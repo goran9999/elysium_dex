@@ -1,8 +1,7 @@
 {
-  "name": "@orca-so/pools-sdk",
-  "version": "0.11.8",
+  "name": "elysium-pools",
+  "version": "0.0.1",
   "description": "Typescript SDK to interact with Orca's ElysiumPool program.",
-  "license": "Apache-2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
@@ -14,9 +13,9 @@
     "tiny-invariant": "^1.2.0"
   },
   "devDependencies": {
+    "@metaplex-foundation/mpl-token-metadata": "2.12.0",
     "@types/bn.js": "~5.1.0",
     "@types/mocha": "^9.0.0",
-    "@metaplex-foundation/mpl-token-metadata": "2.12.0",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",
     "chai": "^4.3.4",
@@ -51,17 +50,10 @@
     "url": "git+https://github.com/orca-so/pools.git"
   },
   "keywords": [
-    "orca_so",
-    "orca",
     "solana",
     "typescript",
     "sdk",
     "crypto",
     "dex"
-  ],
-  "author": "team@orca.so",
-  "bugs": {
-    "url": "https://github.com/orca-so/pools/issues"
-  },
-  "homepage": "https://www.orca.so"
+  ]
 }
