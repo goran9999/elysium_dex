@@ -23,7 +23,7 @@ use crate::state::{OpenPositionBumps, OpenPositionWithMetadataBumps, WhirlpoolBu
 use instructions::*;
 
 #[program]
-pub mod whirlpool {
+pub mod elysium {
     use super::*;
 
     /// Initializes a WhirlpoolsConfig account that hosts info & authorities
