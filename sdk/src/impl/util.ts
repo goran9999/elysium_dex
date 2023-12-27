@@ -1,20 +1,20 @@
 import BN from "bn.js";
 import { PoolUtil, TokenInfo } from "..";
 import {
-  WhirlpoolAccountFetchOptions,
-  WhirlpoolAccountFetcherInterface,
+  ElysiumPoolAccountFetchOptions,
+  ElysiumPoolAccountFetcherInterface,
 } from "../network/public/fetcher";
 import {
   TokenAccountInfo,
-  WhirlpoolData,
-  WhirlpoolRewardInfo,
-  WhirlpoolRewardInfoData,
+  ElysiumPoolData,
+  ElysiumPoolRewardInfo,
+  ElysiumPoolRewardInfoData,
 } from "../types/public";
 
 export async function getTokenMintInfos(
-  fetcher: WhirlpoolAccountFetcherInterface,
-  data: WhirlpoolData,
-  opts?: WhirlpoolAccountFetchOptions
+  fetcher: ElysiumPoolAccountFetcherInterface,
+  data: ElysiumPoolData,
+  opts?: ElysiumPoolAccountFetchOptions
 ): Promise<TokenInfo[]> {
   const mintA = data.tokenMintA;
   const infoA = await fetcher.getMintInfo(mintA, opts);
@@ -33,11 +33,11 @@ export async function getTokenMintInfos(
 }
 
 export async function getRewardInfos(
-  fetcher: WhirlpoolAccountFetcherInterface,
-  data: WhirlpoolData,
-  opts?: WhirlpoolAccountFetchOptions
-): Promise<WhirlpoolRewardInfo[]> {
-  const rewardInfos: WhirlpoolRewardInfo[] = [];
+  fetcher: ElysiumPoolAccountFetcherInterface,
+  data: ElysiumPoolData,
+  opts?: ElysiumPoolAccountFetchOptions
+): Promise<ElysiumPoolRewardInfo[]> {
+  const rewardInfos: ElysiumPoolRewardInfo[] = [];
   for (const rewardInfo of data.rewardInfos) {
     rewardInfos.push(await getRewardInfo(fetcher, rewardInfo, opts));
   }
@@ -45,10 +45,10 @@ export async function getRewardInfos(
 }
 
 async function getRewardInfo(
-  fetcher: WhirlpoolAccountFetcherInterface,
-  data: WhirlpoolRewardInfoData,
-  opts?: WhirlpoolAccountFetchOptions
-): Promise<WhirlpoolRewardInfo> {
+  fetcher: ElysiumPoolAccountFetcherInterface,
+  data: ElysiumPoolRewardInfoData,
+  opts?: ElysiumPoolAccountFetchOptions
+): Promise<ElysiumPoolRewardInfo> {
   const rewardInfo = { ...data, initialized: false, vaultAmount: new BN(0) };
   if (PoolUtil.isRewardInitialized(data)) {
     const vaultInfo = await fetcher.getTokenInfo(data.vault, opts);
@@ -62,9 +62,9 @@ async function getRewardInfo(
 }
 
 export async function getTokenVaultAccountInfos(
-  fetcher: WhirlpoolAccountFetcherInterface,
-  data: WhirlpoolData,
-  opts?: WhirlpoolAccountFetchOptions
+  fetcher: ElysiumPoolAccountFetcherInterface,
+  data: ElysiumPoolData,
+  opts?: ElysiumPoolAccountFetchOptions
 ): Promise<TokenAccountInfo[]> {
   const vaultA = data.tokenVaultA;
   const vaultInfoA = await fetcher.getTokenInfo(vaultA, opts);

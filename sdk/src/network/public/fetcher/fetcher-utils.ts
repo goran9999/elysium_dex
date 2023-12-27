@@ -1,8 +1,13 @@
 import { Address, AddressUtil } from "@orca-so/common-sdk";
 import { Connection } from "@solana/web3.js";
 import invariant from "tiny-invariant";
-import { AccountName, WHIRLPOOL_CODER, WhirlpoolData, getAccountSize } from "../../../types/public";
-import { ParsableWhirlpool } from "../parsing";
+import {
+  AccountName,
+  WHIRLPOOL_CODER,
+  ElysiumPoolData,
+  getAccountSize,
+} from "../../../types/public";
+import { ParsableElysiumPool } from "../parsing";
 
 /**
  * Retrieve a list of whirlpool addresses and accounts filtered by the given params using
@@ -10,11 +15,11 @@ import { ParsableWhirlpool } from "../parsing";
  * @category Network
  *
  * @param connection The connection to use to fetch accounts
- * @param programId The Whirlpool program to search Whirlpool accounts for
- * @param configId The {@link WhirlpoolConfig} account program address to filter by
+ * @param programId The ElysiumPool program to search ElysiumPool accounts for
+ * @param configId The {@link ElysiumPoolConfig} account program address to filter by
  * @returns tuple of whirlpool addresses and accounts
  */
-export async function getAllWhirlpoolAccountsForConfig({
+export async function getAllElysiumPoolAccountsForConfig({
   connection,
   programId,
   configId,
@@ -22,12 +27,12 @@ export async function getAllWhirlpoolAccountsForConfig({
   connection: Connection;
   programId: Address;
   configId: Address;
-}): Promise<ReadonlyMap<string, WhirlpoolData>> {
+}): Promise<ReadonlyMap<string, ElysiumPoolData>> {
   const filters = [
-    { dataSize: getAccountSize(AccountName.Whirlpool) },
+    { dataSize: getAccountSize(AccountName.ElysiumPool) },
     {
       memcmp: WHIRLPOOL_CODER.memcmp(
-        AccountName.Whirlpool,
+        AccountName.ElysiumPool,
         AddressUtil.toPubKey(configId).toBuffer()
       ),
     },
@@ -37,9 +42,9 @@ export async function getAllWhirlpoolAccountsForConfig({
     filters,
   });
 
-  const parsedAccounts: [string, WhirlpoolData][] = [];
+  const parsedAccounts: [string, ElysiumPoolData][] = [];
   accounts.forEach(({ pubkey, account }) => {
-    const parsedAccount = ParsableWhirlpool.parse(pubkey, account);
+    const parsedAccount = ParsableElysiumPool.parse(pubkey, account);
     invariant(!!parsedAccount, `could not parse whirlpool: ${pubkey.toBase58()}`);
     parsedAccounts.push([AddressUtil.toString(pubkey), parsedAccount]);
   });

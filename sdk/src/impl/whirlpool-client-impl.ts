@@ -2,52 +2,52 @@ import { Address } from "@coral-xyz/anchor";
 import { AddressUtil, TransactionBuilder } from "@orca-so/common-sdk";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import invariant from "tiny-invariant";
-import { WhirlpoolContext } from "../context";
+import { ElysiumPoolContext } from "../context";
 import { initTickArrayIx } from "../instructions";
 import {
   collectAllForPositionAddressesTxns,
   collectProtocolFees,
 } from "../instructions/composites";
-import { WhirlpoolIx } from "../ix";
+import { ElysiumPoolIx } from "../ix";
 import {
   IGNORE_CACHE,
   PREFER_CACHE,
-  WhirlpoolAccountFetchOptions,
-  WhirlpoolAccountFetcherInterface,
+  ElysiumPoolAccountFetchOptions,
+  ElysiumPoolAccountFetcherInterface,
 } from "../network/public/fetcher";
-import { WhirlpoolRouter, WhirlpoolRouterBuilder } from "../router/public";
-import { WhirlpoolData } from "../types/public";
+import { ElysiumPoolRouter, ElysiumPoolRouterBuilder } from "../router/public";
+import { ElysiumPoolData } from "../types/public";
 import { getTickArrayDataForPosition } from "../utils/builder/position-builder-util";
 import { PDAUtil, PoolUtil, PriceMath, TickUtil } from "../utils/public";
-import { Position, Whirlpool, WhirlpoolClient } from "../whirlpool-client";
+import { Position, ElysiumPool, ElysiumPoolClient } from "../whirlpool-client";
 import { PositionImpl } from "./position-impl";
 import { getRewardInfos, getTokenMintInfos, getTokenVaultAccountInfos } from "./util";
-import { WhirlpoolImpl } from "./whirlpool-impl";
+import { ElysiumPoolImpl } from "./whirlpool-impl";
 
-export class WhirlpoolClientImpl implements WhirlpoolClient {
-  constructor(readonly ctx: WhirlpoolContext) {}
+export class ElysiumPoolClientImpl implements ElysiumPoolClient {
+  constructor(readonly ctx: ElysiumPoolContext) {}
 
-  public getContext(): WhirlpoolContext {
+  public getContext(): ElysiumPoolContext {
     return this.ctx;
   }
 
-  public getFetcher(): WhirlpoolAccountFetcherInterface {
+  public getFetcher(): ElysiumPoolAccountFetcherInterface {
     return this.ctx.fetcher;
   }
 
-  public getRouter(poolAddresses: Address[]): Promise<WhirlpoolRouter> {
-    return WhirlpoolRouterBuilder.buildWithPools(this.ctx, poolAddresses);
+  public getRouter(poolAddresses: Address[]): Promise<ElysiumPoolRouter> {
+    return ElysiumPoolRouterBuilder.buildWithPools(this.ctx, poolAddresses);
   }
 
-  public async getPool(poolAddress: Address, opts = PREFER_CACHE): Promise<Whirlpool> {
+  public async getPool(poolAddress: Address, opts = PREFER_CACHE): Promise<ElysiumPool> {
     const account = await this.ctx.fetcher.getPool(poolAddress, opts);
     if (!account) {
-      throw new Error(`Unable to fetch Whirlpool at address at ${poolAddress}`);
+      throw new Error(`Unable to fetch ElysiumPool at address at ${poolAddress}`);
     }
     const tokenInfos = await getTokenMintInfos(this.ctx.fetcher, account, opts);
     const vaultInfos = await getTokenVaultAccountInfos(this.ctx.fetcher, account, opts);
     const rewardInfos = await getRewardInfos(this.ctx.fetcher, account, opts);
-    return new WhirlpoolImpl(
+    return new ElysiumPoolImpl(
       this.ctx,
       AddressUtil.toPubKey(poolAddress),
       tokenInfos[0],
@@ -59,12 +59,12 @@ export class WhirlpoolClientImpl implements WhirlpoolClient {
     );
   }
 
-  public async getPools(poolAddresses: Address[], opts = PREFER_CACHE): Promise<Whirlpool[]> {
+  public async getPools(poolAddresses: Address[], opts = PREFER_CACHE): Promise<ElysiumPool[]> {
     const accounts = Array.from(
       (await this.ctx.fetcher.getPools(poolAddresses, opts)).values()
-    ).filter((account): account is WhirlpoolData => !!account);
+    ).filter((account): account is ElysiumPoolData => !!account);
     if (accounts.length !== poolAddresses.length) {
-      throw new Error(`Unable to fetch all Whirlpools at addresses ${poolAddresses}`);
+      throw new Error(`Unable to fetch all ElysiumPools at addresses ${poolAddresses}`);
     }
     const tokenMints = new Set<string>();
     const tokenAccounts = new Set<string>();
@@ -82,7 +82,7 @@ export class WhirlpoolClientImpl implements WhirlpoolClient {
     await this.ctx.fetcher.getMintInfos(Array.from(tokenMints), opts);
     await this.ctx.fetcher.getTokenInfos(Array.from(tokenAccounts), opts);
 
-    const whirlpools: Whirlpool[] = [];
+    const whirlpools: ElysiumPool[] = [];
     for (let i = 0; i < accounts.length; i++) {
       const account = accounts[i];
       const poolAddress = poolAddresses[i];
@@ -90,7 +90,7 @@ export class WhirlpoolClientImpl implements WhirlpoolClient {
       const vaultInfos = await getTokenVaultAccountInfos(this.ctx.fetcher, account, PREFER_CACHE);
       const rewardInfos = await getRewardInfos(this.ctx.fetcher, account, PREFER_CACHE);
       whirlpools.push(
-        new WhirlpoolImpl(
+        new ElysiumPoolImpl(
           this.ctx,
           AddressUtil.toPubKey(poolAddress),
           tokenInfos[0],
@@ -112,7 +112,7 @@ export class WhirlpoolClientImpl implements WhirlpoolClient {
     }
     const whirlAccount = await this.ctx.fetcher.getPool(account.whirlpool, opts);
     if (!whirlAccount) {
-      throw new Error(`Unable to fetch Whirlpool for Position at address at ${positionAddress}`);
+      throw new Error(`Unable to fetch ElysiumPool for Position at address at ${positionAddress}`);
     }
 
     const [lowerTickArray, upperTickArray] = await getTickArrayDataForPosition(
@@ -222,7 +222,7 @@ export class WhirlpoolClientImpl implements WhirlpoolClient {
     const tokenVaultAKeypair = Keypair.generate();
     const tokenVaultBKeypair = Keypair.generate();
 
-    const whirlpoolPda = PDAUtil.getWhirlpool(
+    const whirlpoolPda = PDAUtil.getElysiumPool(
       this.ctx.program.programId,
       whirlpoolsConfig,
       new PublicKey(tokenMintA),
@@ -239,7 +239,7 @@ export class WhirlpoolClientImpl implements WhirlpoolClient {
       this.ctx.txBuilderOpts
     );
 
-    const initPoolIx = WhirlpoolIx.initializePoolIx(this.ctx.program, {
+    const initPoolIx = ElysiumPoolIx.initializePoolIx(this.ctx.program, {
       initSqrtPrice,
       whirlpoolsConfig,
       whirlpoolPda,
@@ -277,7 +277,7 @@ export class WhirlpoolClientImpl implements WhirlpoolClient {
 
   public async collectFeesAndRewardsForPositions(
     positionAddresses: Address[],
-    opts?: WhirlpoolAccountFetchOptions
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<TransactionBuilder[]> {
     const walletKey = this.ctx.wallet.publicKey;
     return collectAllForPositionAddressesTxns(

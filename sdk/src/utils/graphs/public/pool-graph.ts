@@ -1,7 +1,7 @@
 import { Address } from "@coral-xyz/anchor";
 
 /**
- * An object containing the token pairs of a Whirlpool.
+ * An object containing the token pairs of a ElysiumPool.
  * @category PoolGraph
  */
 export interface PoolTokenPair {

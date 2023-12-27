@@ -1,4 +1,4 @@
-use crate::state::WhirlpoolsConfig;
+use crate::state::ElysiumPoolsConfig;
 use crate::{errors::ErrorCode, math::MAX_FEE_RATE};
 use anchor_lang::prelude::*;
 
@@ -14,7 +14,7 @@ impl FeeTier {
 
     pub fn initialize(
         &mut self,
-        whirlpools_config: &Account<WhirlpoolsConfig>,
+        whirlpools_config: &Account<ElysiumPoolsConfig>,
         tick_spacing: u16,
         default_fee_rate: u16,
     ) -> Result<()> {

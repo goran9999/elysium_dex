@@ -3,7 +3,7 @@ import { AddressUtil, Percentage } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { SwapErrorCode } from "../errors/errors";
-import { PREFER_CACHE, WhirlpoolAccountFetcherInterface } from "../network/public/fetcher";
+import { PREFER_CACHE, ElysiumPoolAccountFetcherInterface } from "../network/public/fetcher";
 import { SwapQuoteParam, swapQuoteWithParams } from "../quotes/public";
 import { Path, PoolUtil } from "../utils/public";
 import { SwapQuoteRequest, batchBuildSwapQuoteParams } from "./batch-swap-quote";
@@ -27,7 +27,7 @@ export async function getQuoteMap(
   paths: Path[],
   amountSpecifiedIsInput: boolean,
   programId: PublicKey,
-  fetcher: WhirlpoolAccountFetcherInterface,
+  fetcher: ElysiumPoolAccountFetcherInterface,
   opts: RoutingOptions
 ) {
   const { percentIncrement, numTopPartialQuotes } = opts;

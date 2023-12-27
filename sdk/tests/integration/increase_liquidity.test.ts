@@ -9,10 +9,10 @@ import {
   PriceMath,
   TickArrayData,
   TickUtil,
-  WhirlpoolContext,
-  WhirlpoolData,
-  WhirlpoolIx,
-  toTx
+  ElysiumPoolContext,
+  ElysiumPoolData,
+  ElysiumPoolIx,
+  toTx,
 } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import { PoolUtil, toTokenAmount } from "../../src/utils/public/pool-utils";
@@ -27,28 +27,28 @@ import {
   createTokenAccount,
   getTokenBalance,
   sleep,
-  transferToken
+  transferToken,
 } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
-import { WhirlpoolTestFixture } from "../utils/fixture";
+import { ElysiumPoolTestFixture } from "../utils/fixture";
 import { initTestPool, initTickArray, openPosition } from "../utils/init-utils";
 import {
   generateDefaultInitTickArrayParams,
-  generateDefaultOpenPositionParams
+  generateDefaultOpenPositionParams,
 } from "../utils/test-builders";
 
 describe("increase_liquidity", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("increase liquidity of a position spanning two tick arrays", async () => {
     const currTick = 0;
     const tickLowerIndex = -1280,
       tickUpperIndex = 1280;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: ZERO_BN }],
       initialSqrtPrice: PriceMath.tickIndexToSqrtPriceX64(currTick),
@@ -57,7 +57,10 @@ describe("increase_liquidity", () => {
     const { whirlpoolPda } = poolInitInfo;
     const positionInitInfo = positions[0];
 
-    const poolBefore = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolBefore = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
     const tokenAmount = toTokenAmount(167_000, 167_000);
     const liquidityAmount = PoolUtil.estimateLiquidityFromTokenAmounts(
       currTick,
@@ -71,7 +74,7 @@ describe("increase_liquidity", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
         liquidityAmount,
         tokenMaxA: tokenAmount.tokenA,
         tokenMaxB: tokenAmount.tokenB,
@@ -88,10 +91,16 @@ describe("increase_liquidity", () => {
       })
     ).buildAndExecute();
 
-    const position = (await fetcher.getPosition(positionInitInfo.publicKey, IGNORE_CACHE)) as PositionData;
+    const position = (await fetcher.getPosition(
+      positionInitInfo.publicKey,
+      IGNORE_CACHE
+    )) as PositionData;
     assert.ok(position.liquidity.eq(liquidityAmount));
 
-    const poolAfter = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolAfter = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
     assert.ok(poolAfter.rewardLastUpdatedTimestamp.gt(poolBefore.rewardLastUpdatedTimestamp));
     assert.equal(
       await getTokenBalance(provider, poolInitInfo.tokenVaultAKeypair.publicKey),
@@ -119,7 +128,7 @@ describe("increase_liquidity", () => {
     const currTick = 500;
     const tickLowerIndex = 7168;
     const tickUpperIndex = 8960;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: ZERO_BN }],
       initialSqrtPrice: PriceMath.tickIndexToSqrtPriceX64(currTick),
@@ -127,7 +136,10 @@ describe("increase_liquidity", () => {
     const { poolInitInfo, positions, tokenAccountA, tokenAccountB } = fixture.getInfos();
     const { whirlpoolPda } = poolInitInfo;
     const positionInitInfo = positions[0];
-    const poolBefore = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolBefore = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
 
     const tokenAmount = toTokenAmount(1_000_000, 0);
     const liquidityAmount = PoolUtil.estimateLiquidityFromTokenAmounts(
@@ -139,7 +151,7 @@ describe("increase_liquidity", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
         liquidityAmount,
         tokenMaxA: tokenAmount.tokenA,
         tokenMaxB: tokenAmount.tokenB,
@@ -167,7 +179,10 @@ describe("increase_liquidity", () => {
     );
 
     const expectedLiquidity = new anchor.BN(liquidityAmount);
-    const position = (await fetcher.getPosition(positionInitInfo.publicKey, IGNORE_CACHE)) as PositionData;
+    const position = (await fetcher.getPosition(
+      positionInitInfo.publicKey,
+      IGNORE_CACHE
+    )) as PositionData;
     assert.ok(position.liquidity.eq(expectedLiquidity));
 
     const tickArray = (await fetcher.getTickArray(
@@ -178,7 +193,10 @@ describe("increase_liquidity", () => {
     assertTick(tickArray.ticks[56], true, expectedLiquidity, expectedLiquidity);
     assertTick(tickArray.ticks[70], true, expectedLiquidity, expectedLiquidity.neg());
 
-    const poolAfter = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolAfter = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
     assert.ok(poolAfter.rewardLastUpdatedTimestamp.gte(poolBefore.rewardLastUpdatedTimestamp));
     assert.equal(poolAfter.liquidity, 0);
   });
@@ -187,13 +205,16 @@ describe("increase_liquidity", () => {
     const currTick = 500;
     const tickLowerIndex = 7168;
     const tickUpperIndex = 8960;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: PriceMath.tickIndexToSqrtPriceX64(currTick),
     });
     const { poolInitInfo, tokenAccountA, tokenAccountB } = fixture.getInfos();
     const { whirlpoolPda, tickSpacing } = poolInitInfo;
-    const poolBefore = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolBefore = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
 
     const tokenAmount = toTokenAmount(1_000_000, 0);
     const liquidityAmount = PoolUtil.estimateLiquidityFromTokenAmounts(
@@ -226,7 +247,7 @@ describe("increase_liquidity", () => {
     await new TransactionBuilder(ctx.provider.connection, ctx.provider.wallet, ctx.txBuilderOpts)
       // TODO: create a ComputeBudgetInstruction to request more compute
       .addInstruction(
-        WhirlpoolIx.initTickArrayIx(
+        ElysiumPoolIx.initTickArrayIx(
           ctx.program,
           generateDefaultInitTickArrayParams(
             ctx,
@@ -236,19 +257,19 @@ describe("increase_liquidity", () => {
         )
       )
       // .addInstruction(
-      //   buildtoTx(ctx, WhirlpoolIx.initTickArrayIx(generateDefaultInitTickArrayParams(
+      //   buildtoTx(ctx, ElysiumPoolIx.initTickArrayIx(generateDefaultInitTickArrayParams(
       //     ctx,
       //     whirlpoolPda.publicKey,
       //     getStartTickIndex(pos[0].tickLowerIndex + TICK_ARRAY_SIZE * tickSpacing, tickSpacing),
       //   ))
       // )
-      .addInstruction(WhirlpoolIx.openPositionIx(ctx.program, params))
+      .addInstruction(ElysiumPoolIx.openPositionIx(ctx.program, params))
       // .addInstruction(
-      //   buildWhirlpoolIx.openPositionWithMetadataIx(ctx.program, params)
+      //   buildElysiumPoolIx.openPositionWithMetadataIx(ctx.program, params)
       // )
       .addSigner(mint)
       .addInstruction(
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: tokenAmount.tokenA,
           tokenMaxB: tokenAmount.tokenB,
@@ -288,7 +309,10 @@ describe("increase_liquidity", () => {
     assertTick(tickArray.ticks[56], true, expectedLiquidity, expectedLiquidity);
     assertTick(tickArray.ticks[70], true, expectedLiquidity, expectedLiquidity.neg());
 
-    const poolAfter = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolAfter = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
     assert.ok(poolAfter.rewardLastUpdatedTimestamp.gte(poolBefore.rewardLastUpdatedTimestamp));
     assert.equal(poolAfter.liquidity, 0);
   });
@@ -297,7 +321,7 @@ describe("increase_liquidity", () => {
     const currTick = 1300;
     const tickLowerIndex = -1280,
       tickUpperIndex = 1280;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: ZERO_BN }],
       initialSqrtPrice: PriceMath.tickIndexToSqrtPriceX64(currTick),
@@ -306,7 +330,10 @@ describe("increase_liquidity", () => {
     const { whirlpoolPda } = poolInitInfo;
     const positionInitInfo = positions[0];
 
-    const poolBefore = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolBefore = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
     const tokenAmount = toTokenAmount(0, 167_000);
     const liquidityAmount = PoolUtil.estimateLiquidityFromTokenAmounts(
       currTick,
@@ -322,7 +349,7 @@ describe("increase_liquidity", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
         liquidityAmount,
         tokenMaxA: tokenAmount.tokenA,
         tokenMaxB: tokenAmount.tokenB,
@@ -341,10 +368,16 @@ describe("increase_liquidity", () => {
       .addSigner(delegate)
       .buildAndExecute();
 
-    const position = (await fetcher.getPosition(positionInitInfo.publicKey, IGNORE_CACHE)) as PositionData;
+    const position = (await fetcher.getPosition(
+      positionInitInfo.publicKey,
+      IGNORE_CACHE
+    )) as PositionData;
     assert.ok(position.liquidity.eq(liquidityAmount));
 
-    const poolAfter = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolAfter = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
     assert.ok(poolAfter.rewardLastUpdatedTimestamp.gte(poolBefore.rewardLastUpdatedTimestamp));
     assert.equal(
       await getTokenBalance(provider, poolInitInfo.tokenVaultAKeypair.publicKey),
@@ -407,7 +440,7 @@ describe("increase_liquidity", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
         liquidityAmount: estLiquidityAmount,
         tokenMaxA: tokenAmount.tokenA,
         tokenMaxB: tokenAmount.tokenB,
@@ -424,7 +457,10 @@ describe("increase_liquidity", () => {
       })
     ).buildAndExecute();
 
-    const position = (await fetcher.getPosition(positionPda.publicKey, IGNORE_CACHE)) as PositionData;
+    const position = (await fetcher.getPosition(
+      positionPda.publicKey,
+      IGNORE_CACHE
+    )) as PositionData;
     assert.ok(position.liquidity.eq(estLiquidityAmount));
   });
 
@@ -467,7 +503,7 @@ describe("increase_liquidity", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
         liquidityAmount: estLiquidityAmount,
         tokenMaxA: tokenAmount.tokenA,
         tokenMaxB: tokenAmount.tokenB,
@@ -484,12 +520,15 @@ describe("increase_liquidity", () => {
       })
     ).buildAndExecute();
 
-    const position = (await fetcher.getPosition(positionPda.publicKey, IGNORE_CACHE)) as PositionData;
+    const position = (await fetcher.getPosition(
+      positionPda.publicKey,
+      IGNORE_CACHE
+    )) as PositionData;
     assert.ok(position.liquidity.eq(estLiquidityAmount));
   });
 
   it("fails with zero liquidity amount", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount: ZERO_BN }],
     });
@@ -500,7 +539,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount: ZERO_BN,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(1_000_000),
@@ -521,7 +560,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when token max a exceeded", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount: ZERO_BN }],
@@ -535,7 +574,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(999_999_999),
@@ -556,7 +595,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when token max b exceeded", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount: ZERO_BN }],
     });
@@ -569,7 +608,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(999_999_999),
           tokenMaxB: new BN(0),
@@ -590,7 +629,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when position account does not have exactly 1 token", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount: ZERO_BN }],
     });
@@ -610,7 +649,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(1_000_000),
@@ -635,7 +674,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(1_000_000),
@@ -656,7 +695,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when position token account mint does not match position mint", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount: ZERO_BN }],
     });
@@ -672,7 +711,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(1_000_000),
@@ -695,7 +734,7 @@ describe("increase_liquidity", () => {
   it("fails when position does not match whirlpool", async () => {
     const tickLowerIndex = 7168;
     const tickUpperIndex = 8960;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: ZERO_BN }],
     });
@@ -721,7 +760,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(1_000_000),
@@ -742,7 +781,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when token vaults do not match whirlpool vaults", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount: ZERO_BN }],
     });
@@ -757,7 +796,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(1_000_000),
@@ -779,7 +818,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(1_000_000),
@@ -800,7 +839,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when owner token account mint does not match whirlpool token mint", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount: ZERO_BN }],
     });
@@ -815,7 +854,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(1_000_000),
@@ -837,7 +876,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(1_000_000),
@@ -858,7 +897,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when position authority is not approved delegate for position token account", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount: ZERO_BN }],
     });
@@ -876,7 +915,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(167_000),
@@ -899,7 +938,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when position authority is not authorized for exactly 1 token", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount: ZERO_BN }],
     });
@@ -918,7 +957,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(167_000),
@@ -941,7 +980,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when position authority was not a signer", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount: ZERO_BN }],
     });
@@ -960,7 +999,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(167_000),
@@ -981,7 +1020,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when position authority is not approved for token owner accounts", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount: ZERO_BN }],
     });
@@ -998,7 +1037,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(167_000),
@@ -1021,7 +1060,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when tick arrays do not match the position", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount: ZERO_BN }],
     });
@@ -1042,7 +1081,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(167_000),
@@ -1063,7 +1102,7 @@ describe("increase_liquidity", () => {
   });
 
   it("fails when the tick arrays are for a different whirlpool", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount: ZERO_BN }],
     });
@@ -1086,7 +1125,7 @@ describe("increase_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMaxA: new BN(0),
           tokenMaxB: new BN(167_000),

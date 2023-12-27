@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 #[derive(Accounts)]
 #[instruction(tick_spacing: u16)]
 pub struct InitializeFeeTier<'info> {
-    pub config: Box<Account<'info, WhirlpoolsConfig>>,
+    pub config: Box<Account<'info, ElysiumPoolsConfig>>,
 
     #[account(init,
       payer = funder,

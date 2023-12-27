@@ -1,4 +1,4 @@
-# Whirlpools
+# ElysiumPools
 
 Whirpools is an open-source concentrated liquidity AMM contract on the Solana blockchain.
 This repository contains the Rust smart contract as well as the Typescript SDK (`@orca-so/whirlpools-sdk`) to interact with a deployed program.
@@ -6,6 +6,7 @@ This repository contains the Rust smart contract as well as the Typescript SDK (
 The contract has been audited by [Kudelski and Neodyme](https://orca-so.gitbook.io/orca-developer-portal/whirlpools/overview#security-audits).
 
 The contract has been deployed using verifiable build, so that you can ensure that the hash of the on-chain program matches the hash of the program of the given codebase.
+
 - [Solana Verify CLI](https://github.com/Ellipsis-Labs/solana-verifiable-build)
 - [Verification result on Osec API](https://verify.osec.io/status/whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc)
 
@@ -31,7 +32,7 @@ $ echo $NODE_PATH
 
 ## Usage
 
-Instructions on how to interact with the Whirlpools contract is documented in the [Orca Developer Portal](https://orca-so.gitbook.io/orca-developer-portal/orca/welcome).
+Instructions on how to interact with the ElysiumPools contract is documented in the [Orca Developer Portal](https://orca-so.gitbook.io/orca-developer-portal/orca/welcome).
 
 ## Tests
 
@@ -39,9 +40,9 @@ Instructions on how to interact with the Whirlpools contract is documented in th
 
 ---
 
-# Whirlpool SDK
+# ElysiumPool SDK
 
-Use the SDK to interact with a deployed Whirlpools program via Typescript.
+Use the SDK to interact with a deployed ElysiumPools program via Typescript.
 
 ## Installation
 

@@ -11,9 +11,9 @@ import {
   OpenPositionParams,
   PDAUtil,
   PositionData,
-  WhirlpoolContext,
-  WhirlpoolIx,
-  toTx
+  ElysiumPoolContext,
+  ElysiumPoolIx,
+  toTx,
 } from "../../src";
 import {
   ONE_SOL,
@@ -22,7 +22,7 @@ import {
   createMint,
   createMintInstructions,
   mintToDestination,
-  systemTransferTx
+  systemTransferTx,
 } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
 import { initTestPool, openPosition } from "../utils/init-utils";
@@ -31,8 +31,8 @@ import { generateDefaultOpenPositionParams } from "../utils/test-builders";
 describe("open_position", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   let defaultParams: OpenPositionParams;
@@ -119,12 +119,15 @@ describe("open_position", () => {
 
   it("user must pass the valid token ATA account", async () => {
     const anotherMintKey = await createMint(provider, provider.wallet.publicKey);
-    const positionTokenAccountAddress = getAssociatedTokenAddressSync(anotherMintKey, provider.wallet.publicKey)
+    const positionTokenAccountAddress = getAssociatedTokenAddressSync(
+      anotherMintKey,
+      provider.wallet.publicKey
+    );
 
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.openPositionIx(ctx.program, {
+        ElysiumPoolIx.openPositionIx(ctx.program, {
           ...defaultParams,
           positionTokenAccount: positionTokenAccountAddress,
         })
@@ -179,7 +182,10 @@ describe("open_position", () => {
     const positionMintKeypair = anchor.web3.Keypair.generate();
     const positionPda = PDAUtil.getPosition(ctx.program.programId, positionMintKeypair.publicKey);
 
-    const positionTokenAccountAddress = getAssociatedTokenAddressSync(positionMintKeypair.publicKey, provider.wallet.publicKey)
+    const positionTokenAccountAddress = getAssociatedTokenAddressSync(
+      positionMintKeypair.publicKey,
+      provider.wallet.publicKey
+    );
 
     const tx = new web3.Transaction();
     tx.add(
@@ -195,7 +201,7 @@ describe("open_position", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.openPositionIx(ctx.program, {
+        ElysiumPoolIx.openPositionIx(ctx.program, {
           funder: provider.wallet.publicKey,
           owner: provider.wallet.publicKey,
           positionPda,

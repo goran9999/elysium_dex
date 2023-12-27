@@ -5,34 +5,35 @@ import { Keypair } from "@solana/web3.js";
 import * as assert from "assert";
 import BN from "bn.js";
 import {
-  buildWhirlpoolClient, PriceMath,
+  buildElysiumPoolClient,
+  PriceMath,
   swapQuoteByInputToken,
-  Whirlpool,
-  WhirlpoolContext
+  ElysiumPool,
+  ElysiumPoolContext,
 } from "../../../../src";
-import { SwapErrorCode, WhirlpoolsError } from "../../../../src/errors/errors";
+import { SwapErrorCode, ElysiumPoolsError } from "../../../../src/errors/errors";
 import { IGNORE_CACHE } from "../../../../src/network/public/fetcher";
 import { swapQuoteByInputTokenWithDevFees } from "../../../../src/quotes/public/dev-fee-swap-quote";
 import {
   assertDevFeeQuotes,
   assertDevTokenAmount,
   assertQuoteAndResults,
-  TickSpacing
+  TickSpacing,
 } from "../../../utils";
 import { defaultConfirmOptions } from "../../../utils/const";
 import {
   arrayTickIndexToTickIndex,
   buildPosition,
-  setupSwapTest
+  setupSwapTest,
 } from "../../../utils/swap-test-utils";
 import { getVaultAmounts } from "../../../utils/whirlpools-test-utils";
 
 describe("whirlpool-dev-fee-swap", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
-  const client = buildWhirlpoolClient(ctx);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
+  const client = buildElysiumPoolClient(ctx);
   const tickSpacing = TickSpacing.SixtyFour;
   const slippageTolerance = Percentage.fromFraction(0, 100);
 
@@ -219,45 +220,48 @@ describe("whirlpool-dev-fee-swap", () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 1, offsetIndex: 1 }, tickSpacing);
     const aToB = true;
     const tokenAIsNative = true;
-    const whirlpool = await setupSwapTest({
-      ctx,
-      client,
-      tickSpacing,
-      initSqrtPrice: PriceMath.tickIndexToSqrtPriceX64(currIndex),
-      initArrayStartTicks: [-16896, -11264, -5632, 0, 5632],
-      fundedPositions: [
-        buildPosition(
-          // a
-          { arrayIndex: -1, offsetIndex: 10 },
-          { arrayIndex: 1, offsetIndex: 23 },
-          tickSpacing,
-          new anchor.BN(990_000_000)
-        ),
-        buildPosition(
-          // a
-          { arrayIndex: -1, offsetIndex: 10 },
-          { arrayIndex: 0, offsetIndex: 23 },
-          tickSpacing,
-          new anchor.BN(990_000_000)
-        ),
-        buildPosition(
-          // a
-          { arrayIndex: 0, offsetIndex: 22 },
-          { arrayIndex: 1, offsetIndex: 23 },
-          tickSpacing,
-          new anchor.BN(1_990_000_000)
-        ),
-        buildPosition(
-          // a
-          { arrayIndex: 0, offsetIndex: 23 },
-          { arrayIndex: 1, offsetIndex: 23 },
-          tickSpacing,
-          new anchor.BN(990_000_000)
-        ),
-      ],
-    }, tokenAIsNative);
+    const whirlpool = await setupSwapTest(
+      {
+        ctx,
+        client,
+        tickSpacing,
+        initSqrtPrice: PriceMath.tickIndexToSqrtPriceX64(currIndex),
+        initArrayStartTicks: [-16896, -11264, -5632, 0, 5632],
+        fundedPositions: [
+          buildPosition(
+            // a
+            { arrayIndex: -1, offsetIndex: 10 },
+            { arrayIndex: 1, offsetIndex: 23 },
+            tickSpacing,
+            new anchor.BN(990_000_000)
+          ),
+          buildPosition(
+            // a
+            { arrayIndex: -1, offsetIndex: 10 },
+            { arrayIndex: 0, offsetIndex: 23 },
+            tickSpacing,
+            new anchor.BN(990_000_000)
+          ),
+          buildPosition(
+            // a
+            { arrayIndex: 0, offsetIndex: 22 },
+            { arrayIndex: 1, offsetIndex: 23 },
+            tickSpacing,
+            new anchor.BN(1_990_000_000)
+          ),
+          buildPosition(
+            // a
+            { arrayIndex: 0, offsetIndex: 23 },
+            { arrayIndex: 1, offsetIndex: 23 },
+            tickSpacing,
+            new anchor.BN(990_000_000)
+          ),
+        ],
+      },
+      tokenAIsNative
+    );
 
-    const { devWallet, balance: preDevWalletBalance } = await setupDevWallet(ctx, 10_000_000)
+    const { devWallet, balance: preDevWalletBalance } = await setupDevWallet(ctx, 10_000_000);
 
     const devFeePercentage = Percentage.fromFraction(1, 10000); // 0.01%
     const inputTokenAmount = new BN(1_000_000_000); // Swap 1SOL
@@ -293,7 +297,13 @@ describe("whirlpool-dev-fee-swap", () => {
       beforeVaultAmounts,
       afterVaultAmounts
     );
-    await assertDevTokenAmount(ctx, inputTokenQuoteWithDevFees, swapToken, devWallet.publicKey, preDevWalletBalance);
+    await assertDevTokenAmount(
+      ctx,
+      inputTokenQuoteWithDevFees,
+      swapToken,
+      devWallet.publicKey,
+      preDevWalletBalance
+    );
   });
 
   it("swap with dev-fee 50%", async () => {
@@ -388,7 +398,7 @@ describe("whirlpool-dev-fee-swap", () => {
           devFeePercentage,
           IGNORE_CACHE
         ),
-      (err) => (err as WhirlpoolsError).errorCode === SwapErrorCode.InvalidDevFeePercentage
+      (err) => (err as ElysiumPoolsError).errorCode === SwapErrorCode.InvalidDevFeePercentage
     );
   });
 
@@ -428,14 +438,14 @@ describe("whirlpool-dev-fee-swap", () => {
           devFeePercentage,
           IGNORE_CACHE
         ),
-      (err) => (err as WhirlpoolsError).errorCode === SwapErrorCode.InvalidDevFeePercentage
+      (err) => (err as ElysiumPoolsError).errorCode === SwapErrorCode.InvalidDevFeePercentage
     );
   });
 });
 
 async function getQuotes(
-  ctx: WhirlpoolContext,
-  whirlpool: Whirlpool,
+  ctx: ElysiumPoolContext,
+  whirlpool: ElysiumPool,
   swapToken: Address,
   inputTokenAmount: BN,
   postFeeTokenAmount: BN,
@@ -474,12 +484,12 @@ async function getQuotes(
   return { inputTokenQuote, postFeeInputTokenQuote, inputTokenQuoteWithDevFees };
 }
 
-async function setupDevWallet(ctx: WhirlpoolContext, airdrop: number) {
+async function setupDevWallet(ctx: ElysiumPoolContext, airdrop: number) {
   // Setup dev-wallet. Airdrop some tokens in or it'll be difficult to account for
   // rent-tokens when we do assertion
   const devWallet = Keypair.generate();
   const txn = await ctx.provider.connection.requestAirdrop(devWallet.publicKey, airdrop);
   await ctx.provider.connection.confirmTransaction(txn);
   const balance = await ctx.provider.connection.getBalance(devWallet.publicKey);
-  return { devWallet, balance }
+  return { devWallet, balance };
 }

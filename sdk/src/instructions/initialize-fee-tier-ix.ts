@@ -1,7 +1,7 @@
 import { Program } from "@coral-xyz/anchor";
 import { PDA } from "@orca-so/common-sdk";
 import { PublicKey, SystemProgram } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 import { Instruction } from "@orca-so/common-sdk";
 
@@ -26,7 +26,7 @@ export type InitFeeTierParams = {
 };
 
 /**
- * Initializes a fee tier account usable by Whirlpools in this WhirlpoolsConfig space.
+ * Initializes a fee tier account usable by ElysiumPools in this ElysiumPoolsConfig space.
  *
  *  Special Errors
  * `FeeRateMaxExceeded` - If the provided default_fee_rate exceeds MAX_FEE_RATE.
@@ -37,7 +37,7 @@ export type InitFeeTierParams = {
  * @returns - Instruction to perform the action.
  */
 export function initializeFeeTierIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: InitFeeTierParams
 ): Instruction {
   const { feeTierPda, whirlpoolsConfig, tickSpacing, feeAuthority, defaultFeeRate, funder } =

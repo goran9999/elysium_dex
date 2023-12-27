@@ -4,9 +4,9 @@ import {
   InitPoolParams,
   PDAUtil,
   toTx,
-  WhirlpoolContext,
-  WhirlpoolData,
-  WhirlpoolIx
+  ElysiumPoolContext,
+  ElysiumPoolData,
+  ElysiumPoolIx,
 } from "../../src";
 import { TickSpacing } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
@@ -16,8 +16,8 @@ import { createInOrderMints } from "../utils/test-builders";
 describe("set_default_protocol_fee_rate", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully set_default_protocol_fee_rate", async () => {
@@ -32,12 +32,12 @@ describe("set_default_protocol_fee_rate", () => {
     const newDefaultProtocolFeeRate = 45;
 
     // Fetch initial whirlpool and check it is default
-    let whirlpool_0 = (await fetcher.getPool(whirlpoolKey)) as WhirlpoolData;
+    let whirlpool_0 = (await fetcher.getPool(whirlpoolKey)) as ElysiumPoolData;
     assert.equal(whirlpool_0.protocolFeeRate, configInitInfo.defaultProtocolFeeRate);
 
     await toTx(
       ctx,
-      WhirlpoolIx.setDefaultProtocolFeeRateIx(ctx.program, {
+      ElysiumPoolIx.setDefaultProtocolFeeRateIx(ctx.program, {
         whirlpoolsConfig: whirlpoolsConfigKey,
         feeAuthority: feeAuthorityKeypair.publicKey,
         defaultProtocolFeeRate: newDefaultProtocolFeeRate,
@@ -47,11 +47,11 @@ describe("set_default_protocol_fee_rate", () => {
       .buildAndExecute();
 
     // Setting the default rate did not change existing whirlpool fee rate
-    whirlpool_0 = (await fetcher.getPool(whirlpoolKey)) as WhirlpoolData;
+    whirlpool_0 = (await fetcher.getPool(whirlpoolKey)) as ElysiumPoolData;
     assert.equal(whirlpool_0.protocolFeeRate, configInitInfo.defaultProtocolFeeRate);
 
     const [tokenMintA, tokenMintB] = await createInOrderMints(ctx);
-    const whirlpoolPda = PDAUtil.getWhirlpool(
+    const whirlpoolPda = PDAUtil.getElysiumPool(
       ctx.program.programId,
       whirlpoolsConfigKey,
       tokenMintA,
@@ -70,9 +70,9 @@ describe("set_default_protocol_fee_rate", () => {
       tokenVaultBKeypair,
       tickSpacing: TickSpacing.Stable,
     };
-    await toTx(ctx, WhirlpoolIx.initializePoolIx(ctx.program, newPoolInitInfo)).buildAndExecute();
+    await toTx(ctx, ElysiumPoolIx.initializePoolIx(ctx.program, newPoolInitInfo)).buildAndExecute();
 
-    const whirlpool_1 = (await fetcher.getPool(whirlpoolPda.publicKey)) as WhirlpoolData;
+    const whirlpool_1 = (await fetcher.getPool(whirlpoolPda.publicKey)) as ElysiumPoolData;
     assert.equal(whirlpool_1.protocolFeeRate, newDefaultProtocolFeeRate);
   });
 
@@ -85,7 +85,7 @@ describe("set_default_protocol_fee_rate", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setDefaultProtocolFeeRateIx(ctx.program, {
+        ElysiumPoolIx.setDefaultProtocolFeeRateIx(ctx.program, {
           whirlpoolsConfig: whirlpoolsConfigKey,
           feeAuthority: feeAuthorityKeypair.publicKey,
           defaultProtocolFeeRate: newDefaultProtocolFeeRate,

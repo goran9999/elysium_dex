@@ -4,10 +4,12 @@ import { MathUtil } from "@orca-so/common-sdk";
 import * as assert from "assert";
 import Decimal from "decimal.js";
 import {
-  buildWhirlpoolClient,
+  buildElysiumPoolClient,
   collectRewardsQuote,
-  NUM_REWARDS, toTx,
-  WhirlpoolContext, WhirlpoolIx
+  NUM_REWARDS,
+  toTx,
+  ElysiumPoolContext,
+  ElysiumPoolIx,
 } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import {
@@ -19,26 +21,26 @@ import {
   sleep,
   TickSpacing,
   transferToken,
-  ZERO_BN
+  ZERO_BN,
 } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
-import { WhirlpoolTestFixture } from "../utils/fixture";
+import { ElysiumPoolTestFixture } from "../utils/fixture";
 import { initTestPool } from "../utils/init-utils";
 
 describe("collect_reward", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
-  const client = buildWhirlpoolClient(ctx);
+  const client = buildElysiumPoolClient(ctx);
 
   it("successfully collect rewards", async () => {
     const vaultStartBalance = 1_000_000;
     const lowerTickIndex = -1280,
       upperTickIndex = 1280,
       tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: tickSpacing,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -74,7 +76,7 @@ describe("collect_reward", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.updateFeesAndRewardsIx(ctx.program, {
+      ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
         whirlpool: whirlpoolPda.publicKey,
         position: positions[0].publicKey,
         tickArrayLower: positions[0].tickArrayLower,
@@ -92,7 +94,7 @@ describe("collect_reward", () => {
       position: positionPreCollect.getData(),
       tickLower: positionPreCollect.getLowerTickData(),
       tickUpper: positionPreCollect.getUpperTickData(),
-      timeStampInSeconds: pool.getData().rewardLastUpdatedTimestamp
+      timeStampInSeconds: pool.getData().rewardLastUpdatedTimestamp,
     });
 
     // Check that the expectation is not zero
@@ -110,7 +112,7 @@ describe("collect_reward", () => {
 
       await toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
@@ -135,7 +137,7 @@ describe("collect_reward", () => {
 
   it("successfully collect reward with a position authority delegate", async () => {
     const vaultStartBalance = 1_000_000;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -165,7 +167,7 @@ describe("collect_reward", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.updateFeesAndRewardsIx(ctx.program, {
+      ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
         whirlpool: whirlpoolPda.publicKey,
         position: positions[0].publicKey,
         tickArrayLower: positions[0].tickArrayLower,
@@ -178,7 +180,7 @@ describe("collect_reward", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.collectRewardIx(ctx.program, {
+      ElysiumPoolIx.collectRewardIx(ctx.program, {
         whirlpool: whirlpoolPda.publicKey,
         positionAuthority: delegate.publicKey,
         position: positions[0].publicKey,
@@ -194,7 +196,7 @@ describe("collect_reward", () => {
 
   it("successfully collect reward with transferred position token", async () => {
     const vaultStartBalance = 1_000_000;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -232,7 +234,7 @@ describe("collect_reward", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.updateFeesAndRewardsIx(ctx.program, {
+      ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
         whirlpool: whirlpoolPda.publicKey,
         position: positions[0].publicKey,
         tickArrayLower: positions[0].tickArrayLower,
@@ -242,7 +244,7 @@ describe("collect_reward", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.collectRewardIx(ctx.program, {
+      ElysiumPoolIx.collectRewardIx(ctx.program, {
         whirlpool: whirlpoolPda.publicKey,
         positionAuthority: delegate.publicKey,
         position: positions[0].publicKey,
@@ -258,7 +260,7 @@ describe("collect_reward", () => {
 
   it("successfully collect reward with owner even when there is a delegate", async () => {
     const vaultStartBalance = 1_000_000;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -288,7 +290,7 @@ describe("collect_reward", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.updateFeesAndRewardsIx(ctx.program, {
+      ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
         whirlpool: whirlpoolPda.publicKey,
         position: positions[0].publicKey,
         tickArrayLower: positions[0].tickArrayLower,
@@ -301,7 +303,7 @@ describe("collect_reward", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.collectRewardIx(ctx.program, {
+      ElysiumPoolIx.collectRewardIx(ctx.program, {
         whirlpool: whirlpoolPda.publicKey,
         positionAuthority: provider.wallet.publicKey,
         position: positions[0].publicKey,
@@ -314,7 +316,7 @@ describe("collect_reward", () => {
   });
 
   it("fails when reward index references an uninitialized reward", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -339,7 +341,7 @@ describe("collect_reward", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
@@ -354,7 +356,7 @@ describe("collect_reward", () => {
   });
 
   it("fails when position does not match whirlpool", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -380,7 +382,7 @@ describe("collect_reward", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
@@ -395,7 +397,7 @@ describe("collect_reward", () => {
   });
 
   it("fails when position token account does not have exactly one token", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -428,7 +430,7 @@ describe("collect_reward", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
@@ -443,7 +445,7 @@ describe("collect_reward", () => {
   });
 
   it("fails when position token account mint does not match position mint", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -472,7 +474,7 @@ describe("collect_reward", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
@@ -487,7 +489,7 @@ describe("collect_reward", () => {
   });
 
   it("fails when position authority is not approved delegate for position token account", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -515,7 +517,7 @@ describe("collect_reward", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           positionAuthority: delegate.publicKey,
           position: positions[0].publicKey,
@@ -532,7 +534,7 @@ describe("collect_reward", () => {
   });
 
   it("fails when position authority is not authorized for exactly one token", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -561,7 +563,7 @@ describe("collect_reward", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           positionAuthority: delegate.publicKey,
           position: positions[0].publicKey,
@@ -578,7 +580,7 @@ describe("collect_reward", () => {
   });
 
   it("fails when position authority was not a signer", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -607,7 +609,7 @@ describe("collect_reward", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           positionAuthority: delegate.publicKey,
           position: positions[0].publicKey,
@@ -622,7 +624,7 @@ describe("collect_reward", () => {
   });
 
   it("fails when reward vault does not match whirlpool reward vault", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -649,7 +651,7 @@ describe("collect_reward", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
@@ -664,7 +666,7 @@ describe("collect_reward", () => {
   });
 
   it("fails when reward owner account mint does not match whirlpool reward mint", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -691,7 +693,7 @@ describe("collect_reward", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
@@ -706,7 +708,7 @@ describe("collect_reward", () => {
   });
 
   it("fails when reward index is out of bounds", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [
@@ -733,7 +735,7 @@ describe("collect_reward", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,

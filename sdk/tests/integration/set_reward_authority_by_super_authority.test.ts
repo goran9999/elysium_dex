@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import * as assert from "assert";
-import { toTx, WhirlpoolContext, WhirlpoolData, WhirlpoolIx } from "../../src";
+import { toTx, ElysiumPoolContext, ElysiumPoolData, ElysiumPoolIx } from "../../src";
 import { TickSpacing } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
 import { initTestPool } from "../utils/init-utils";
@@ -8,8 +8,8 @@ import { initTestPool } from "../utils/init-utils";
 describe("set_reward_authority_by_super_authority", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully set_reward_authority_by_super_authority", async () => {
@@ -20,7 +20,7 @@ describe("set_reward_authority_by_super_authority", () => {
     const newAuthorityKeypair = anchor.web3.Keypair.generate();
     await toTx(
       ctx,
-      WhirlpoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
+      ElysiumPoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
         whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
         whirlpool: poolInitInfo.whirlpoolPda.publicKey,
         rewardEmissionsSuperAuthority:
@@ -31,7 +31,7 @@ describe("set_reward_authority_by_super_authority", () => {
     )
       .addSigner(configKeypairs.rewardEmissionsSuperAuthorityKeypair)
       .buildAndExecute();
-    const pool = (await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey)) as WhirlpoolData;
+    const pool = (await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey)) as ElysiumPoolData;
     assert.ok(pool.rewardInfos[0].authority.equals(newAuthorityKeypair.publicKey));
   });
 
@@ -44,7 +44,7 @@ describe("set_reward_authority_by_super_authority", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
           whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
           whirlpool: invalidPool.publicKey,
           rewardEmissionsSuperAuthority:
@@ -66,7 +66,7 @@ describe("set_reward_authority_by_super_authority", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
           whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardEmissionsSuperAuthority: invalidSuperAuthorityKeypair.publicKey,
@@ -89,7 +89,7 @@ describe("set_reward_authority_by_super_authority", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
           whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardEmissionsSuperAuthority:
@@ -111,7 +111,7 @@ describe("set_reward_authority_by_super_authority", () => {
     assert.throws(() => {
       toTx(
         ctx,
-        WhirlpoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
           whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardEmissionsSuperAuthority:
@@ -127,7 +127,7 @@ describe("set_reward_authority_by_super_authority", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setRewardAuthorityBySuperAuthorityIx(ctx.program, {
           whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardEmissionsSuperAuthority:

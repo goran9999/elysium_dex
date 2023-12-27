@@ -1,7 +1,7 @@
 import { Instruction, TransactionBuilder } from "@orca-so/common-sdk";
-import { WhirlpoolContext } from "../../context";
+import { ElysiumPoolContext } from "../../context";
 
-export function toTx(ctx: WhirlpoolContext, ix: Instruction): TransactionBuilder {
+export function toTx(ctx: ElysiumPoolContext, ix: Instruction): TransactionBuilder {
   return new TransactionBuilder(
     ctx.provider.connection,
     ctx.provider.wallet,

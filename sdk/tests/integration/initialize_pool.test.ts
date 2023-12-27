@@ -8,10 +8,10 @@ import {
   MIN_SQRT_PRICE,
   PDAUtil,
   PriceMath,
-  WhirlpoolContext,
-  WhirlpoolData,
-  WhirlpoolIx,
-  toTx
+  ElysiumPoolContext,
+  ElysiumPoolData,
+  ElysiumPoolIx,
+  toTx,
 } from "../../src";
 import {
   ONE_SOL,
@@ -19,7 +19,7 @@ import {
   ZERO_BN,
   asyncAssertTokenVault,
   createMint,
-  systemTransferTx
+  systemTransferTx,
 } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
 import { buildTestPoolParams, initTestPool } from "../utils/init-utils";
@@ -27,8 +27,8 @@ import { buildTestPoolParams, initTestPool } from "../utils/init-utils";
 describe("initialize_pool", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully init a Standard account", async () => {
@@ -38,9 +38,11 @@ describe("initialize_pool", () => {
       TickSpacing.Standard,
       price
     );
-    const whirlpool = (await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey)) as WhirlpoolData;
+    const whirlpool = (await fetcher.getPool(
+      poolInitInfo.whirlpoolPda.publicKey
+    )) as ElysiumPoolData;
 
-    const expectedWhirlpoolPda = PDAUtil.getWhirlpool(
+    const expectedElysiumPoolPda = PDAUtil.getElysiumPool(
       program.programId,
       configInitInfo.whirlpoolsConfigKeypair.publicKey,
       poolInitInfo.tokenMintA,
@@ -48,8 +50,8 @@ describe("initialize_pool", () => {
       TickSpacing.Standard
     );
 
-    assert.ok(poolInitInfo.whirlpoolPda.publicKey.equals(expectedWhirlpoolPda.publicKey));
-    assert.equal(expectedWhirlpoolPda.bump, whirlpool.whirlpoolBump[0]);
+    assert.ok(poolInitInfo.whirlpoolPda.publicKey.equals(expectedElysiumPoolPda.publicKey));
+    assert.equal(expectedElysiumPoolPda.bump, whirlpool.whirlpoolBump[0]);
 
     assert.ok(whirlpool.whirlpoolsConfig.equals(poolInitInfo.whirlpoolsConfig));
     assert.ok(whirlpool.tokenMintA.equals(poolInitInfo.tokenMintA));
@@ -101,7 +103,9 @@ describe("initialize_pool", () => {
       TickSpacing.Stable,
       price
     );
-    const whirlpool = (await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey)) as WhirlpoolData;
+    const whirlpool = (await fetcher.getPool(
+      poolInitInfo.whirlpoolPda.publicKey
+    )) as ElysiumPoolData;
 
     assert.ok(whirlpool.whirlpoolsConfig.equals(poolInitInfo.whirlpoolsConfig));
     assert.ok(whirlpool.tokenMintA.equals(poolInitInfo.tokenMintA));
@@ -162,7 +166,10 @@ describe("initialize_pool", () => {
     };
 
     await assert.rejects(
-      toTx(ctx, WhirlpoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)).buildAndExecute(),
+      toTx(
+        ctx,
+        ElysiumPoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)
+      ).buildAndExecute(),
       /custom program error: 0x7d6/ // ConstraintSeeds
     );
   });
@@ -177,7 +184,10 @@ describe("initialize_pool", () => {
     };
 
     await assert.rejects(
-      toTx(ctx, WhirlpoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)).buildAndExecute(),
+      toTx(
+        ctx,
+        ElysiumPoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)
+      ).buildAndExecute(),
       /custom program error: 0x7d6/ // ConstraintSeeds
     );
   });
@@ -185,7 +195,7 @@ describe("initialize_pool", () => {
   it("fails when token mints are in the wrong order", async () => {
     const { poolInitInfo, configInitInfo } = await buildTestPoolParams(ctx, TickSpacing.Standard);
 
-    const whirlpoolPda = PDAUtil.getWhirlpool(
+    const whirlpoolPda = PDAUtil.getElysiumPool(
       ctx.program.programId,
       configInitInfo.whirlpoolsConfigKeypair.publicKey,
       poolInitInfo.tokenMintB,
@@ -202,7 +212,10 @@ describe("initialize_pool", () => {
     };
 
     await assert.rejects(
-      toTx(ctx, WhirlpoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)).buildAndExecute(),
+      toTx(
+        ctx,
+        ElysiumPoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)
+      ).buildAndExecute(),
       /custom program error: 0x1788/ // InvalidTokenMintOrder
     );
   });
@@ -210,7 +223,7 @@ describe("initialize_pool", () => {
   it("fails when the same token mint is passed in", async () => {
     const { poolInitInfo, configInitInfo } = await buildTestPoolParams(ctx, TickSpacing.Standard);
 
-    const whirlpoolPda = PDAUtil.getWhirlpool(
+    const whirlpoolPda = PDAUtil.getElysiumPool(
       ctx.program.programId,
       configInitInfo.whirlpoolsConfigKeypair.publicKey,
       poolInitInfo.tokenMintA,
@@ -226,7 +239,10 @@ describe("initialize_pool", () => {
     };
 
     await assert.rejects(
-      toTx(ctx, WhirlpoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)).buildAndExecute(),
+      toTx(
+        ctx,
+        ElysiumPoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)
+      ).buildAndExecute(),
       /custom program error: 0x1788/ // InvalidTokenMintOrder
     );
   });
@@ -241,7 +257,10 @@ describe("initialize_pool", () => {
     };
 
     await assert.rejects(
-      toTx(ctx, WhirlpoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)).buildAndExecute(),
+      toTx(
+        ctx,
+        ElysiumPoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)
+      ).buildAndExecute(),
       /custom program error: 0x177b/ // SqrtPriceOutOfBounds
     );
   });
@@ -255,7 +274,10 @@ describe("initialize_pool", () => {
     };
 
     await assert.rejects(
-      toTx(ctx, WhirlpoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)).buildAndExecute(),
+      toTx(
+        ctx,
+        ElysiumPoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)
+      ).buildAndExecute(),
       /custom program error: 0x177b/ // SqrtPriceOutOfBounds
     );
   });
@@ -266,22 +288,26 @@ describe("initialize_pool", () => {
     const whirlpoolPda = poolInitInfo.whirlpoolPda;
     const validBump = whirlpoolPda.bump;
     const invalidBump = (validBump + 1) % 256; // +1 shift mod 256
-    const modifiedWhirlpoolPda: PDA = {
+    const modifiedElysiumPoolPda: PDA = {
       publicKey: whirlpoolPda.publicKey,
       bump: invalidBump,
     };
 
     const modifiedPoolInitInfo: InitPoolParams = {
       ...poolInitInfo,
-      whirlpoolPda: modifiedWhirlpoolPda,
+      whirlpoolPda: modifiedElysiumPoolPda,
     };
 
-    await toTx(ctx, WhirlpoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)).buildAndExecute();
+    await toTx(
+      ctx,
+      ElysiumPoolIx.initializePoolIx(ctx.program, modifiedPoolInitInfo)
+    ).buildAndExecute();
 
     // check if passed invalid bump was ignored
-    const whirlpool = (await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey)) as WhirlpoolData;
+    const whirlpool = (await fetcher.getPool(
+      poolInitInfo.whirlpoolPda.publicKey
+    )) as ElysiumPoolData;
     assert.equal(whirlpool.whirlpoolBump, validBump);
     assert.notEqual(whirlpool.whirlpoolBump, invalidBump);
   });
-
 });

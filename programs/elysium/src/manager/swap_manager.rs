@@ -20,12 +20,12 @@ pub struct PostSwapUpdate {
     pub next_tick_index: i32,
     pub next_sqrt_price: u128,
     pub next_fee_growth_global: u128,
-    pub next_reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+    pub next_reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
     pub next_protocol_fee: u64,
 }
 
 pub fn swap(
-    whirlpool: &Whirlpool,
+    whirlpool: &ElysiumPool,
     swap_tick_sequence: &mut SwapTickSequence,
     amount: u64,
     sqrt_price_limit: u128,
@@ -244,7 +244,7 @@ fn calculate_update(
     liquidity: u128,
     fee_growth_global_a: u128,
     fee_growth_global_b: u128,
-    reward_infos: &[WhirlpoolRewardInfo; NUM_REWARDS],
+    reward_infos: &[ElysiumPoolRewardInfo; NUM_REWARDS],
 ) -> Result<(TickUpdate, u128)> {
     // Use updated fee_growth for crossing tick
     // Use -liquidity_net if going left, +liquidity_net going right

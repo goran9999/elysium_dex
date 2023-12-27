@@ -1,12 +1,12 @@
 import { Address } from "@coral-xyz/anchor";
 import { Percentage } from "@orca-so/common-sdk";
 import BN from "bn.js";
-import { SwapErrorCode, WhirlpoolsError } from "../../errors/errors";
+import { SwapErrorCode, ElysiumPoolsError } from "../../errors/errors";
 import {
-  WhirlpoolAccountFetchOptions,
-  WhirlpoolAccountFetcherInterface,
+  ElysiumPoolAccountFetchOptions,
+  ElysiumPoolAccountFetcherInterface,
 } from "../../network/public/fetcher";
-import { Whirlpool } from "../../whirlpool-client";
+import { ElysiumPool } from "../../whirlpool-client";
 import { NormalSwapQuote, swapQuoteByInputToken } from "./swap-quote";
 
 /**
@@ -14,8 +14,8 @@ import { NormalSwapQuote, swapQuoteByInputToken } from "./swap-quote";
  * @category Quotes
  * @param estimatedAmountIn - Approximate number of input token swapped in the swap
  * @param estimatedAmountOut - Approximate number of output token swapped in the swap
- * @param estimatedEndTickIndex - Approximate tick-index the Whirlpool will land on after this swap
- * @param estimatedEndSqrtPrice - Approximate sqrtPrice the Whirlpool will land on after this swap
+ * @param estimatedEndTickIndex - Approximate tick-index the ElysiumPool will land on after this swap
+ * @param estimatedEndSqrtPrice - Approximate sqrtPrice the ElysiumPool will land on after this swap
  * @param estimatedFeeAmount - Approximate feeAmount (all fees) charged on this swap
  * @param estimatedSwapFeeAmount - Approximate feeAmount (LP + protocol fees) charged on this swap
  * @param devFeeAmount -  FeeAmount (developer fees) charged on this swap
@@ -34,28 +34,28 @@ export type DevFeeSwapQuote = NormalSwapQuote & {
  * Get an estimated swap quote using input token amount while collecting dev fees.
  *
  * @category Quotes
- * @param whirlpool - Whirlpool to perform the swap on
+ * @param whirlpool - ElysiumPool to perform the swap on
  * @param inputTokenMint - PublicKey for the input token mint to swap with
  * @param tokenAmount - The amount of input token to swap from
  * @param slippageTolerance - The amount of slippage to account for in this quote
- * @param programId - PublicKey for the Whirlpool ProgramId
- * @param cache - WhirlpoolAccountCacheInterface instance to fetch solana accounts
- * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+ * @param programId - PublicKey for the ElysiumPool ProgramId
+ * @param cache - ElysiumPoolAccountCacheInterface instance to fetch solana accounts
+ * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
  * @param devFeePercentage - The percentage amount to send to developer wallet prior to the swap. Percentage num/dem values has to match token decimal.
  * @returns a SwapQuote object with slippage adjusted SwapInput parameters & estimates on token amounts, fee & end whirlpool states.
  */
 export async function swapQuoteByInputTokenWithDevFees(
-  whirlpool: Whirlpool,
+  whirlpool: ElysiumPool,
   inputTokenMint: Address,
   tokenAmount: BN,
   slippageTolerance: Percentage,
   programId: Address,
-  fetcher: WhirlpoolAccountFetcherInterface,
+  fetcher: ElysiumPoolAccountFetcherInterface,
   devFeePercentage: Percentage,
-  opts?: WhirlpoolAccountFetchOptions
+  opts?: ElysiumPoolAccountFetchOptions
 ): Promise<DevFeeSwapQuote> {
   if (devFeePercentage.toDecimal().greaterThanOrEqualTo(1)) {
-    throw new WhirlpoolsError(
+    throw new ElysiumPoolsError(
       "Provided devFeePercentage must be less than 100%",
       SwapErrorCode.InvalidDevFeePercentage
     );

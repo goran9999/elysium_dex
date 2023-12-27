@@ -17,7 +17,7 @@ pub struct ModifyLiquidityUpdate {
     pub whirlpool_liquidity: u128,
     pub tick_lower_update: TickUpdate,
     pub tick_upper_update: TickUpdate,
-    pub reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+    pub reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
     pub position_update: PositionUpdate,
 }
 
@@ -25,7 +25,7 @@ pub struct ModifyLiquidityUpdate {
 // Fee and reward growths will also be calculated by this function.
 // To trigger only calculation of fee and reward growths, use calculate_fee_and_reward_growths.
 pub fn calculate_modify_liquidity<'info>(
-    whirlpool: &Whirlpool,
+    whirlpool: &ElysiumPool,
     position: &Position,
     tick_array_lower: &AccountLoader<'info, TickArray>,
     tick_array_upper: &AccountLoader<'info, TickArray>,
@@ -53,12 +53,12 @@ pub fn calculate_modify_liquidity<'info>(
 }
 
 pub fn calculate_fee_and_reward_growths<'info>(
-    whirlpool: &Whirlpool,
+    whirlpool: &ElysiumPool,
     position: &Position,
     tick_array_lower: &AccountLoader<'info, TickArray>,
     tick_array_upper: &AccountLoader<'info, TickArray>,
     timestamp: u64,
-) -> Result<(PositionUpdate, [WhirlpoolRewardInfo; NUM_REWARDS])> {
+) -> Result<(PositionUpdate, [ElysiumPoolRewardInfo; NUM_REWARDS])> {
     let tick_array_lower = tick_array_lower.load()?;
     let tick_lower =
         tick_array_lower.get_tick(position.tick_lower_index, whirlpool.tick_spacing)?;
@@ -84,7 +84,7 @@ pub fn calculate_fee_and_reward_growths<'info>(
 
 // Calculates the state changes after modifying liquidity of a whirlpool position.
 fn _calculate_modify_liquidity(
-    whirlpool: &Whirlpool,
+    whirlpool: &ElysiumPool,
     position: &Position,
     tick_lower: &Tick,
     tick_upper: &Tick,
@@ -200,7 +200,7 @@ pub fn calculate_liquidity_token_deltas(
 }
 
 pub fn sync_modify_liquidity_values<'info>(
-    whirlpool: &mut Whirlpool,
+    whirlpool: &mut ElysiumPool,
     position: &mut Position,
     tick_array_lower: &AccountLoader<'info, TickArray>,
     tick_array_upper: &AccountLoader<'info, TickArray>,
@@ -363,7 +363,7 @@ mod calculate_modify_liquidity_unit_tests {
     mod xo_position {
 
         // Current tick below position
-        // Whirlpool virtual liquidity does not change
+        // ElysiumPool virtual liquidity does not change
         mod current_tick_below {
             use crate::{
                 manager::liquidity_manager::_calculate_modify_liquidity, state::*, util::*,
@@ -672,7 +672,7 @@ mod calculate_modify_liquidity_unit_tests {
         }
 
         // Current tick inside position
-        // Whirlpool virtual liquidity increases
+        // ElysiumPool virtual liquidity increases
         mod current_tick_inside {
             use crate::{
                 manager::liquidity_manager::_calculate_modify_liquidity, state::*, util::*,
@@ -989,7 +989,7 @@ mod calculate_modify_liquidity_unit_tests {
         }
 
         // Current tick above position
-        // Whirlpool virtual liquidity does not change
+        // ElysiumPool virtual liquidity does not change
         mod current_tick_above {
             use crate::{
                 manager::liquidity_manager::_calculate_modify_liquidity, state::*, util::*,
@@ -2303,7 +2303,7 @@ mod calculate_modify_liquidity_unit_tests {
         // liquidity has been removed from a position and the ticks are still initialized.
         #[test]
         fn accrued_tokens_ok_closed_position_ticks_remain_initialized() {
-            // Whirlpool with 1000 liquidity, fees (a: 100, b: 200) and reward (20)
+            // ElysiumPool with 1000 liquidity, fees (a: 100, b: 200) and reward (20)
             // Lower Tick with 10 liquidity, existing fee checkpoints (a: 10, b: 20) and reward (2)
             // Upper Tick with 10 liquidity, existing fee checkpoints (a: 1, b: 2) and reward (1)
             let mut test = LiquidityTestFixture::new(LiquidityTestFixtureInfo {

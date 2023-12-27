@@ -1,16 +1,16 @@
 import { BN, Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
- * Parameters to set rewards emissions for a reward in a Whirlpool
+ * Parameters to set rewards emissions for a reward in a ElysiumPool
  *
  * @category Instruction Types
  * @param whirlpool - PublicKey for the whirlpool which the reward resides in.
  * @param rewardIndex - The reward index that we'd like to initialize. (0 <= index <= NUM_REWARDS).
  * @param rewardVaultKey - PublicKey of the vault for this reward index.
- * @param rewardAuthority - Assigned authority by the reward_super_authority for the specified reward-index in this Whirlpool
+ * @param rewardAuthority - Assigned authority by the reward_super_authority for the specified reward-index in this ElysiumPool
  * @param emissionsPerSecondX64 - The new emissions per second to set for this reward.
  */
 export type SetRewardEmissionsParams = {
@@ -22,7 +22,7 @@ export type SetRewardEmissionsParams = {
 };
 
 /**
- * Set the reward emissions for a reward in a Whirlpool.
+ * Set the reward emissions for a reward in a ElysiumPool.
  *
  * #### Special Errors
  * - `RewardVaultAmountInsufficient` - The amount of rewards in the reward vault cannot emit more than a day of desired emissions.
@@ -36,7 +36,7 @@ export type SetRewardEmissionsParams = {
  * @returns - Instruction to perform the action.
  */
 export function setRewardEmissionsIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: SetRewardEmissionsParams
 ): Instruction {
   const {

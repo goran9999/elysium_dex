@@ -13,11 +13,11 @@ import {
   TICK_ARRAY_SIZE,
   TickArrayData,
   TickUtil,
-  WhirlpoolContext,
-  WhirlpoolIx,
-  buildWhirlpoolClient,
+  ElysiumPoolContext,
+  ElysiumPoolIx,
+  buildElysiumPoolClient,
   swapQuoteByInputToken,
-  toTx
+  toTx,
 } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import { MAX_U64, TickSpacing, ZERO_BN, getTokenBalance } from "../utils";
@@ -29,16 +29,16 @@ import {
   initTestPoolWithLiquidity,
   initTestPoolWithTokens,
   initTickArrayRange,
-  withdrawPositions
+  withdrawPositions,
 } from "../utils/init-utils";
 
 describe("swap", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
-  const client = buildWhirlpoolClient(ctx);
+  const client = buildElysiumPoolClient(ctx);
 
   it("fail on token vault mint a does not match whirlpool token a", async () => {
     const { poolInitInfo, whirlpoolPda, tokenAccountA, tokenAccountB } =
@@ -63,7 +63,7 @@ describe("swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.swapIx(ctx.program, {
+        ElysiumPoolIx.swapIx(ctx.program, {
           amount: new BN(10),
           otherAmountThreshold: ZERO_BN,
           sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
@@ -108,7 +108,7 @@ describe("swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.swapIx(ctx.program, {
+        ElysiumPoolIx.swapIx(ctx.program, {
           amount: new BN(10),
           otherAmountThreshold: ZERO_BN,
           sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
@@ -155,7 +155,7 @@ describe("swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.swapIx(ctx.program, {
+        ElysiumPoolIx.swapIx(ctx.program, {
           amount: new BN(10),
           otherAmountThreshold: ZERO_BN,
           sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
@@ -202,7 +202,7 @@ describe("swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.swapIx(ctx.program, {
+        ElysiumPoolIx.swapIx(ctx.program, {
           amount: new BN(10),
           otherAmountThreshold: ZERO_BN,
           sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
@@ -244,7 +244,7 @@ describe("swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.swapIx(ctx.program, {
+        ElysiumPoolIx.swapIx(ctx.program, {
           amount: new BN(10),
           otherAmountThreshold: ZERO_BN,
           sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
@@ -290,7 +290,7 @@ describe("swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.swapIx(ctx.program, {
+        ElysiumPoolIx.swapIx(ctx.program, {
           amount: new BN(10),
           otherAmountThreshold: ZERO_BN,
           sqrtPriceLimit: PriceMath.tickIndexToSqrtPriceX64(-50000),
@@ -332,7 +332,7 @@ describe("swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.swapIx(ctx.program, {
+        ElysiumPoolIx.swapIx(ctx.program, {
           amount: new BN(10),
           otherAmountThreshold: ZERO_BN,
           sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
@@ -374,7 +374,7 @@ describe("swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.swapIx(ctx.program, {
+        ElysiumPoolIx.swapIx(ctx.program, {
           amount: new BN(10),
           otherAmountThreshold: ZERO_BN,
           sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
@@ -412,7 +412,7 @@ describe("swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.swapIx(ctx.program, {
+        ElysiumPoolIx.swapIx(ctx.program, {
           amount: new BN(10),
           otherAmountThreshold: ZERO_BN,
           sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
@@ -457,7 +457,7 @@ describe("swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.swapIx(ctx.program, {
+        ElysiumPoolIx.swapIx(ctx.program, {
           amount: new BN(10),
           otherAmountThreshold: ZERO_BN,
           sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
@@ -497,7 +497,7 @@ describe("swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.swapIx(ctx.program, {
+        ElysiumPoolIx.swapIx(ctx.program, {
           amount: new BN(0),
           otherAmountThreshold: ZERO_BN,
           sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
@@ -566,7 +566,7 @@ describe("swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         ...quote,
         whirlpool: whirlpoolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
@@ -639,7 +639,7 @@ describe("swap", () => {
 
     whirlpool = await client.getPool(whirlpoolKey, IGNORE_CACHE);
     whirlpoolData = whirlpool.getData();
-    // Whirlpool.currentTick is 91720, so the newly funded position's upper tick is not
+    // ElysiumPool.currentTick is 91720, so the newly funded position's upper tick is not
     // strictly less than 91720 so the liquidity is not added.
     assert.ok(whirlpoolData.liquidity.eq(initialLiquidity));
     assert.ok(whirlpoolData.sqrtPrice.eq(startSqrtPrice));
@@ -657,7 +657,7 @@ describe("swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         ...quote,
         whirlpool: whirlpoolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
@@ -692,7 +692,7 @@ describe("swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         ...quote2,
         whirlpool: whirlpoolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
@@ -766,7 +766,7 @@ describe("swap", () => {
 
     whirlpool = await client.getPool(whirlpoolKey, IGNORE_CACHE);
     whirlpoolData = whirlpool.getData();
-    // Whirlpool.currentTick is 91720, so the newly funded position's upper tick is not
+    // ElysiumPool.currentTick is 91720, so the newly funded position's upper tick is not
     // strictly less than 91720 so the liquidity is not added.
     assert.ok(whirlpoolData.liquidity.eq(initialLiquidity));
     assert.ok(whirlpoolData.sqrtPrice.eq(startSqrtPrice));
@@ -784,7 +784,7 @@ describe("swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         ...quote,
         whirlpool: whirlpoolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
@@ -818,7 +818,7 @@ describe("swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         ...quote2,
         whirlpool: whirlpoolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
@@ -894,7 +894,7 @@ describe("swap", () => {
     // Tick
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(7051000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: PriceMath.tickIndexToSqrtPriceX64(28500),
@@ -953,7 +953,7 @@ describe("swap", () => {
     };
 
     try {
-      await toTx(ctx, WhirlpoolIx.swapIx(ctx.program, params)).buildAndExecute();
+      await toTx(ctx, ElysiumPoolIx.swapIx(ctx.program, params)).buildAndExecute();
       assert.fail("should fail if a tick-array is uninitialized");
     } catch (e) {
       const error = e as Error;
@@ -987,7 +987,7 @@ describe("swap", () => {
     };
 
     try {
-      await toTx(ctx, WhirlpoolIx.swapIx(ctx.program, params)).buildAndExecute();
+      await toTx(ctx, ElysiumPoolIx.swapIx(ctx.program, params)).buildAndExecute();
       assert.fail("should fail if sqrt_price exceeds maximum");
     } catch (e) {
       const error = e as Error;
@@ -1021,7 +1021,7 @@ describe("swap", () => {
     };
 
     try {
-      await toTx(ctx, WhirlpoolIx.swapIx(ctx.program, params)).buildAndExecute();
+      await toTx(ctx, ElysiumPoolIx.swapIx(ctx.program, params)).buildAndExecute();
       assert.fail("should fail if sqrt_price subceeds minimum");
     } catch (e) {
       const error = e as Error;
@@ -1073,7 +1073,7 @@ describe("swap", () => {
     };
 
     try {
-      await toTx(ctx, WhirlpoolIx.swapIx(ctx.program, params)).buildAndExecute();
+      await toTx(ctx, ElysiumPoolIx.swapIx(ctx.program, params)).buildAndExecute();
       assert.fail("should fail if amount out is below threshold");
     } catch (e) {
       const error = e as Error;
@@ -1125,7 +1125,7 @@ describe("swap", () => {
     };
 
     try {
-      await toTx(ctx, WhirlpoolIx.swapIx(ctx.program, params)).buildAndExecute();
+      await toTx(ctx, ElysiumPoolIx.swapIx(ctx.program, params)).buildAndExecute();
       assert.fail("should fail if amount out is below threshold");
     } catch (e) {
       const error = e as Error;
@@ -1177,7 +1177,7 @@ describe("swap", () => {
     };
 
     try {
-      await toTx(ctx, WhirlpoolIx.swapIx(ctx.program, params)).buildAndExecute();
+      await toTx(ctx, ElysiumPoolIx.swapIx(ctx.program, params)).buildAndExecute();
       assert.fail("should fail if amount out is below threshold");
     } catch (e) {
       const error = e as Error;
@@ -1229,7 +1229,7 @@ describe("swap", () => {
     };
 
     try {
-      await toTx(ctx, WhirlpoolIx.swapIx(ctx.program, params)).buildAndExecute();
+      await toTx(ctx, ElysiumPoolIx.swapIx(ctx.program, params)).buildAndExecute();
       assert.fail("should fail if amount out is below threshold");
     } catch (e) {
       const error = e as Error;
@@ -1343,7 +1343,7 @@ describe("swap", () => {
     // Tick
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(829996),
         otherAmountThreshold: MAX_U64,
         sqrtPriceLimit: PriceMath.tickIndexToSqrtPriceX64(29240),
@@ -1384,7 +1384,7 @@ describe("swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(14538074),
         otherAmountThreshold: MAX_U64,
         sqrtPriceLimit: PriceMath.tickIndexToSqrtPriceX64(27712),
@@ -1425,7 +1425,7 @@ describe("swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(829996),
         otherAmountThreshold: MAX_U64,
         sqrtPriceLimit: PriceMath.tickIndexToSqrtPriceX64(29240),
@@ -1466,7 +1466,7 @@ describe("swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(14538074),
         otherAmountThreshold: MAX_U64,
         sqrtPriceLimit: PriceMath.tickIndexToSqrtPriceX64(27712),
@@ -1507,7 +1507,7 @@ describe("swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(829996),
         otherAmountThreshold: MAX_U64,
         sqrtPriceLimit: PriceMath.tickIndexToSqrtPriceX64(29240),
@@ -1548,7 +1548,7 @@ describe("swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(14538074),
         otherAmountThreshold: MAX_U64,
         sqrtPriceLimit: PriceMath.tickIndexToSqrtPriceX64(27712),
@@ -1611,7 +1611,7 @@ describe("swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.collectProtocolFeesIx(ctx.program, {
+      ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
         whirlpoolsConfig: poolInitInfo.whirlpoolsConfig,
         whirlpool: poolInitInfo.whirlpoolPda.publicKey,
         collectProtocolFeesAuthority: configKeypairs.collectProtocolFeesAuthorityKeypair.publicKey,

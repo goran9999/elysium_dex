@@ -2,10 +2,10 @@ import { Address } from "@coral-xyz/anchor";
 import { AddressUtil, Percentage, U64_MAX, ZERO } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import { WhirlpoolContext } from "../..";
+import { ElysiumPoolContext } from "../..";
 import {
-  WhirlpoolAccountFetchOptions,
-  WhirlpoolAccountFetcherInterface,
+  ElysiumPoolAccountFetchOptions,
+  ElysiumPoolAccountFetcherInterface,
 } from "../../network/public/fetcher";
 import {
   MAX_SQRT_PRICE,
@@ -14,9 +14,9 @@ import {
   SwapInput,
   SwapParams,
   TickArray,
-  WhirlpoolData,
+  ElysiumPoolData,
 } from "../../types/public";
-import { Whirlpool } from "../../whirlpool-client";
+import { ElysiumPool } from "../../whirlpool-client";
 import { adjustForSlippage } from "../math/token-math";
 import { PDAUtil } from "./pda-utils";
 import { PoolUtil } from "./pool-utils";
@@ -25,7 +25,7 @@ import { SwapDirection, TokenType } from "./types";
 
 /**
  * A request to fetch the tick-arrays that a swap may traverse across.
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  */
 export interface TickArrayRequest {
   whirlpoolAddress: PublicKey;
@@ -35,7 +35,7 @@ export interface TickArrayRequest {
 }
 
 /**
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  */
 export class SwapUtils {
   /**
@@ -57,14 +57,14 @@ export class SwapUtils {
   }
 
   /**
-   * Given the intended token mint to swap, return the swap direction of a swap for a Whirlpool
-   * @param pool The Whirlpool to evaluate the mint against
+   * Given the intended token mint to swap, return the swap direction of a swap for a ElysiumPool
+   * @param pool The ElysiumPool to evaluate the mint against
    * @param swapTokenMint The token mint PublicKey the user bases their swap against
    * @param swapTokenIsInput Whether the swap token is the input token. (similar to amountSpecifiedIsInput from swap Ix)
    * @returns The direction of the swap given the swapTokenMint. undefined if the token mint is not part of the trade pair of the pool.
    */
   public static getSwapDirection(
-    pool: WhirlpoolData,
+    pool: ElysiumPoolData,
     swapTokenMint: PublicKey,
     swapTokenIsInput: boolean
   ): SwapDirection | undefined {
@@ -82,11 +82,11 @@ export class SwapUtils {
    * Given the current tick-index, returns the dervied PDA and fetched data
    * for the tick-arrays that this swap may traverse across.
    *
-   * @category Whirlpool Utils
-   * @param tickCurrentIndex - The current tickIndex for the Whirlpool to swap on.
-   * @param tickSpacing - The tickSpacing for the Whirlpool.
+   * @category ElysiumPool Utils
+   * @param tickCurrentIndex - The current tickIndex for the ElysiumPool to swap on.
+   * @param tickSpacing - The tickSpacing for the ElysiumPool.
    * @param aToB - The direction of the trade.
-   * @param programId - The Whirlpool programId which the Whirlpool lives on.
+   * @param programId - The ElysiumPool programId which the ElysiumPool lives on.
    * @param whirlpoolAddress - PublicKey of the whirlpool to swap on.
    * @returns An array of PublicKey[] for the tickArray accounts that this swap may traverse across.
    */
@@ -120,14 +120,14 @@ export class SwapUtils {
   /**
    * Given the current tick-index, returns TickArray objects that this swap may traverse across.
    *
-   * @category Whirlpool Utils
-   * @param tickCurrentIndex - The current tickIndex for the Whirlpool to swap on.
-   * @param tickSpacing - The tickSpacing for the Whirlpool.
+   * @category ElysiumPool Utils
+   * @param tickCurrentIndex - The current tickIndex for the ElysiumPool to swap on.
+   * @param tickSpacing - The tickSpacing for the ElysiumPool.
    * @param aToB - The direction of the trade.
-   * @param programId - The Whirlpool programId which the Whirlpool lives on.
+   * @param programId - The ElysiumPool programId which the ElysiumPool lives on.
    * @param whirlpoolAddress - PublicKey of the whirlpool to swap on.
-   * @param cache - WhirlpoolAccountCacheInterface object to fetch solana accounts
-   * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+   * @param cache - ElysiumPoolAccountCacheInterface object to fetch solana accounts
+   * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
    * @returns An array of PublicKey[] for the tickArray accounts that this swap may traverse across.
    */
   public static async getTickArrays(
@@ -136,8 +136,8 @@ export class SwapUtils {
     aToB: boolean,
     programId: PublicKey,
     whirlpoolAddress: PublicKey,
-    fetcher: WhirlpoolAccountFetcherInterface,
-    opts?: WhirlpoolAccountFetchOptions
+    fetcher: ElysiumPoolAccountFetcherInterface,
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<TickArray[]> {
     const data = await this.getBatchTickArrays(
       programId,
@@ -150,17 +150,17 @@ export class SwapUtils {
 
   /**
    * Fetch a batch of tick-arrays for a set of TA requests.
-   * @param programId - The Whirlpool programId which the Whirlpool lives on.
-   * @param cache - WhirlpoolAccountCacheInterface instance to fetch solana accounts
+   * @param programId - The ElysiumPool programId which the ElysiumPool lives on.
+   * @param cache - ElysiumPoolAccountCacheInterface instance to fetch solana accounts
    * @param tickArrayRequests - An array of {@link TickArrayRequest} of tick-arrays to request for.
-   * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+   * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
    * @returns A array of request indicies mapped to an array of resulting PublicKeys.
    */
   public static async getBatchTickArrays(
     programId: PublicKey,
-    fetcher: WhirlpoolAccountFetcherInterface,
+    fetcher: ElysiumPoolAccountFetcherInterface,
     tickArrayRequests: TickArrayRequest[],
-    opts?: WhirlpoolAccountFetchOptions
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<TickArray[][]> {
     let addresses: PublicKey[] = [];
     let requestToIndices = [];
@@ -224,12 +224,12 @@ export class SwapUtils {
   }
 
   /**
-   * Convert a quote object and WhirlpoolClient's {@link Whirlpool} object into a {@link SwapParams} type
-   * to be plugged into {@link WhirlpoolIx.swapIx}.
+   * Convert a quote object and ElysiumPoolClient's {@link ElysiumPool} object into a {@link SwapParams} type
+   * to be plugged into {@link ElysiumPoolIx.swapIx}.
    *
    * @param quote - A {@link SwapQuote} type generated from {@link swapQuoteWithParams}
-   * @param ctx - {@link WhirlpoolContext}
-   * @param whirlpool - A {@link Whirlpool} object from WhirlpoolClient
+   * @param ctx - {@link ElysiumPoolContext}
+   * @param whirlpool - A {@link ElysiumPool} object from ElysiumPoolClient
    * @param inputTokenAssociatedAddress - The public key for the ATA of the input token in the swap
    * @param outputTokenAssociatedAddress - The public key for the ATA of the input token in the swap
    * @param wallet - The token authority for this swap
@@ -237,8 +237,8 @@ export class SwapUtils {
    */
   public static getSwapParamsFromQuote(
     quote: SwapInput,
-    ctx: WhirlpoolContext,
-    whirlpool: Whirlpool,
+    ctx: ElysiumPoolContext,
+    whirlpool: ElysiumPool,
     inputTokenAssociatedAddress: Address,
     outputTokenAssociatedAddress: Address,
     wallet: PublicKey
@@ -258,7 +258,7 @@ export class SwapUtils {
 
   public static getSwapParamsFromQuoteKeys(
     quote: SwapInput,
-    ctx: WhirlpoolContext,
+    ctx: ElysiumPoolContext,
     whirlpool: PublicKey,
     tokenVaultA: PublicKey,
     tokenVaultB: PublicKey,

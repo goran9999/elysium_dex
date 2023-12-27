@@ -2,18 +2,18 @@ import { Address } from "@coral-xyz/anchor";
 import { AddressUtil, Instruction, TokenUtil, TransactionBuilder } from "@orca-so/common-sdk";
 import { NATIVE_MINT } from "@solana/spl-token";
 import { PACKET_DATA_SIZE } from "@solana/web3.js";
-import { WhirlpoolContext } from "../..";
+import { ElysiumPoolContext } from "../..";
 import { PREFER_CACHE } from "../../network/public/fetcher";
 import {
   TokenMintTypes,
   addNativeMintHandlingIx,
-  getTokenMintsFromWhirlpools,
+  getTokenMintsFromElysiumPools,
   resolveAtaForMints,
 } from "../../utils/whirlpool-ata-utils";
 import { collectProtocolFeesIx } from "../collect-protocol-fees-ix";
 
 export async function collectProtocolFees(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   poolAddresses: Address[]
 ): Promise<TransactionBuilder> {
   const receiverKey = ctx.wallet.publicKey;
@@ -25,7 +25,7 @@ export async function collectProtocolFees(
 
   const accountExemption = await ctx.fetcher.getAccountRentExempt();
   const { ataTokenAddresses, resolveAtaIxs } = await resolveAtaForMints(ctx, {
-    mints: getTokenMintsFromWhirlpools(whirlpoolDatas, TokenMintTypes.POOL_ONLY).mintMap,
+    mints: getTokenMintsFromElysiumPools(whirlpoolDatas, TokenMintTypes.POOL_ONLY).mintMap,
     accountExemption,
     receiver: receiverKey,
     payer: payerKey,

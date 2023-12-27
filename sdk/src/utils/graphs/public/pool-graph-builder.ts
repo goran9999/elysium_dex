@@ -1,5 +1,5 @@
 import { Address } from "@coral-xyz/anchor";
-import { PREFER_CACHE, WhirlpoolAccountFetcherInterface } from "../../../network/public/fetcher";
+import { PREFER_CACHE, ElysiumPoolAccountFetcherInterface } from "../../../network/public/fetcher";
 import { AdjacencyListPoolGraph } from "../adjacency-list-pool-graph";
 import { PoolGraph, PoolTokenPair } from "./pool-graph";
 
@@ -14,12 +14,12 @@ export class PoolGraphBuilder {
   /**
    * Fetch data and build a {@link PoolGraph} from a list of pools addresses
    * @param pools - a list of pool addresses to generate this pool graph
-   * @param cache - {@link WhirlpoolAccountFetcherInterface} to use for fetching pool data
+   * @param cache - {@link ElysiumPoolAccountFetcherInterface} to use for fetching pool data
    * @returns A {@link PoolGraph} with the provided pools
    */
   static async buildPoolGraphWithFetch(
     pools: Address[],
-    fetcher: WhirlpoolAccountFetcherInterface
+    fetcher: ElysiumPoolAccountFetcherInterface
   ): Promise<PoolGraph> {
     const poolAccounts = await fetcher.getPools(pools, PREFER_CACHE);
     const poolTokenPairs = Array.from(poolAccounts.entries())

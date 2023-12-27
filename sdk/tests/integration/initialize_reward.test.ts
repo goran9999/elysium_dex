@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import * as assert from "assert";
-import { toTx, WhirlpoolContext, WhirlpoolData, WhirlpoolIx } from "../../src";
+import { toTx, ElysiumPoolContext, ElysiumPoolData, ElysiumPoolIx } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import { createMint, ONE_SOL, systemTransferTx, TickSpacing } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
@@ -9,8 +9,8 @@ import { initializeReward, initTestPool } from "../utils/init-utils";
 describe("initialize_reward", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully initializes reward at index 0", async () => {
@@ -26,7 +26,7 @@ describe("initialize_reward", () => {
     const whirlpool = (await fetcher.getPool(
       poolInitInfo.whirlpoolPda.publicKey,
       IGNORE_CACHE
-    )) as WhirlpoolData;
+    )) as ElysiumPoolData;
 
     assert.ok(whirlpool.rewardInfos[0].mint.equals(params.rewardMint));
     assert.ok(whirlpool.rewardInfos[0].vault.equals(params.rewardVaultKeypair.publicKey));
@@ -51,7 +51,7 @@ describe("initialize_reward", () => {
     const whirlpool2 = (await fetcher.getPool(
       poolInitInfo.whirlpoolPda.publicKey,
       IGNORE_CACHE
-    )) as WhirlpoolData;
+    )) as ElysiumPoolData;
 
     assert.ok(whirlpool2.rewardInfos[0].mint.equals(params.rewardMint));
     assert.ok(whirlpool2.rewardInfos[0].vault.equals(params.rewardVaultKeypair.publicKey));
@@ -107,7 +107,7 @@ describe("initialize_reward", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.initializeRewardIx(ctx.program, {
+        ElysiumPoolIx.initializeRewardIx(ctx.program, {
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           funder: provider.wallet.publicKey,
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,

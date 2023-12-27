@@ -3,10 +3,10 @@ import { Instruction } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
- * Raw parameters and accounts to swap on a Whirlpool
+ * Raw parameters and accounts to swap on a ElysiumPool
  *
  * @category Instruction Types
  * @param swapInput - Parameters in {@link SwapInput}
@@ -15,7 +15,7 @@ import { Whirlpool } from "../artifacts/whirlpool";
  * @param tokenOwnerAccountB - PublicKey for the associated token account for tokenB in the collection wallet
  * @param tokenVaultA - PublicKey for the tokenA vault for this whirlpool.
  * @param tokenVaultB - PublicKey for the tokenB vault for this whirlpool.
- * @param oracle - PublicKey for the oracle account for this Whirlpool.
+ * @param oracle - PublicKey for the oracle account for this ElysiumPool.
  * @param tokenAuthority - authority to withdraw tokens from the input token account
  */
 export type SwapParams = SwapInput & {
@@ -29,7 +29,7 @@ export type SwapParams = SwapInput & {
 };
 
 /**
- * Parameters that describe the nature of a swap on a Whirlpool.
+ * Parameters that describe the nature of a swap on a ElysiumPool.
  *
  * @category Instruction Types
  * @param aToB - The direction of the swap. True if swapping from A to B. False if swapping from B to A.
@@ -38,7 +38,7 @@ export type SwapParams = SwapInput & {
  * @param amount - The amount of input or output token to swap from (depending on amountSpecifiedIsInput).
  * @param otherAmountThreshold - The maximum/minimum of input/output token to swap into (depending on amountSpecifiedIsInput).
  * @param sqrtPriceLimit - The maximum/minimum price the swap will swap to.
- * @param tickArray0 - PublicKey of the tick-array where the Whirlpool's currentTickIndex resides in
+ * @param tickArray0 - PublicKey of the tick-array where the ElysiumPool's currentTickIndex resides in
  * @param tickArray1 - The next tick-array in the swap direction. If the swap will not reach the next tick-aray, input the same array as tickArray0.
  * @param tickArray2 - The next tick-array in the swap direction after tickArray2. If the swap will not reach the next tick-aray, input the same array as tickArray1.
  */
@@ -54,7 +54,7 @@ export type SwapInput = {
 };
 
 /**
- * Parameters to swap on a Whirlpool with developer fees
+ * Parameters to swap on a ElysiumPool with developer fees
  *
  * @category Instruction Types
  * @param swapInput - Parameters in {@link SwapInput}
@@ -65,7 +65,7 @@ export type DevFeeSwapInput = SwapInput & {
 };
 
 /**
- * Perform a swap in this Whirlpool
+ * Perform a swap in this ElysiumPool
  *
  * #### Special Errors
  * - `ZeroTradableAmount` - User provided parameter `amount` is 0.
@@ -83,7 +83,7 @@ export type DevFeeSwapInput = SwapInput & {
  * @param params - {@link SwapParams}
  * @returns - Instruction to perform the action.
  */
-export function swapIx(program: Program<Whirlpool>, params: SwapParams): Instruction {
+export function swapIx(program: Program<ElysiumPool>, params: SwapParams): Instruction {
   const {
     amount,
     otherAmountThreshold,

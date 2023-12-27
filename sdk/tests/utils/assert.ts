@@ -3,10 +3,10 @@ import { ONE } from "@orca-so/common-sdk";
 import { AccountLayout, NATIVE_MINT, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import * as assert from "assert";
-import { SwapQuote, WhirlpoolContext } from "../../src";
-import { Whirlpool } from "../../src/artifacts/whirlpool";
+import { SwapQuote, ElysiumPoolContext } from "../../src";
+import { ElysiumPool } from "../../src/artifacts/whirlpool";
 import { DevFeeSwapQuote } from "../../src/quotes/public/dev-fee-swap-quote";
-import { TickData, WhirlpoolData } from "../../src/types/public";
+import { TickData, ElysiumPoolData } from "../../src/types/public";
 import { TEST_TOKEN_PROGRAM_ID } from "./test-consts";
 import { getTokenBalance } from "./token";
 import { VaultAmounts } from "./whirlpools-test-utils";
@@ -85,16 +85,15 @@ export function assertDevFeeQuotes(
 }
 
 export async function assertDevTokenAmount(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   expectationQuote: DevFeeSwapQuote,
   swapToken: PublicKey,
   devWallet: PublicKey,
   preDevWalletLamport = 0
 ) {
-
   if (swapToken.equals(NATIVE_MINT)) {
     const walletAmount = await ctx.provider.connection.getBalance(devWallet);
-    assert.equal(expectationQuote.devFeeAmount.toNumber() + preDevWalletLamport, walletAmount)
+    assert.equal(expectationQuote.devFeeAmount.toNumber() + preDevWalletLamport, walletAmount);
     return;
   }
 
@@ -110,7 +109,7 @@ export async function assertDevTokenAmount(
 export function assertQuoteAndResults(
   aToB: boolean,
   quote: SwapQuote,
-  endData: WhirlpoolData,
+  endData: ElysiumPoolData,
   beforeVaultAmounts: VaultAmounts,
   afterVaultAmounts: VaultAmounts
 ) {
@@ -128,7 +127,7 @@ export function assertQuoteAndResults(
 
 // Helper for token vault assertion checks.
 export async function asyncAssertTokenVault(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   tokenVaultPublicKey: web3.PublicKey,
   expectedValues: {
     expectedOwner: web3.PublicKey;

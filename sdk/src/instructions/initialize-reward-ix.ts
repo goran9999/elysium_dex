@@ -2,19 +2,19 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 import { Instruction } from "@orca-so/common-sdk";
 
 /**
- * Parameters to initialize a rewards for a Whirlpool
+ * Parameters to initialize a rewards for a ElysiumPool
  *
  * @category Instruction Types
  * @param whirlpool - PublicKey for the whirlpool config space that the fee-tier will be initialized for.
  * @param rewardIndex - The reward index that we'd like to initialize. (0 <= index <= NUM_REWARDS).
  * @param rewardMint - PublicKey for the reward mint that we'd use for the reward index.
  * @param rewardVaultKeypair - Keypair of the vault for this reward index.
- * @param rewardAuthority - Assigned authority by the reward_super_authority for the specified reward-index in this Whirlpool
+ * @param rewardAuthority - Assigned authority by the reward_super_authority for the specified reward-index in this ElysiumPool
  * @param funder - The account that would fund the creation of this account
  */
 export type InitializeRewardParams = {
@@ -27,7 +27,7 @@ export type InitializeRewardParams = {
 };
 
 /**
- * Initialize reward for a Whirlpool. A pool can only support up to a set number of rewards.
+ * Initialize reward for a ElysiumPool. A pool can only support up to a set number of rewards.
  * The initial emissionsPerSecond is set to 0.
  *
  * #### Special Errors
@@ -40,7 +40,7 @@ export type InitializeRewardParams = {
  * @returns - Instruction to perform the action.
  */
 export function initializeRewardIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: InitializeRewardParams
 ): Instruction {
   const { rewardAuthority, funder, whirlpool, rewardMint, rewardVaultKeypair, rewardIndex } =

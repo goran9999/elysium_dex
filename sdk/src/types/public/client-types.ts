@@ -1,32 +1,32 @@
 import { Account, Mint } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import { TickArrayData, WhirlpoolRewardInfoData } from "./anchor-types";
+import { TickArrayData, ElysiumPoolRewardInfoData } from "./anchor-types";
 
 /**
  * Extended Mint type to host token info.
- * @category WhirlpoolClient
+ * @category ElysiumPoolClient
  */
 export type TokenInfo = Mint & { mint: PublicKey };
 
 /**
  * Extended (token) Account type to host account info for a Token.
- * @category WhirlpoolClient
+ * @category ElysiumPoolClient
  */
 export type TokenAccountInfo = Account;
 
 /**
- * Type to represent a reward for a reward index on a Whirlpool.
- * @category WhirlpoolClient
+ * Type to represent a reward for a reward index on a ElysiumPool.
+ * @category ElysiumPoolClient
  */
-export type WhirlpoolRewardInfo = WhirlpoolRewardInfoData & {
+export type ElysiumPoolRewardInfo = ElysiumPoolRewardInfoData & {
   initialized: boolean;
   vaultAmount: BN;
 };
 
 /**
- * A wrapper class of a TickArray on a Whirlpool
- * @category WhirlpoolClient
+ * A wrapper class of a TickArray on a ElysiumPool
+ * @category ElysiumPoolClient
  */
 export type TickArray = {
   address: PublicKey;

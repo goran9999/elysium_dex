@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import * as assert from "assert";
-import { toTx, WhirlpoolContext, WhirlpoolData, WhirlpoolIx } from "../../src";
+import { toTx, ElysiumPoolContext, ElysiumPoolData, ElysiumPoolIx } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import { TickSpacing } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
@@ -9,8 +9,8 @@ import { generateDefaultConfigParams } from "../utils/test-builders";
 
 describe("set_protocol_fee_rate", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully sets_protocol_fee_rate", async () => {
@@ -24,19 +24,25 @@ describe("set_protocol_fee_rate", () => {
 
     const newProtocolFeeRate = 50;
 
-    let whirlpool = (await fetcher.getPool(whirlpoolKey, IGNORE_CACHE)) as WhirlpoolData;
+    let whirlpool = (await fetcher.getPool(whirlpoolKey, IGNORE_CACHE)) as ElysiumPoolData;
 
     assert.equal(whirlpool.protocolFeeRate, configInitInfo.defaultProtocolFeeRate);
 
-    const txBuilder = toTx(ctx, WhirlpoolIx.setProtocolFeeRateIx(program, {
-      whirlpool: whirlpoolKey,
-      whirlpoolsConfig: whirlpoolsConfigKey,
-      feeAuthority: feeAuthorityKeypair.publicKey,
-      protocolFeeRate: newProtocolFeeRate
-    })).addSigner(feeAuthorityKeypair);
+    const txBuilder = toTx(
+      ctx,
+      ElysiumPoolIx.setProtocolFeeRateIx(program, {
+        whirlpool: whirlpoolKey,
+        whirlpoolsConfig: whirlpoolsConfigKey,
+        feeAuthority: feeAuthorityKeypair.publicKey,
+        protocolFeeRate: newProtocolFeeRate,
+      })
+    ).addSigner(feeAuthorityKeypair);
     await txBuilder.buildAndExecute();
 
-    whirlpool = (await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    whirlpool = (await fetcher.getPool(
+      poolInitInfo.whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
     assert.equal(whirlpool.protocolFeeRate, newProtocolFeeRate);
   });
 
@@ -53,7 +59,7 @@ describe("set_protocol_fee_rate", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setProtocolFeeRateIx(ctx.program, {
+        ElysiumPoolIx.setProtocolFeeRateIx(ctx.program, {
           whirlpoolsConfig: whirlpoolsConfigKey,
           whirlpool: whirlpoolKey,
           feeAuthority: feeAuthorityKeypair.publicKey,
@@ -79,7 +85,7 @@ describe("set_protocol_fee_rate", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setProtocolFeeRateIx(ctx.program, {
+        ElysiumPoolIx.setProtocolFeeRateIx(ctx.program, {
           whirlpoolsConfig: whirlpoolsConfigKey,
           whirlpool: whirlpoolKey,
           feeAuthority: feeAuthorityKeypair.publicKey,
@@ -98,7 +104,7 @@ describe("set_protocol_fee_rate", () => {
     const { configInitInfo: otherConfigInitInfo } = generateDefaultConfigParams(ctx);
     await toTx(
       ctx,
-      WhirlpoolIx.initializeConfigIx(ctx.program, otherConfigInitInfo)
+      ElysiumPoolIx.initializeConfigIx(ctx.program, otherConfigInitInfo)
     ).buildAndExecute();
 
     const newProtocolFeeRate = 1000;

@@ -29,7 +29,7 @@ pub struct OpenBundledPosition<'info> {
 
     pub position_bundle_authority: Signer<'info>,
 
-    pub whirlpool: Box<Account<'info, Whirlpool>>,
+    pub whirlpool: Box<Account<'info, ElysiumPool>>,
 
     #[account(mut)]
     pub funder: Signer<'info>,

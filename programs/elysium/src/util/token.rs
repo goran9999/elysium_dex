@@ -1,4 +1,4 @@
-use crate::state::{PositionBundle, Whirlpool};
+use crate::state::{ElysiumPool, PositionBundle};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 use mpl_token_metadata::instruction::create_metadata_accounts_v3;
@@ -31,7 +31,7 @@ pub fn transfer_from_owner_to_vault<'info>(
 }
 
 pub fn transfer_from_vault_to_owner<'info>(
-    whirlpool: &Account<'info, Whirlpool>,
+    whirlpool: &Account<'info, ElysiumPool>,
     token_vault: &Account<'info, TokenAccount>,
     token_owner_account: &Account<'info, TokenAccount>,
     token_program: &Program<'info, Token>,
@@ -99,7 +99,7 @@ pub fn burn_and_close_user_position_token<'info>(
 }
 
 pub fn mint_position_token_and_remove_authority<'info>(
-    whirlpool: &Account<'info, Whirlpool>,
+    whirlpool: &Account<'info, ElysiumPool>,
     position_mint: &Account<'info, Mint>,
     position_token_account: &Account<'info, TokenAccount>,
     token_program: &Program<'info, Token>,
@@ -114,7 +114,7 @@ pub fn mint_position_token_and_remove_authority<'info>(
 }
 
 pub fn mint_position_token_with_metadata_and_remove_authority<'info>(
-    whirlpool: &Account<'info, Whirlpool>,
+    whirlpool: &Account<'info, ElysiumPool>,
     position_mint: &Account<'info, Mint>,
     position_token_account: &Account<'info, TokenAccount>,
     position_metadata_account: &UncheckedAccount<'info>,
@@ -169,7 +169,7 @@ pub fn mint_position_token_with_metadata_and_remove_authority<'info>(
 }
 
 fn mint_position_token<'info>(
-    whirlpool: &Account<'info, Whirlpool>,
+    whirlpool: &Account<'info, ElysiumPool>,
     position_mint: &Account<'info, Mint>,
     position_token_account: &Account<'info, TokenAccount>,
     token_program: &Program<'info, Token>,
@@ -195,7 +195,7 @@ fn mint_position_token<'info>(
 }
 
 fn remove_position_token_mint_authority<'info>(
-    whirlpool: &Account<'info, Whirlpool>,
+    whirlpool: &Account<'info, ElysiumPool>,
     position_mint: &Account<'info, Mint>,
     token_program: &Program<'info, Token>,
 ) -> Result<()> {

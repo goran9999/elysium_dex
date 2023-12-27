@@ -3,10 +3,10 @@ Decimal.set({ precision: 40, rounding: 4 });
 
 /**
  * This script is to generate the magic numbers & unit tests needed for the exponent function
- * in Whirlpools.
+ * in ElysiumPools.
  *
  * Explanation on what magic numbers are:
- * https://www.notion.so/orcaso/Fixed-Point-Arithmetic-in-Whirlpools-63f9817a852b4029a6eb15dc755c7baf#5df2cfe5d62b4b0aa7e58f5f381c2d55
+ * https://www.notion.so/orcaso/Fixed-Point-Arithmetic-in-ElysiumPools-63f9817a852b4029a6eb15dc755c7baf#5df2cfe5d62b4b0aa7e58f5f381c2d55
  */
 
 const x32 = new Decimal(2).pow(32);

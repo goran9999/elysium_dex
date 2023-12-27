@@ -6,27 +6,34 @@ import { BN } from "bn.js";
 import Decimal from "decimal.js";
 import {
   NUM_REWARDS,
-  PDAUtil, Whirlpool,
-  WhirlpoolClient,
-  WhirlpoolContext,
-  buildWhirlpoolClient,
+  PDAUtil,
+  ElysiumPool,
+  ElysiumPoolClient,
+  ElysiumPoolContext,
+  buildElysiumPoolClient,
   collectFeesQuote,
   collectRewardsQuote,
-  decreaseLiquidityQuoteByLiquidity
+  decreaseLiquidityQuoteByLiquidity,
 } from "../../../src";
 import { IGNORE_CACHE } from "../../../src/network/public/fetcher";
-import { TickSpacing, ZERO_BN, createAssociatedTokenAccount, sleep, transferToken } from "../../utils";
+import {
+  TickSpacing,
+  ZERO_BN,
+  createAssociatedTokenAccount,
+  sleep,
+  transferToken,
+} from "../../utils";
 import { defaultConfirmOptions } from "../../utils/const";
-import { WhirlpoolTestFixture } from "../../utils/fixture";
+import { ElysiumPoolTestFixture } from "../../utils/fixture";
 
 interface SharedTestContext {
   provider: anchor.AnchorProvider;
-  program: Whirlpool;
-  whirlpoolCtx: WhirlpoolContext;
-  whirlpoolClient: WhirlpoolClient;
+  program: ElysiumPool;
+  whirlpoolCtx: ElysiumPoolContext;
+  whirlpoolClient: ElysiumPoolClient;
 }
 
-describe("WhirlpoolImpl#closePosition()", () => {
+describe("ElysiumPoolImpl#closePosition()", () => {
   let testCtx: SharedTestContext;
   const tickLowerIndex = 29440;
   const tickUpperIndex = 33536;
@@ -38,9 +45,9 @@ describe("WhirlpoolImpl#closePosition()", () => {
     const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
     anchor.setProvider(provider);
-    const program = anchor.workspace.Whirlpool;
-    const whirlpoolCtx = WhirlpoolContext.fromWorkspace(provider, program);
-    const whirlpoolClient = buildWhirlpoolClient(whirlpoolCtx);
+    const program = anchor.workspace.ElysiumPool;
+    const whirlpoolCtx = ElysiumPoolContext.fromWorkspace(provider, program);
+    const whirlpoolClient = buildElysiumPoolClient(whirlpoolCtx);
 
     testCtx = {
       provider,
@@ -50,7 +57,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
     };
   });
 
-  async function accrueFeesAndRewards(fixture: WhirlpoolTestFixture) {
+  async function accrueFeesAndRewards(fixture: ElysiumPoolTestFixture) {
     const ctx = testCtx.whirlpoolCtx;
     const { poolInitInfo } = fixture.getInfos();
     const { whirlpoolClient } = testCtx;
@@ -59,41 +66,50 @@ describe("WhirlpoolImpl#closePosition()", () => {
 
     // Accrue fees in token A
     const pool = await whirlpoolClient.getPool(whirlpoolPda.publicKey, IGNORE_CACHE);
-    await (await pool.swap({
-      amount: new BN(200_000),
-      amountSpecifiedIsInput: true,
-      sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
-      otherAmountThreshold: ZERO_BN,
-      aToB: true,
-      tickArray0: tickArrayPda.publicKey,
-      tickArray1: tickArrayPda.publicKey,
-      tickArray2: tickArrayPda.publicKey,
-    })).buildAndExecute()
+    await (
+      await pool.swap({
+        amount: new BN(200_000),
+        amountSpecifiedIsInput: true,
+        sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
+        otherAmountThreshold: ZERO_BN,
+        aToB: true,
+        tickArray0: tickArrayPda.publicKey,
+        tickArray1: tickArrayPda.publicKey,
+        tickArray2: tickArrayPda.publicKey,
+      })
+    ).buildAndExecute();
 
     // Accrue fees in token B
-    await (await pool.swap({
-      amount: new BN(200_000),
-      otherAmountThreshold: ZERO_BN,
-      sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
-      amountSpecifiedIsInput: true,
-      aToB: false,
-      tickArray0: tickArrayPda.publicKey,
-      tickArray1: tickArrayPda.publicKey,
-      tickArray2: tickArrayPda.publicKey,
-    })).buildAndExecute()
+    await (
+      await pool.swap({
+        amount: new BN(200_000),
+        otherAmountThreshold: ZERO_BN,
+        sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
+        amountSpecifiedIsInput: true,
+        aToB: false,
+        tickArray0: tickArrayPda.publicKey,
+        tickArray1: tickArrayPda.publicKey,
+        tickArray2: tickArrayPda.publicKey,
+      })
+    ).buildAndExecute();
 
     // accrue rewards
     await sleep(1200);
   }
 
-  async function removeLiquidity(fixture: WhirlpoolTestFixture) {
+  async function removeLiquidity(fixture: ElysiumPoolTestFixture) {
     const {
       poolInitInfo,
       positions: [positionInfo],
     } = fixture.getInfos();
-    const position = await testCtx.whirlpoolClient.getPosition(positionInfo.publicKey, IGNORE_CACHE);
-    const pool = await testCtx.whirlpoolClient.getPool(poolInitInfo.whirlpoolPda.publicKey, IGNORE_CACHE);
-
+    const position = await testCtx.whirlpoolClient.getPosition(
+      positionInfo.publicKey,
+      IGNORE_CACHE
+    );
+    const pool = await testCtx.whirlpoolClient.getPool(
+      poolInitInfo.whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    );
 
     const liquidityCollectedQuote = await decreaseLiquidityQuoteByLiquidity(
       position.getData().liquidity,
@@ -107,22 +123,22 @@ describe("WhirlpoolImpl#closePosition()", () => {
     await tx.buildAndExecute();
   }
 
-  async function collectFees(fixture: WhirlpoolTestFixture) {
+  async function collectFees(fixture: ElysiumPoolTestFixture) {
     const { positions } = fixture.getInfos();
     const { whirlpoolClient } = testCtx;
     const position = await whirlpoolClient.getPosition(positions[0].publicKey, IGNORE_CACHE);
-    const hasL = !position.getData().liquidity.isZero()
+    const hasL = !position.getData().liquidity.isZero();
     await (await position.collectFees(hasL)).buildAndExecute();
   }
 
-  async function collectRewards(fixture: WhirlpoolTestFixture) {
+  async function collectRewards(fixture: ElysiumPoolTestFixture) {
     const { positions } = fixture.getInfos();
     const { whirlpoolClient } = testCtx;
     const position = await whirlpoolClient.getPosition(positions[0].publicKey, IGNORE_CACHE);
     await (await position.collectRewards(undefined, true)).buildAndExecute();
   }
 
-  async function testClosePosition(fixture: WhirlpoolTestFixture, isWSOLTest = false) {
+  async function testClosePosition(fixture: ElysiumPoolTestFixture, isWSOLTest = false) {
     const { positions, poolInitInfo, rewards } = fixture.getInfos();
     const { whirlpoolClient } = testCtx;
     const ctx = whirlpoolClient.getContext();
@@ -144,7 +160,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
     // TODO: Our createWSOLAccountInstructions ignores payer and requires destinationWallet to sign
     // We can remove this once we move to syncNative and wSOL becomes another ATA to handle.
     if (isWSOLTest) {
-      txs[1].addSigner(otherWallet)
+      txs[1].addSigner(otherWallet);
     }
 
     await txs[0].buildAndExecute();
@@ -164,7 +180,10 @@ describe("WhirlpoolImpl#closePosition()", () => {
       tickLower: position.getLowerTickData(),
       tickUpper: position.getUpperTickData(),
     });
-    const accountAPubkey = getAssociatedTokenAddressSync(poolInitInfo.tokenMintA, otherWallet.publicKey);
+    const accountAPubkey = getAssociatedTokenAddressSync(
+      poolInitInfo.tokenMintA,
+      otherWallet.publicKey
+    );
     const accountA = (await ctx.fetcher.getTokenInfo(accountAPubkey, IGNORE_CACHE)) as Account;
     const expectAmountA = liquidityCollectedQuote.tokenMinA.add(feeQuote.feeOwedA);
     if (isWSOLTest) {
@@ -181,22 +200,19 @@ describe("WhirlpoolImpl#closePosition()", () => {
     } else if (expectAmountA.isZero()) {
       assert.ok(!accountA || accountA.amount === 0n);
     } else {
-      assert.equal(
-        accountA?.amount.toString(),
-        expectAmountA.toString()
-      );
+      assert.equal(accountA?.amount.toString(), expectAmountA.toString());
     }
 
-    const accountBPubkey = getAssociatedTokenAddressSync(poolInitInfo.tokenMintB, otherWallet.publicKey);
+    const accountBPubkey = getAssociatedTokenAddressSync(
+      poolInitInfo.tokenMintB,
+      otherWallet.publicKey
+    );
     const accountB = await ctx.fetcher.getTokenInfo(accountBPubkey, IGNORE_CACHE);
     const expectAmountB = liquidityCollectedQuote.tokenMinB.add(feeQuote.feeOwedB);
     if (expectAmountB.isZero()) {
       assert.ok(!accountB || accountB.amount === 0n);
     } else {
-      assert.equal(
-        accountB?.amount.toString(),
-        expectAmountB.toString()
-      );
+      assert.equal(accountB?.amount.toString(), expectAmountB.toString());
     }
 
     // Verify reward collected. We use the same timestamp that the closePosition call used to collectRewards.
@@ -210,7 +226,10 @@ describe("WhirlpoolImpl#closePosition()", () => {
     });
     for (let i = 0; i < NUM_REWARDS; i++) {
       if (!!rewards[i]) {
-        const rewardATA = getAssociatedTokenAddressSync(rewards[i].rewardMint, otherWallet.publicKey);
+        const rewardATA = getAssociatedTokenAddressSync(
+          rewards[i].rewardMint,
+          otherWallet.publicKey
+        );
         const rewardTokenAccount = await ctx.fetcher.getTokenInfo(rewardATA, IGNORE_CACHE);
         assert.equal(rewardTokenAccount?.amount.toString(), rewardQuote[i]?.toString());
       }
@@ -219,7 +238,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
 
   context("when the whirlpool is SPL-only", () => {
     it("should close a position with no liquidity, fees, or rewards", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -231,7 +250,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
     });
 
     it("should close a position with only liquidity", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -242,7 +261,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
     });
 
     it("should close a position with only fees", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -255,7 +274,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
     });
 
     it("should close a position with only rewards", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -286,7 +305,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
     });
 
     it("should close a position with only liquidity and fees", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -298,7 +317,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
     });
 
     it("should close a position with only liquidity and rewards", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -327,7 +346,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
     });
 
     it("should close a position with only fees and rewards", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -354,7 +373,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
     });
 
     it("should close a position with liquidity, fees, and rewards", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -381,7 +400,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
 
     it("should close a position with liquidity, fees, and rewards (no ATAs)", async () => {
       const ctx = testCtx.whirlpoolCtx;
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -405,11 +424,14 @@ describe("WhirlpoolImpl#closePosition()", () => {
       const otherWallet = anchor.web3.Keypair.generate();
       const positionData = fixture.getInfos().positions[0];
 
-      const position = await testCtx.whirlpoolClient.getPosition(positionData.publicKey, IGNORE_CACHE);
+      const position = await testCtx.whirlpoolClient.getPosition(
+        positionData.publicKey,
+        IGNORE_CACHE
+      );
 
       const walletPositionTokenAccount = getAssociatedTokenAddressSync(
         positionData.mintKeypair.publicKey,
-        testCtx.whirlpoolCtx.wallet.publicKey,
+        testCtx.whirlpoolCtx.wallet.publicKey
       );
 
       const newOwnerPositionTokenAccount = await createAssociatedTokenAccount(
@@ -420,7 +442,12 @@ describe("WhirlpoolImpl#closePosition()", () => {
       );
 
       await accrueFeesAndRewards(fixture);
-      await transferToken(testCtx.provider, walletPositionTokenAccount, newOwnerPositionTokenAccount, 1);
+      await transferToken(
+        testCtx.provider,
+        walletPositionTokenAccount,
+        newOwnerPositionTokenAccount,
+        1
+      );
 
       const { poolInitInfo } = fixture.getInfos();
 
@@ -455,7 +482,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
 
   context("when the whirlpool is SOL-SPL", () => {
     it("should close a position with liquidity, fees, and rewards", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -483,7 +510,7 @@ describe("WhirlpoolImpl#closePosition()", () => {
 
     it("should close a position with liquidity, fees, and rewards (no ATA)", async () => {
       const ctx = testCtx.whirlpoolCtx;
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -508,11 +535,14 @@ describe("WhirlpoolImpl#closePosition()", () => {
       const otherWallet = anchor.web3.Keypair.generate();
       const positionData = fixture.getInfos().positions[0];
 
-      const position = await testCtx.whirlpoolClient.getPosition(positionData.publicKey, IGNORE_CACHE);
+      const position = await testCtx.whirlpoolClient.getPosition(
+        positionData.publicKey,
+        IGNORE_CACHE
+      );
 
       const walletPositionTokenAccount = getAssociatedTokenAddressSync(
         positionData.mintKeypair.publicKey,
-        testCtx.whirlpoolCtx.wallet.publicKey,
+        testCtx.whirlpoolCtx.wallet.publicKey
       );
 
       const newOwnerPositionTokenAccount = await createAssociatedTokenAccount(
@@ -523,7 +553,12 @@ describe("WhirlpoolImpl#closePosition()", () => {
       );
 
       await accrueFeesAndRewards(fixture);
-      await transferToken(testCtx.provider, walletPositionTokenAccount, newOwnerPositionTokenAccount, 1);
+      await transferToken(
+        testCtx.provider,
+        walletPositionTokenAccount,
+        newOwnerPositionTokenAccount,
+        1
+      );
 
       const { poolInitInfo } = fixture.getInfos();
 

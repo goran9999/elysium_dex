@@ -1,8 +1,8 @@
 import * as anchor from "@coral-xyz/anchor";
 import { AuthorityType } from "@solana/spl-token";
 import * as assert from "assert";
-import { toTx, WhirlpoolIx } from "../../src";
-import { WhirlpoolContext } from "../../src/context";
+import { toTx, ElysiumPoolIx } from "../../src";
+import { ElysiumPoolContext } from "../../src/context";
 import {
   approveToken,
   createAndMintToTokenAccount,
@@ -10,16 +10,22 @@ import {
   setAuthority,
   TickSpacing,
   transferToken,
-  ZERO_BN
+  ZERO_BN,
 } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
-import { WhirlpoolTestFixture } from "../utils/fixture";
-import { initializePositionBundle, initTestPool, initTestPoolWithLiquidity, openBundledPosition, openPosition } from "../utils/init-utils";
+import { ElysiumPoolTestFixture } from "../utils/fixture";
+import {
+  initializePositionBundle,
+  initTestPool,
+  initTestPoolWithLiquidity,
+  openBundledPosition,
+  openPosition,
+} from "../utils/init-utils";
 
 describe("close_position", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
 
   it("successfully closes an open position", async () => {
     const { poolInitInfo } = await initTestPool(ctx, TickSpacing.Standard);
@@ -29,7 +35,7 @@ describe("close_position", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.closePositionIx(ctx.program, {
+      ElysiumPoolIx.closePositionIx(ctx.program, {
         positionAuthority: provider.wallet.publicKey,
         receiver: receiverKeypair.publicKey,
         position: params.positionPda.publicKey,
@@ -74,7 +80,7 @@ describe("close_position", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.closePositionIx(ctx.program, {
+      ElysiumPoolIx.closePositionIx(ctx.program, {
         positionAuthority: delegate.publicKey,
         receiver: owner.publicKey,
         position: params.positionPda.publicKey,
@@ -104,7 +110,7 @@ describe("close_position", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.closePositionIx(ctx.program, {
+      ElysiumPoolIx.closePositionIx(ctx.program, {
         positionAuthority: owner.publicKey,
         receiver: owner.publicKey,
         position: params.positionPda.publicKey,
@@ -117,7 +123,7 @@ describe("close_position", () => {
   });
 
   it("succeeds with position token that was transferred to new owner", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: 0, tickUpperIndex: 128, liquidityAmount: ZERO_BN }],
     });
@@ -134,7 +140,7 @@ describe("close_position", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.closePositionIx(ctx.program, {
+      ElysiumPoolIx.closePositionIx(ctx.program, {
         positionAuthority: newOwner.publicKey,
         receiver: newOwner.publicKey,
         position: position.publicKey,
@@ -154,7 +160,7 @@ describe("close_position", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.closePositionIx(ctx.program, {
+        ElysiumPoolIx.closePositionIx(ctx.program, {
           positionAuthority: provider.wallet.publicKey,
           receiver: receiverKeypair.publicKey,
           position: positionInfo.positionPda.publicKey,
@@ -182,7 +188,7 @@ describe("close_position", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.closePositionIx(ctx.program, {
+        ElysiumPoolIx.closePositionIx(ctx.program, {
           positionAuthority: owner.publicKey,
           receiver: owner.publicKey,
           position: params.positionPda.publicKey,
@@ -220,7 +226,7 @@ describe("close_position", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.closePositionIx(ctx.program, {
+        ElysiumPoolIx.closePositionIx(ctx.program, {
           positionAuthority: delegate.publicKey,
           receiver: owner.publicKey,
           position: params.positionPda.publicKey,
@@ -249,7 +255,7 @@ describe("close_position", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.closePositionIx(ctx.program, {
+        ElysiumPoolIx.closePositionIx(ctx.program, {
           positionAuthority: fakeOwner.publicKey,
           receiver: owner.publicKey,
           position: params.positionPda.publicKey,
@@ -264,7 +270,7 @@ describe("close_position", () => {
   });
 
   it("fails if position token account does not contain exactly one token", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: 0, tickUpperIndex: 128, liquidityAmount: ZERO_BN }],
     });
@@ -279,7 +285,7 @@ describe("close_position", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.closePositionIx(ctx.program, {
+        ElysiumPoolIx.closePositionIx(ctx.program, {
           positionAuthority: provider.wallet.publicKey,
           receiver: provider.wallet.publicKey,
           position: position.publicKey,
@@ -317,7 +323,7 @@ describe("close_position", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.closePositionIx(ctx.program, {
+        ElysiumPoolIx.closePositionIx(ctx.program, {
           positionAuthority: delegate.publicKey,
           receiver: owner.publicKey,
           position: params.positionPda.publicKey,
@@ -358,7 +364,7 @@ describe("close_position", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.closePositionIx(ctx.program, {
+        ElysiumPoolIx.closePositionIx(ctx.program, {
           positionAuthority: fakeDelegate.publicKey,
           receiver: owner.publicKey,
           position: params.positionPda.publicKey,
@@ -373,7 +379,7 @@ describe("close_position", () => {
   });
 
   it("fails if position token account mint does not match position mint", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: 0, tickUpperIndex: 128, liquidityAmount: ZERO_BN }],
     });
@@ -388,7 +394,7 @@ describe("close_position", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.closePositionIx(ctx.program, {
+        ElysiumPoolIx.closePositionIx(ctx.program, {
           positionAuthority: provider.wallet.publicKey,
           receiver: provider.wallet.publicKey,
           position: position.publicKey,
@@ -401,7 +407,7 @@ describe("close_position", () => {
   });
 
   it("fails if position_mint does not match position's position_mint field", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       positions: [{ tickLowerIndex: 0, tickUpperIndex: 128, liquidityAmount: ZERO_BN }],
     });
@@ -414,7 +420,7 @@ describe("close_position", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.closePositionIx(ctx.program, {
+        ElysiumPoolIx.closePositionIx(ctx.program, {
           positionAuthority: provider.wallet.publicKey,
           receiver: provider.wallet.publicKey,
           position: position.publicKey,
@@ -429,7 +435,7 @@ describe("close_position", () => {
 
   describe("bundled position", () => {
     it("fails if position is BUNDLED position", async () => {
-      const fixture = await new WhirlpoolTestFixture(ctx).init({
+      const fixture = await new ElysiumPoolTestFixture(ctx).init({
         tickSpacing: TickSpacing.Standard,
         positions: [],
       });
@@ -444,14 +450,14 @@ describe("close_position", () => {
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         bundleIndex,
         0,
-        128,
+        128
       );
 
       // try to close bundled position
       await assert.rejects(
         toTx(
           ctx,
-          WhirlpoolIx.closePositionIx(ctx.program, {
+          ElysiumPoolIx.closePositionIx(ctx.program, {
             positionAuthority: provider.wallet.publicKey,
             receiver: provider.wallet.publicKey,
             position: positionInitInfo.params.bundledPositionPda.publicKey,

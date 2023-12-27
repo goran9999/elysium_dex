@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import * as assert from "assert";
-import { toTx, WhirlpoolContext, WhirlpoolData, WhirlpoolIx } from "../../src";
+import { toTx, ElysiumPoolContext, ElysiumPoolData, ElysiumPoolIx } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import { createAndMintToTokenAccount, mintToDestination, TickSpacing, ZERO_BN } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
@@ -9,8 +9,8 @@ import { initializeReward, initTestPool } from "../utils/init-utils";
 describe("set_reward_emissions", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   const emissionsPerSecondX64 = new anchor.BN(10_000).shln(64).div(new anchor.BN(60 * 60 * 24));
@@ -36,7 +36,7 @@ describe("set_reward_emissions", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.setRewardEmissionsIx(ctx.program, {
+      ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
         rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
         whirlpool: poolInitInfo.whirlpoolPda.publicKey,
         rewardIndex,
@@ -50,13 +50,13 @@ describe("set_reward_emissions", () => {
     let whirlpool = (await fetcher.getPool(
       poolInitInfo.whirlpoolPda.publicKey,
       IGNORE_CACHE
-    )) as WhirlpoolData;
+    )) as ElysiumPoolData;
     assert.ok(whirlpool.rewardInfos[0].emissionsPerSecondX64.eq(emissionsPerSecondX64));
 
     // Successfuly set emissions back to zero
     await toTx(
       ctx,
-      WhirlpoolIx.setRewardEmissionsIx(ctx.program, {
+      ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
         rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
         whirlpool: poolInitInfo.whirlpoolPda.publicKey,
         rewardIndex,
@@ -67,7 +67,10 @@ describe("set_reward_emissions", () => {
       .addSigner(configKeypairs.rewardEmissionsSuperAuthorityKeypair)
       .buildAndExecute();
 
-    whirlpool = (await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    whirlpool = (await fetcher.getPool(
+      poolInitInfo.whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
     assert.ok(whirlpool.rewardInfos[0].emissionsPerSecondX64.eq(ZERO_BN));
   });
 
@@ -91,7 +94,7 @@ describe("set_reward_emissions", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardEmissionsIx(ctx.program, {
+        ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
           rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardIndex,
@@ -126,7 +129,7 @@ describe("set_reward_emissions", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardEmissionsIx(ctx.program, {
+        ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
           rewardVaultKey: fakeVault,
@@ -151,7 +154,7 @@ describe("set_reward_emissions", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardEmissionsIx(ctx.program, {
+        ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
           rewardVaultKey: anchor.web3.PublicKey.default,
@@ -183,7 +186,7 @@ describe("set_reward_emissions", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardEmissionsIx(ctx.program, {
+        ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
           rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardIndex,

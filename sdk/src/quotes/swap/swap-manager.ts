@@ -1,6 +1,6 @@
 import { ZERO } from "@orca-so/common-sdk";
 import BN from "bn.js";
-import { PROTOCOL_FEE_RATE_MUL_VALUE, WhirlpoolData } from "../../types/public";
+import { PROTOCOL_FEE_RATE_MUL_VALUE, ElysiumPoolData } from "../../types/public";
 import { computeSwapStep } from "../../utils/math/swap-math";
 import { PriceMath } from "../../utils/public";
 import { TickArraySequence } from "./tick-array-sequence";
@@ -14,7 +14,7 @@ export type SwapResult = {
 };
 
 export function computeSwap(
-  whirlpoolData: WhirlpoolData,
+  whirlpoolData: ElysiumPoolData,
   tickSequence: TickArraySequence,
   tokenAmount: BN,
   sqrtPriceLimit: BN,

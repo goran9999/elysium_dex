@@ -5,8 +5,8 @@
     {
       "name": "initializeConfig",
       "docs": [
-        "Initializes a WhirlpoolsConfig account that hosts info & authorities",
-        "required to govern a set of Whirlpools.",
+        "Initializes a ElysiumPoolsConfig account that hosts info & authorities",
+        "required to govern a set of ElysiumPools.",
         "",
         "### Parameters",
         "- `fee_authority` - Authority authorized to initialize fee-tiers and set customs fees.",
@@ -52,11 +52,11 @@
     {
       "name": "initializePool",
       "docs": [
-        "Initializes a Whirlpool account.",
+        "Initializes a ElysiumPool account.",
         "Fee rate is set to the default values on the config and supplied fee_tier.",
         "",
         "### Parameters",
-        "- `bumps` - The bump value when deriving the PDA of the Whirlpool address.",
+        "- `bumps` - The bump value when deriving the PDA of the ElysiumPool address.",
         "- `tick_spacing` - The desired tick spacing for this pool.",
         "- `initial_sqrt_price` - The desired initial sqrt-price for this pool",
         "",
@@ -126,7 +126,7 @@
         {
           "name": "bumps",
           "type": {
-            "defined": "WhirlpoolBumps"
+            "defined": "ElysiumPoolBumps"
           }
         },
         {
@@ -142,7 +142,7 @@
     {
       "name": "initializeTickArray",
       "docs": [
-        "Initializes a tick_array account to represent a tick-range in a Whirlpool.",
+        "Initializes a tick_array account to represent a tick-range in a ElysiumPool.",
         "",
         "### Parameters",
         "- `start_tick_index` - The starting tick index for this tick-array.",
@@ -184,10 +184,10 @@
     {
       "name": "initializeFeeTier",
       "docs": [
-        "Initializes a fee_tier account usable by Whirlpools in a WhirlpoolConfig space.",
+        "Initializes a fee_tier account usable by ElysiumPools in a ElysiumPoolConfig space.",
         "",
         "### Authority",
-        "- \"fee_authority\" - Set authority in the WhirlpoolConfig",
+        "- \"fee_authority\" - Set authority in the ElysiumPoolConfig",
         "",
         "### Parameters",
         "- `tick_spacing` - The tick-spacing that this fee-tier suggests the default_fee_rate for.",
@@ -238,11 +238,11 @@
     {
       "name": "initializeReward",
       "docs": [
-        "Initialize reward for a Whirlpool. A pool can only support up to a set number of rewards.",
+        "Initialize reward for a ElysiumPool. A pool can only support up to a set number of rewards.",
         "",
         "### Authority",
         "- \"reward_authority\" - assigned authority by the reward_super_authority for the specified",
-        "reward-index in this Whirlpool",
+        "reward-index in this ElysiumPool",
         "",
         "### Parameters",
         "- `reward_index` - The reward index that we'd like to initialize. (0 <= index <= NUM_REWARDS)",
@@ -304,11 +304,11 @@
     {
       "name": "setRewardEmissions",
       "docs": [
-        "Set the reward emissions for a reward in a Whirlpool.",
+        "Set the reward emissions for a reward in a ElysiumPool.",
         "",
         "### Authority",
         "- \"reward_authority\" - assigned authority by the reward_super_authority for the specified",
-        "reward-index in this Whirlpool",
+        "reward-index in this ElysiumPool",
         "",
         "### Parameters",
         "- `reward_index` - The reward index (0 <= index <= NUM_REWARDS) that we'd like to modify.",
@@ -353,7 +353,7 @@
     {
       "name": "openPosition",
       "docs": [
-        "Open a position in a Whirlpool. A unique token will be minted to represent the position",
+        "Open a position in a ElysiumPool. A unique token will be minted to represent the position",
         "in the users wallet. The position will start off with 0 liquidity.",
         "",
         "### Parameters",
@@ -436,7 +436,7 @@
     {
       "name": "openPositionWithMetadata",
       "docs": [
-        "Open a position in a Whirlpool. A unique token will be minted to represent the position",
+        "Open a position in a ElysiumPool. A unique token will be minted to represent the position",
         "in the users wallet. Additional Metaplex metadata is appended to identify the token.",
         "The position will start off with 0 liquidity.",
         "",
@@ -538,7 +538,7 @@
     {
       "name": "increaseLiquidity",
       "docs": [
-        "Add liquidity to a position in the Whirlpool. This call also updates the position's accrued fees and rewards.",
+        "Add liquidity to a position in the ElysiumPool. This call also updates the position's accrued fees and rewards.",
         "",
         "### Authority",
         "- `position_authority` - authority that owns the token corresponding to this desired position.",
@@ -628,7 +628,7 @@
     {
       "name": "decreaseLiquidity",
       "docs": [
-        "Withdraw liquidity from a position in the Whirlpool. This call also updates the position's accrued fees and rewards.",
+        "Withdraw liquidity from a position in the ElysiumPool. This call also updates the position's accrued fees and rewards.",
         "",
         "### Authority",
         "- `position_authority` - authority that owns the token corresponding to this desired position.",
@@ -860,10 +860,10 @@
     {
       "name": "collectProtocolFees",
       "docs": [
-        "Collect the protocol fees accrued in this Whirlpool",
+        "Collect the protocol fees accrued in this ElysiumPool",
         "",
         "### Authority",
-        "- `collect_protocol_fees_authority` - assigned authority in the WhirlpoolConfig that can collect protocol fees"
+        "- `collect_protocol_fees_authority` - assigned authority in the ElysiumPoolConfig that can collect protocol fees"
       ],
       "accounts": [
         {
@@ -912,7 +912,7 @@
     {
       "name": "swap",
       "docs": [
-        "Perform a swap in this Whirlpool",
+        "Perform a swap in this ElysiumPool",
         "",
         "### Authority",
         "- \"token_authority\" - The authority to withdraw tokens from the input token account.",
@@ -1017,7 +1017,7 @@
     {
       "name": "closePosition",
       "docs": [
-        "Close a position in a Whirlpool. Burns the position token in the owner's wallet.",
+        "Close a position in a ElysiumPool. Burns the position token in the owner's wallet.",
         "",
         "### Authority",
         "- \"position_authority\" - The authority that owns the position token.",
@@ -1066,7 +1066,7 @@
         "Only the current fee authority has permission to invoke this instruction.",
         "",
         "### Authority",
-        "- \"fee_authority\" - Set authority in the WhirlpoolConfig",
+        "- \"fee_authority\" - Set authority in the ElysiumPoolConfig",
         "",
         "### Parameters",
         "- `default_fee_rate` - The default fee rate that a pool will use if the pool uses this",
@@ -1102,15 +1102,15 @@
     {
       "name": "setDefaultProtocolFeeRate",
       "docs": [
-        "Sets the default protocol fee rate for a WhirlpoolConfig",
+        "Sets the default protocol fee rate for a ElysiumPoolConfig",
         "Protocol fee rate is represented as a basis point.",
         "Only the current fee authority has permission to invoke this instruction.",
         "",
         "### Authority",
-        "- \"fee_authority\" - Set authority that can modify pool fees in the WhirlpoolConfig",
+        "- \"fee_authority\" - Set authority that can modify pool fees in the ElysiumPoolConfig",
         "",
         "### Parameters",
-        "- `default_protocol_fee_rate` - Rate that is referenced during the initialization of a Whirlpool using this config.",
+        "- `default_protocol_fee_rate` - Rate that is referenced during the initialization of a ElysiumPool using this config.",
         "",
         "#### Special Errors",
         "- `ProtocolFeeRateMaxExceeded` - If the provided default_protocol_fee_rate exceeds MAX_PROTOCOL_FEE_RATE."
@@ -1137,12 +1137,12 @@
     {
       "name": "setFeeRate",
       "docs": [
-        "Sets the fee rate for a Whirlpool.",
+        "Sets the fee rate for a ElysiumPool.",
         "Fee rate is represented as hundredths of a basis point.",
         "Only the current fee authority has permission to invoke this instruction.",
         "",
         "### Authority",
-        "- \"fee_authority\" - Set authority that can modify pool fees in the WhirlpoolConfig",
+        "- \"fee_authority\" - Set authority that can modify pool fees in the ElysiumPoolConfig",
         "",
         "### Parameters",
         "- `fee_rate` - The rate that the pool will use to calculate fees going onwards.",
@@ -1177,12 +1177,12 @@
     {
       "name": "setProtocolFeeRate",
       "docs": [
-        "Sets the protocol fee rate for a Whirlpool.",
+        "Sets the protocol fee rate for a ElysiumPool.",
         "Protocol fee rate is represented as a basis point.",
         "Only the current fee authority has permission to invoke this instruction.",
         "",
         "### Authority",
-        "- \"fee_authority\" - Set authority that can modify pool fees in the WhirlpoolConfig",
+        "- \"fee_authority\" - Set authority that can modify pool fees in the ElysiumPoolConfig",
         "",
         "### Parameters",
         "- `protocol_fee_rate` - The rate that the pool will use to calculate protocol fees going onwards.",
@@ -1217,13 +1217,13 @@
     {
       "name": "setFeeAuthority",
       "docs": [
-        "Sets the fee authority for a WhirlpoolConfig.",
+        "Sets the fee authority for a ElysiumPoolConfig.",
         "The fee authority can set the fee & protocol fee rate for individual pools or",
         "set the default fee rate for newly minted pools.",
         "Only the current fee authority has permission to invoke this instruction.",
         "",
         "### Authority",
-        "- \"fee_authority\" - Set authority that can modify pool fees in the WhirlpoolConfig"
+        "- \"fee_authority\" - Set authority that can modify pool fees in the ElysiumPoolConfig"
       ],
       "accounts": [
         {
@@ -1247,11 +1247,11 @@
     {
       "name": "setCollectProtocolFeesAuthority",
       "docs": [
-        "Sets the fee authority to collect protocol fees for a WhirlpoolConfig.",
+        "Sets the fee authority to collect protocol fees for a ElysiumPoolConfig.",
         "Only the current collect protocol fee authority has permission to invoke this instruction.",
         "",
         "### Authority",
-        "- \"fee_authority\" - Set authority that can collect protocol fees in the WhirlpoolConfig"
+        "- \"fee_authority\" - Set authority that can collect protocol fees in the ElysiumPoolConfig"
       ],
       "accounts": [
         {
@@ -1356,9 +1356,9 @@
     {
       "name": "setRewardEmissionsSuperAuthority",
       "docs": [
-        "Set the whirlpool reward super authority for a WhirlpoolConfig",
+        "Set the whirlpool reward super authority for a ElysiumPoolConfig",
         "Only the current reward super authority has permission to invoke this instruction.",
-        "This instruction will not change the authority on any `WhirlpoolRewardInfo` whirlpool rewards.",
+        "This instruction will not change the authority on any `ElysiumPoolRewardInfo` whirlpool rewards.",
         "",
         "### Authority",
         "- \"reward_emissions_super_authority\" - Set authority that can control reward authorities for all pools in this config space."
@@ -1385,7 +1385,7 @@
     {
       "name": "twoHopSwap",
       "docs": [
-        "Perform a two-hop swap in this Whirlpool",
+        "Perform a two-hop swap in this ElysiumPool",
         "",
         "### Authority",
         "- \"token_authority\" - The authority to withdraw tokens from the input token account.",
@@ -1721,7 +1721,7 @@
     {
       "name": "openBundledPosition",
       "docs": [
-        "Open a bundled position in a Whirlpool. No new tokens are issued",
+        "Open a bundled position in a ElysiumPool. No new tokens are issued",
         "because the owner of the position bundle becomes the owner of the position.",
         "The position will start off with 0 liquidity.",
         "",
@@ -1798,7 +1798,7 @@
     {
       "name": "closeBundledPosition",
       "docs": [
-        "Close a bundled position in a Whirlpool.",
+        "Close a bundled position in a ElysiumPool.",
         "",
         "### Authority",
         "- `position_bundle_authority` - authority that owns the token corresponding to this desired position bundle.",
@@ -1847,7 +1847,7 @@
   ],
   "accounts": [
     {
-      "name": "WhirlpoolsConfig",
+      "name": "ElysiumPoolsConfig",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1902,10 +1902,7 @@
           {
             "name": "positionBitmap",
             "type": {
-              "array": [
-                "u8",
-                32
-              ]
+              "array": ["u8", 32]
             }
           }
         ]
@@ -1994,7 +1991,7 @@
       }
     },
     {
-      "name": "Whirlpool",
+      "name": "ElysiumPool",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2005,10 +2002,7 @@
           {
             "name": "whirlpoolBump",
             "type": {
-              "array": [
-                "u8",
-                1
-              ]
+              "array": ["u8", 1]
             }
           },
           {
@@ -2018,10 +2012,7 @@
           {
             "name": "tickSpacingSeed",
             "type": {
-              "array": [
-                "u8",
-                2
-              ]
+              "array": ["u8", 2]
             }
           },
           {
@@ -2085,7 +2076,7 @@
             "type": {
               "array": [
                 {
-                  "defined": "WhirlpoolRewardInfo"
+                  "defined": "ElysiumPoolRewardInfo"
                 },
                 3
               ]
@@ -2168,21 +2159,18 @@
           {
             "name": "rewardGrowthsOutside",
             "type": {
-              "array": [
-                "u128",
-                3
-              ]
+              "array": ["u128", 3]
             }
           }
         ]
       }
     },
     {
-      "name": "WhirlpoolRewardInfo",
+      "name": "ElysiumPoolRewardInfo",
       "docs": [
-        "Stores the state relevant for tracking liquidity mining rewards at the `Whirlpool` level.",
+        "Stores the state relevant for tracking liquidity mining rewards at the `ElysiumPool` level.",
         "These values are used in conjunction with `PositionRewardInfo`, `Tick.reward_growths_outside`,",
-        "and `Whirlpool.reward_last_updated_timestamp` to determine how many rewards are earned by open",
+        "and `ElysiumPool.reward_last_updated_timestamp` to determine how many rewards are earned by open",
         "positions."
       ],
       "type": {
@@ -2190,16 +2178,12 @@
         "fields": [
           {
             "name": "mint",
-            "docs": [
-              "Reward token mint."
-            ],
+            "docs": ["Reward token mint."],
             "type": "publicKey"
           },
           {
             "name": "vault",
-            "docs": [
-              "Reward vault token account."
-            ],
+            "docs": ["Reward vault token account."],
             "type": "publicKey"
           },
           {
@@ -2228,7 +2212,7 @@
       }
     },
     {
-      "name": "WhirlpoolBumps",
+      "name": "ElysiumPoolBumps",
       "type": {
         "kind": "struct",
         "fields": [

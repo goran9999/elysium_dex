@@ -10,7 +10,7 @@ import {
 import { NATIVE_MINT, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import invariant from "tiny-invariant";
-import { WhirlpoolContext } from "../context";
+import { ElysiumPoolContext } from "../context";
 import {
   DevFeeSwapInput,
   IncreaseLiquidityInput,
@@ -29,29 +29,34 @@ import {
   collectRewardsQuote,
   decreaseLiquidityQuoteByLiquidityWithParams,
 } from "../quotes/public";
-import { TokenAccountInfo, TokenInfo, WhirlpoolData, WhirlpoolRewardInfo } from "../types/public";
+import {
+  TokenAccountInfo,
+  TokenInfo,
+  ElysiumPoolData,
+  ElysiumPoolRewardInfo,
+} from "../types/public";
 import { getTickArrayDataForPosition } from "../utils/builder/position-builder-util";
 import { PDAUtil, TickArrayUtil, TickUtil } from "../utils/public";
 import {
   TokenMintTypes,
-  getTokenMintsFromWhirlpools,
+  getTokenMintsFromElysiumPools,
   resolveAtaForMints,
 } from "../utils/whirlpool-ata-utils";
-import { Whirlpool } from "../whirlpool-client";
+import { ElysiumPool } from "../whirlpool-client";
 import { PositionImpl } from "./position-impl";
 import { getRewardInfos, getTokenVaultAccountInfos } from "./util";
 
-export class WhirlpoolImpl implements Whirlpool {
-  private data: WhirlpoolData;
+export class ElysiumPoolImpl implements ElysiumPool {
+  private data: ElysiumPoolData;
   constructor(
-    readonly ctx: WhirlpoolContext,
+    readonly ctx: ElysiumPoolContext,
     readonly address: PublicKey,
     readonly tokenAInfo: TokenInfo,
     readonly tokenBInfo: TokenInfo,
     private tokenVaultAInfo: TokenAccountInfo,
     private tokenVaultBInfo: TokenAccountInfo,
-    private rewardInfos: WhirlpoolRewardInfo[],
-    data: WhirlpoolData
+    private rewardInfos: ElysiumPoolRewardInfo[],
+    data: ElysiumPoolData
   ) {
     this.data = data;
   }
@@ -60,7 +65,7 @@ export class WhirlpoolImpl implements Whirlpool {
     return this.address;
   }
 
-  getData(): WhirlpoolData {
+  getData(): ElysiumPoolData {
     return this.data;
   }
 
@@ -80,7 +85,7 @@ export class WhirlpoolImpl implements Whirlpool {
     return this.tokenVaultBInfo;
   }
 
-  getRewardInfos(): WhirlpoolRewardInfo[] {
+  getRewardInfos(): ElysiumPoolRewardInfo[] {
     return this.rewardInfos;
   }
 
@@ -269,7 +274,7 @@ export class WhirlpoolImpl implements Whirlpool {
 
     const whirlpool = await this.ctx.fetcher.getPool(this.address, PREFER_CACHE);
     if (!whirlpool) {
-      throw new Error(`Whirlpool not found: ${translateAddress(this.address).toBase58()}`);
+      throw new Error(`ElysiumPool not found: ${translateAddress(this.address).toBase58()}`);
     }
 
     invariant(
@@ -283,10 +288,7 @@ export class WhirlpoolImpl implements Whirlpool {
 
     const positionMintKeypair = Keypair.generate();
     const positionMintPubkey = positionMint ?? positionMintKeypair.publicKey;
-    const positionPda = PDAUtil.getPosition(
-      this.ctx.program.programId,
-      positionMintPubkey
-    );
+    const positionPda = PDAUtil.getPosition(this.ctx.program.programId, positionMintPubkey);
     const metadataPda = PDAUtil.getPositionMetadata(positionMintPubkey);
     const positionTokenAccountAddress = getAssociatedTokenAddressSync(
       positionMintPubkey,
@@ -315,7 +317,7 @@ export class WhirlpoolImpl implements Whirlpool {
       }
     );
     txBuilder.addInstruction(positionIx);
-    if(positionMint === undefined) {
+    if (positionMint === undefined) {
       txBuilder.addSigner(positionMintKeypair);
     }
 
@@ -390,7 +392,7 @@ export class WhirlpoolImpl implements Whirlpool {
 
     invariant(
       positionData.whirlpool.equals(this.address),
-      `Position ${positionAddress.toBase58()} is not a position for Whirlpool ${this.address.toBase58()}`
+      `Position ${positionAddress.toBase58()} is not a position for ElysiumPool ${this.address.toBase58()}`
     );
 
     const positionTokenAccount = getAssociatedTokenAddressSync(
@@ -491,7 +493,7 @@ export class WhirlpoolImpl implements Whirlpool {
       mintType = TokenMintTypes.REWARD_ONLY;
     }
 
-    const affiliatedMints = getTokenMintsFromWhirlpools([whirlpool], mintType);
+    const affiliatedMints = getTokenMintsFromElysiumPools([whirlpool], mintType);
     const { ataTokenAddresses: walletTokenAccountsByMint, resolveAtaIxs } =
       await resolveAtaForMints(this.ctx, {
         mints: affiliatedMints.mintMap,

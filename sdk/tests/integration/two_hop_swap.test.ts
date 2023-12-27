@@ -4,15 +4,15 @@ import { PublicKey } from "@solana/web3.js";
 import * as assert from "assert";
 import { BN } from "bn.js";
 import {
-  buildWhirlpoolClient,
+  buildElysiumPoolClient,
   InitPoolParams,
   PDAUtil,
   swapQuoteByInputToken,
   swapQuoteByOutputToken,
   toTx,
   twoHopSwapQuoteFromSwapQuotes,
-  WhirlpoolContext,
-  WhirlpoolIx
+  ElysiumPoolContext,
+  ElysiumPoolIx,
 } from "../../src";
 import { TwoHopSwapParams } from "../../src/instructions";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
@@ -23,16 +23,16 @@ import {
   FundedPositionParams,
   getDefaultAquarium,
   getTokenAccsForPools,
-  InitAquariumParams
+  InitAquariumParams,
 } from "../utils/init-utils";
 
 describe("two-hop swap", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
-  const client = buildWhirlpoolClient(ctx);
+  const client = buildElysiumPoolClient(ctx);
 
   let aqConfig: InitAquariumParams;
   beforeEach(async () => {
@@ -208,11 +208,10 @@ describe("two-hop swap", () => {
 
     async function rejectParams(params: TwoHopSwapParams, error: assert.AssertPredicate) {
       await assert.rejects(
-        toTx(ctx, WhirlpoolIx.twoHopSwapIx(ctx.program, params)).buildAndExecute(),
-        error,
+        toTx(ctx, ElysiumPoolIx.twoHopSwapIx(ctx.program, params)).buildAndExecute(),
+        error
       );
     }
-
   });
 
   it("swaps [2] with two-hop swap, amountSpecifiedIsInput=true", async () => {
@@ -254,7 +253,7 @@ describe("two-hop swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.twoHopSwapIx(ctx.program, {
+      ElysiumPoolIx.twoHopSwapIx(ctx.program, {
         ...twoHopQuote,
         ...getParamsFromPools([pools[0], pools[1]], tokenAccounts),
         tokenAuthority: ctx.wallet.publicKey,
@@ -281,11 +280,14 @@ describe("two-hop swap", () => {
     whirlpoolTwo = await client.getPool(whirlpoolTwoKey, IGNORE_CACHE);
   });
 
-
   it("swaps [2] with two-hop swap, amountSpecifiedIsInput=true, A->B->A", async () => {
     // Add another mint and update pool so there is no overlapping mint
     aqConfig.initFeeTierParams.push({ tickSpacing: TickSpacing.ThirtyTwo });
-    aqConfig.initPoolParams[1] = { mintIndices: [0, 1], tickSpacing: TickSpacing.ThirtyTwo, feeTierIndex: 1 };
+    aqConfig.initPoolParams[1] = {
+      mintIndices: [0, 1],
+      tickSpacing: TickSpacing.ThirtyTwo,
+      feeTierIndex: 1,
+    };
     aqConfig.initTickArrayRangeParams.push({
       poolIndex: 1,
       startTickIndex: 22528,
@@ -299,14 +301,12 @@ describe("two-hop swap", () => {
       aToB: false,
     });
 
-
     const aquarium = (await buildTestAquariums(ctx, [aqConfig]))[0];
     const { tokenAccounts, mintKeys, pools } = aquarium;
 
     let tokenBalances = await getTokenBalances(tokenAccounts.map((acc) => acc.account));
 
     const tokenVaultBalances = await getTokenBalancesForVaults(pools);
-
 
     const whirlpoolOneKey = pools[0].whirlpoolPda.publicKey;
     const whirlpoolTwoKey = pools[1].whirlpoolPda.publicKey;
@@ -339,7 +339,7 @@ describe("two-hop swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.twoHopSwapIx(ctx.program, {
+      ElysiumPoolIx.twoHopSwapIx(ctx.program, {
         ...twoHopQuote,
         ...getParamsFromPools([pools[0], pools[1]], tokenAccounts),
         tokenAuthority: ctx.wallet.publicKey,
@@ -399,7 +399,7 @@ describe("two-hop swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.twoHopSwapIx(ctx.program, {
+        ElysiumPoolIx.twoHopSwapIx(ctx.program, {
           ...twoHopQuote,
           ...getParamsFromPools([pools[0], pools[1]], tokenAccounts),
           otherAmountThreshold: new BN(613309),
@@ -448,7 +448,7 @@ describe("two-hop swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.twoHopSwapIx(ctx.program, {
+      ElysiumPoolIx.twoHopSwapIx(ctx.program, {
         ...twoHopQuote,
         ...getParamsFromPools([pools[0], pools[1]], tokenAccounts),
         tokenAuthority: ctx.wallet.publicKey,
@@ -508,7 +508,7 @@ describe("two-hop swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.twoHopSwapIx(ctx.program, {
+        ElysiumPoolIx.twoHopSwapIx(ctx.program, {
           ...twoHopQuote,
           ...getParamsFromPools([pools[0], pools[1]], tokenAccounts),
           otherAmountThreshold: new BN(2),
@@ -559,7 +559,7 @@ describe("two-hop swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.twoHopSwapIx(ctx.program, {
+        ElysiumPoolIx.twoHopSwapIx(ctx.program, {
           ...twoHopQuote,
           ...getParamsFromPools([pools[0], pools[1]], tokenAccounts),
           tokenAuthority: ctx.wallet.publicKey,
@@ -614,7 +614,7 @@ describe("two-hop swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.twoHopSwapIx(ctx.program, {
+      ElysiumPoolIx.twoHopSwapIx(ctx.program, {
         ...twoHopQuote,
         ...getParamsFromPools([pools[0], pools[1]], tokenAccounts),
         tokenAuthority: ctx.wallet.publicKey,
@@ -626,7 +626,6 @@ describe("two-hop swap", () => {
 
     assert.equal(whirlpoolOne.getData().sqrtPrice.eq(quote.sqrtPriceLimit), true);
   });
-
 
   it("swaps [2] with two-hop swap, amount_specified_is_input=true, second swap price limit", async () => {
     const aquarium = (await buildTestAquariums(ctx, [aqConfig]))[0];
@@ -673,7 +672,7 @@ describe("two-hop swap", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.twoHopSwapIx(ctx.program, {
+      ElysiumPoolIx.twoHopSwapIx(ctx.program, {
         ...twoHopQuote,
         ...getParamsFromPools([pools[0], pools[1]], tokenAccounts),
         tokenAuthority: ctx.wallet.publicKey,
@@ -732,7 +731,7 @@ describe("two-hop swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.twoHopSwapIx(ctx.program, {
+        ElysiumPoolIx.twoHopSwapIx(ctx.program, {
           ...twoHopQuote,
           ...getParamsFromPools([pools[0], pools[1]], tokenAccounts),
           tokenAuthority: ctx.wallet.publicKey,
@@ -740,7 +739,6 @@ describe("two-hop swap", () => {
       ).buildAndExecute()
     );
   });
-
 
   it("fails swaps [2] with two-hop swap, amount_specified_is_input=true, second swap price limit", async () => {
     const aquarium = (await buildTestAquariums(ctx, [aqConfig]))[0];
@@ -788,7 +786,7 @@ describe("two-hop swap", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.twoHopSwapIx(ctx.program, {
+        ElysiumPoolIx.twoHopSwapIx(ctx.program, {
           ...twoHopQuote,
           ...getParamsFromPools([pools[0], pools[1]], tokenAccounts),
           tokenAuthority: ctx.wallet.publicKey,

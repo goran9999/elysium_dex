@@ -2,7 +2,7 @@ import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
  * Parameters to collect rewards from a reward index in a position.
@@ -36,7 +36,7 @@ export type CollectRewardParams = {
  * @returns - Instruction to perform the action.
  */
 export function collectRewardIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: CollectRewardParams
 ): Instruction {
   const {

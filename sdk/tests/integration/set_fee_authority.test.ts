@@ -1,14 +1,14 @@
 import * as anchor from "@coral-xyz/anchor";
 import * as assert from "assert";
-import { toTx, WhirlpoolContext, WhirlpoolIx, WhirlpoolsConfigData } from "../../src";
+import { toTx, ElysiumPoolContext, ElysiumPoolIx, ElysiumPoolsConfigData } from "../../src";
 import { defaultConfirmOptions } from "../utils/const";
 import { generateDefaultConfigParams } from "../utils/test-builders";
 
 describe("set_fee_authority", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully set_fee_authority", async () => {
@@ -16,11 +16,14 @@ describe("set_fee_authority", () => {
       configInitInfo,
       configKeypairs: { feeAuthorityKeypair },
     } = generateDefaultConfigParams(ctx);
-    await toTx(ctx, WhirlpoolIx.initializeConfigIx(ctx.program, configInitInfo)).buildAndExecute();
+    await toTx(
+      ctx,
+      ElysiumPoolIx.initializeConfigIx(ctx.program, configInitInfo)
+    ).buildAndExecute();
     const newAuthorityKeypair = anchor.web3.Keypair.generate();
     await toTx(
       ctx,
-      WhirlpoolIx.setFeeAuthorityIx(ctx.program, {
+      ElysiumPoolIx.setFeeAuthorityIx(ctx.program, {
         whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
         feeAuthority: feeAuthorityKeypair.publicKey,
         newFeeAuthority: newAuthorityKeypair.publicKey,
@@ -30,7 +33,7 @@ describe("set_fee_authority", () => {
       .buildAndExecute();
     const config = (await fetcher.getConfig(
       configInitInfo.whirlpoolsConfigKeypair.publicKey
-    )) as WhirlpoolsConfigData;
+    )) as ElysiumPoolsConfigData;
     assert.ok(config.feeAuthority.equals(newAuthorityKeypair.publicKey));
   });
 
@@ -39,12 +42,15 @@ describe("set_fee_authority", () => {
       configInitInfo,
       configKeypairs: { feeAuthorityKeypair },
     } = generateDefaultConfigParams(ctx);
-    await toTx(ctx, WhirlpoolIx.initializeConfigIx(ctx.program, configInitInfo)).buildAndExecute();
+    await toTx(
+      ctx,
+      ElysiumPoolIx.initializeConfigIx(ctx.program, configInitInfo)
+    ).buildAndExecute();
 
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setFeeAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setFeeAuthorityIx(ctx.program, {
           whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
           feeAuthority: feeAuthorityKeypair.publicKey,
           newFeeAuthority: provider.wallet.publicKey,
@@ -56,12 +62,15 @@ describe("set_fee_authority", () => {
 
   it("fails if invalid fee_authority provided", async () => {
     const { configInitInfo } = generateDefaultConfigParams(ctx);
-    await toTx(ctx, WhirlpoolIx.initializeConfigIx(ctx.program, configInitInfo)).buildAndExecute();
+    await toTx(
+      ctx,
+      ElysiumPoolIx.initializeConfigIx(ctx.program, configInitInfo)
+    ).buildAndExecute();
 
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setFeeAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setFeeAuthorityIx(ctx.program, {
           whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
           feeAuthority: provider.wallet.publicKey,
           newFeeAuthority: provider.wallet.publicKey,

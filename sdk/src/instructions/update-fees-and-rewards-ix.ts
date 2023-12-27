@@ -1,6 +1,6 @@
 import { Program } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 import { Instruction } from "@orca-so/common-sdk";
 
@@ -33,7 +33,7 @@ export type UpdateFeesAndRewardsParams = {
  * @returns - Instruction to perform the action.
  */
 export function updateFeesAndRewardsIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: UpdateFeesAndRewardsParams
 ): Instruction {
   const { whirlpool, position, tickArrayLower, tickArrayUpper } = params;

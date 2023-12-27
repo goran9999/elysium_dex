@@ -2,7 +2,7 @@ import { Address } from "@coral-xyz/anchor";
 import { Percentage, TransactionBuilder } from "@orca-so/common-sdk";
 import { AddressLookupTableAccount } from "@solana/web3.js";
 import BN from "bn.js";
-import { WhirlpoolAccountFetchOptions } from "../../network/public/fetcher";
+import { ElysiumPoolAccountFetchOptions } from "../../network/public/fetcher";
 import { SwapQuote } from "../../quotes/public";
 import { Path } from "../../utils/public";
 import { AtaAccountInfo, RouteSelectOptions } from "./router-utils";
@@ -128,31 +128,31 @@ export type TradeHopSnapshot = {
 export type ExecutableRoute = readonly [TradeRoute, AddressLookupTableAccount[] | undefined];
 
 /**
- * Convienience class to find routes through a set of Whirlpools and execute a swap across them.
+ * Convienience class to find routes through a set of ElysiumPools and execute a swap across them.
  * The router only supports up to 2-hop trades between pools and does not support arbitrage trades
  * between the same token.
  *
  * @category Router
  */
-export interface WhirlpoolRouter {
+export interface ElysiumPoolRouter {
   /**
    * Finds all possible routes for a trade, ordered by the best other token amount you would get from a trade.
    * Use {@link RouterUtils.selectFirstExecutableRoute} to find the best executable route.
    *
    * @param trade
    * The trade to find routes for.
-   * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+   * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
    * @param opts
    * {@link RoutingOptions} to configure the router. Missing options will be filled with default values from
    * {@link RouterUtils.getDefaultRoutingOptions}.
    * @param fetchOpts
-   * {@link WhirlpoolAccountFetchOptions} to configure the fetching of on-chain data.
+   * {@link ElysiumPoolAccountFetchOptions} to configure the fetching of on-chain data.
    * @return A list of {@link TradeRoute} that can be used to execute a swap, ordered by the best other token amount.
    */
   findAllRoutes(
     trade: Trade,
     opts?: Partial<RoutingOptions>,
-    fetchOpts?: WhirlpoolAccountFetchOptions
+    fetchOpts?: ElysiumPoolAccountFetchOptions
   ): Promise<TradeRoute[]>;
 
   /**
@@ -160,7 +160,7 @@ export interface WhirlpoolRouter {
    * under the current execution environment.
    * @param trade
    * The trade to find routes for.
-   * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+   * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
    * @param opts
    * {@link RoutingOptions} to configure the router. Missing options will be filled with default values from
    * {@link RouterUtils.getDefaultRoutingOptions}.
@@ -168,7 +168,7 @@ export interface WhirlpoolRouter {
    * {@link RouteSelectOptions} to configure the selection of the best route. Missing options
    * will be filled with default values from {@link RouterUtils.getDefaultRouteSelectOptions}.
    * @param fetchOpts
-   * {@link WhirlpoolAccountFetchOptions} to configure the fetching of on-chain data.
+   * {@link ElysiumPoolAccountFetchOptions} to configure the fetching of on-chain data.
    * @returns
    * The best {@link ExecutableRoute} that can be used to execute a swap. If no executable route is found, null is returned.
    */
@@ -176,7 +176,7 @@ export interface WhirlpoolRouter {
     trade: Trade,
     opts?: Partial<RoutingOptions>,
     selectionOpts?: Partial<RouteSelectOptions>,
-    fetchOpts?: WhirlpoolAccountFetchOptions
+    fetchOpts?: ElysiumPoolAccountFetchOptions
   ): Promise<ExecutableRoute | null>;
 
   /**

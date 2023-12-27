@@ -6,29 +6,35 @@ import {
   InitPoolParams,
   POSITION_BUNDLE_SIZE,
   PositionBundleData,
-  WhirlpoolContext,
-  WhirlpoolIx,
-  buildWhirlpoolClient,
+  ElysiumPoolContext,
+  ElysiumPoolIx,
+  buildElysiumPoolClient,
   increaseLiquidityQuoteByInputTokenWithParams,
-  toTx
+  toTx,
 } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import {
   ONE_SOL,
   TickSpacing,
-  approveToken, createAssociatedTokenAccount,
+  approveToken,
+  createAssociatedTokenAccount,
   systemTransferTx,
-  transferToken
+  transferToken,
 } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
-import { initTestPool, initializePositionBundle, openBundledPosition, openPosition } from "../utils/init-utils";
+import {
+  initTestPool,
+  initializePositionBundle,
+  openBundledPosition,
+  openPosition,
+} from "../utils/init-utils";
 import { mintTokensToTestAccount } from "../utils/test-builders";
 
 describe("close_bundled_position", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
-  const client = buildWhirlpoolClient(ctx);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
+  const client = buildElysiumPoolClient(ctx);
   const fetcher = ctx.fetcher;
 
   const tickLowerIndex = 0;
@@ -47,7 +53,8 @@ describe("close_bundled_position", () => {
   });
 
   function checkBitmapIsOpened(account: PositionBundleData, bundleIndex: number): boolean {
-    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE) throw Error("bundleIndex is out of bounds");
+    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE)
+      throw Error("bundleIndex is out of bounds");
 
     const bitmapIndex = Math.floor(bundleIndex / 8);
     const bitmapOffset = bundleIndex % 8;
@@ -55,7 +62,8 @@ describe("close_bundled_position", () => {
   }
 
   function checkBitmapIsClosed(account: PositionBundleData, bundleIndex: number): boolean {
-    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE) throw Error("bundleIndex is out of bounds");
+    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE)
+      throw Error("bundleIndex is out of bounds");
 
     const bitmapIndex = Math.floor(bundleIndex / 8);
     const bitmapOffset = bundleIndex % 8;
@@ -66,8 +74,7 @@ describe("close_bundled_position", () => {
     for (let i = 0; i < POSITION_BUNDLE_SIZE; i++) {
       if (openedBundleIndexes.includes(i)) {
         assert.ok(checkBitmapIsOpened(account, i));
-      }
-      else {
+      } else {
         assert.ok(checkBitmapIsClosed(account, i));
       }
     }
@@ -88,14 +95,17 @@ describe("close_bundled_position", () => {
     const { bundledPositionPda } = positionInitInfo.params;
 
     const preAccount = await fetcher.getPosition(bundledPositionPda.publicKey, IGNORE_CACHE);
-    const prePositionBundle = await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE);
+    const prePositionBundle = await fetcher.getPositionBundle(
+      positionBundleInfo.positionBundlePda.publicKey,
+      IGNORE_CACHE
+    );
     checkBitmap(prePositionBundle!, [bundleIndex]);
     assert.ok(preAccount !== null);
 
     const receiverKeypair = anchor.web3.Keypair.generate();
     await toTx(
       ctx,
-      WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+      ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
         bundledPosition: bundledPositionPda.publicKey,
         bundleIndex,
         positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -105,7 +115,10 @@ describe("close_bundled_position", () => {
       })
     ).buildAndExecute();
     const postAccount = await fetcher.getPosition(bundledPositionPda.publicKey, IGNORE_CACHE);
-    const postPositionBundle = await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE);
+    const postPositionBundle = await fetcher.getPositionBundle(
+      positionBundleInfo.positionBundlePda.publicKey,
+      IGNORE_CACHE
+    );
     checkBitmap(postPositionBundle!, []);
     assert.ok(postAccount === null);
 
@@ -130,7 +143,7 @@ describe("close_bundled_position", () => {
 
     const tx = await toTx(
       ctx,
-      WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+      ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
         bundledPosition: bundledPositionPda.publicKey,
         bundleIndex: 1, // invalid
         positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -161,7 +174,7 @@ describe("close_bundled_position", () => {
 
     const tx = toTx(
       ctx,
-      WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+      ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
         bundledPosition: bundledPositionPda.publicKey,
         bundleIndex,
         positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -224,7 +237,7 @@ describe("close_bundled_position", () => {
     // try to close...
     const tx = toTx(
       ctx,
-      WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+      ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
         bundledPosition: bundledPositionPda.publicKey,
         bundleIndex,
         positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -262,7 +275,7 @@ describe("close_bundled_position", () => {
       );
       const tx = toTx(
         ctx,
-        WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
           bundledPosition: positionInitInfo1.params.bundledPositionPda.publicKey, // invalid
           bundleIndex: 0,
           positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -292,7 +305,7 @@ describe("close_bundled_position", () => {
       );
       const tx = toTx(
         ctx,
-        WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
           bundledPosition: positionInitInfo.params.bundledPositionPda.publicKey,
           bundleIndex,
           positionBundle: positionBundleInfo1.positionBundlePda.publicKey, // invalid
@@ -324,16 +337,16 @@ describe("close_bundled_position", () => {
         provider,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         funderKeypair.publicKey,
-        ctx.wallet.publicKey,
+        ctx.wallet.publicKey
       );
       const tx = toTx(
         ctx,
-        WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
           bundledPosition: positionInitInfo.params.bundledPositionPda.publicKey,
           bundleIndex,
           positionBundle: positionBundleInfo.positionBundlePda.publicKey,
           positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: ata,  // invalid
+          positionBundleTokenAccount: ata, // invalid
           receiver: ctx.wallet.publicKey,
         })
       );
@@ -359,12 +372,12 @@ describe("close_bundled_position", () => {
       );
       const tx = toTx(
         ctx,
-        WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
           bundledPosition: positionInitInfo.params.bundledPositionPda.publicKey,
           bundleIndex,
           positionBundle: positionBundleInfo0.positionBundlePda.publicKey,
           positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo1.positionBundleTokenAccount,  // invalid
+          positionBundleTokenAccount: positionBundleInfo1.positionBundleTokenAccount, // invalid
           receiver: ctx.wallet.publicKey,
         })
       );
@@ -389,7 +402,7 @@ describe("close_bundled_position", () => {
       );
       const tx = toTx(
         ctx,
-        WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
           bundledPosition: positionInitInfo.params.bundledPositionPda.publicKey,
           bundleIndex,
           positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -423,7 +436,7 @@ describe("close_bundled_position", () => {
 
       const tx = toTx(
         ctx,
-        WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
           bundledPosition: positionInitInfo.params.bundledPositionPda.publicKey,
           bundleIndex,
           positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -444,10 +457,13 @@ describe("close_bundled_position", () => {
         provider,
         positionBundleInfo.positionBundleTokenAccount,
         funderKeypair.publicKey,
-        1,
+        1
       );
       await tx.buildAndExecute();
-      const positionBundle = await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE);
+      const positionBundle = await fetcher.getPositionBundle(
+        positionBundleInfo.positionBundlePda.publicKey,
+        IGNORE_CACHE
+      );
       checkBitmapIsClosed(positionBundle!, 0);
     });
 
@@ -466,7 +482,7 @@ describe("close_bundled_position", () => {
 
       const tx = toTx(
         ctx,
-        WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
           bundledPosition: positionInitInfo.params.bundledPositionPda.publicKey,
           bundleIndex,
           positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -481,12 +497,15 @@ describe("close_bundled_position", () => {
         provider,
         positionBundleInfo.positionBundleTokenAccount,
         funderKeypair.publicKey,
-        1,
+        1
       );
 
       // owner can close even if delegation exists
       await tx.buildAndExecute();
-      const positionBundle = await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE);
+      const positionBundle = await fetcher.getPositionBundle(
+        positionBundleInfo.positionBundlePda.publicKey,
+        IGNORE_CACHE
+      );
       checkBitmapIsClosed(positionBundle!, 0);
     });
 
@@ -505,7 +524,7 @@ describe("close_bundled_position", () => {
 
       const tx = toTx(
         ctx,
-        WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
           bundledPosition: positionInitInfo.params.bundledPositionPda.publicKey,
           bundleIndex,
           positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -526,7 +545,7 @@ describe("close_bundled_position", () => {
         provider,
         positionBundleInfo.positionBundleTokenAccount,
         funderKeypair.publicKey,
-        0,
+        0
       );
       await assert.rejects(
         tx.buildAndExecute(),
@@ -553,34 +572,32 @@ describe("close_bundled_position", () => {
         provider,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         funderKeypair.publicKey,
-        ctx.wallet.publicKey,
+        ctx.wallet.publicKey
       );
 
-      await transferToken(
-        provider,
-        positionBundleInfo.positionBundleTokenAccount,
-        funderATA,
-        1
-      );
+      await transferToken(provider, positionBundleInfo.positionBundleTokenAccount, funderATA, 1);
 
       const tokenInfo = await fetcher.getTokenInfo(funderATA, IGNORE_CACHE);
       assert.ok(tokenInfo?.amount === 1n);
 
       const tx = toTx(
         ctx,
-        WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
           bundledPosition: positionInitInfo.params.bundledPositionPda.publicKey,
           bundleIndex,
           positionBundle: positionBundleInfo.positionBundlePda.publicKey,
           positionBundleAuthority: funderKeypair.publicKey, // new owner
           positionBundleTokenAccount: funderATA,
-          receiver: funderKeypair.publicKey
+          receiver: funderKeypair.publicKey,
         })
       );
       tx.addSigner(funderKeypair);
 
       await tx.buildAndExecute();
-      const positionBundle = await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE);
+      const positionBundle = await fetcher.getPositionBundle(
+        positionBundleInfo.positionBundlePda.publicKey,
+        IGNORE_CACHE
+      );
       checkBitmapIsClosed(positionBundle!, 0);
     });
   });
@@ -605,7 +622,7 @@ describe("close_bundled_position", () => {
 
       const tx = toTx(
         ctx,
-        WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
           bundledPosition: params.positionPda.publicKey, // NON-bundled position
           bundleIndex,
           positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -621,5 +638,4 @@ describe("close_bundled_position", () => {
       );
     });
   });
-
 });

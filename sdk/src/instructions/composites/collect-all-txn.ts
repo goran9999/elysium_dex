@@ -9,20 +9,20 @@ import {
 } from "@orca-so/common-sdk";
 import { NATIVE_MINT, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-import { PositionData, WhirlpoolContext } from "../..";
-import { WhirlpoolIx } from "../../ix";
-import { PREFER_CACHE, WhirlpoolAccountFetchOptions } from "../../network/public/fetcher";
-import { WhirlpoolData } from "../../types/public";
+import { PositionData, ElysiumPoolContext } from "../..";
+import { ElysiumPoolIx } from "../../ix";
+import { PREFER_CACHE, ElysiumPoolAccountFetchOptions } from "../../network/public/fetcher";
+import { ElysiumPoolData } from "../../types/public";
 import { PDAUtil, PoolUtil, TickUtil } from "../../utils/public";
 import { checkMergedTransactionSizeIsValid, convertListToMap } from "../../utils/txn-utils";
-import { getTokenMintsFromWhirlpools } from "../../utils/whirlpool-ata-utils";
+import { getTokenMintsFromElysiumPools } from "../../utils/whirlpool-ata-utils";
 import { updateFeesAndRewardsIx } from "../update-fees-and-rewards-ix";
 
 /**
  * Parameters to collect all fees and rewards from a list of positions.
  *
  * @category Instruction Types
- * @param positionAddrs - An array of Whirlpool position addresses.
+ * @param positionAddrs - An array of ElysiumPool position addresses.
  * @param receiver - The destination wallet that collected fees & reward will be sent to. Defaults to ctx.wallet key.
  * @param positionOwner - The wallet key that contains the position token. Defaults to ctx.wallet key.
  * @param positionAuthority - The authority key that can authorize operation on the position. Defaults to ctx.wallet key.
@@ -36,7 +36,7 @@ export type CollectAllPositionAddressParams = {
  * Parameters to collect all fees and rewards from a list of positions.
  *
  * @category Instruction Types
- * @param positions - An array of Whirlpool positions.
+ * @param positions - An array of ElysiumPool positions.
  * @param receiver - The destination wallet that collected fees & reward will be sent to. Defaults to ctx.wallet key.
  * @param positionOwner - The wallet key that contains the position token. Defaults to ctx.wallet key.
  * @param positionAuthority - The authority key that can authorize operation on the position. Defaults to ctx.wallet key.
@@ -63,19 +63,19 @@ export type CollectAllParams = {
 };
 
 /**
- * Build a set of transactions to collect fees and rewards for a set of Whirlpool Positions.
+ * Build a set of transactions to collect fees and rewards for a set of ElysiumPool Positions.
  *
  * @category Instructions
  * @experimental
- * @param ctx - WhirlpoolContext object for the current environment.
+ * @param ctx - ElysiumPoolContext object for the current environment.
  * @param params - CollectAllPositionAddressParams object
- * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+ * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
  * @returns A set of transaction-builders to resolve ATA for affliated tokens, collect fee & rewards for all positions.
  */
 export async function collectAllForPositionAddressesTxns(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   params: CollectAllPositionAddressParams,
-  opts: WhirlpoolAccountFetchOptions = PREFER_CACHE
+  opts: ElysiumPoolAccountFetchOptions = PREFER_CACHE
 ): Promise<TransactionBuilder[]> {
   const { positions, ...rest } = params;
   const fetchedPositions = await ctx.fetcher.getPositions(positions, opts);
@@ -91,15 +91,15 @@ export async function collectAllForPositionAddressesTxns(
 }
 
 /**
- * Build a set of transactions to collect fees and rewards for a set of Whirlpool Positions.
+ * Build a set of transactions to collect fees and rewards for a set of ElysiumPool Positions.
  *
  * @experimental
- * @param ctx - WhirlpoolContext object for the current environment.
+ * @param ctx - ElysiumPoolContext object for the current environment.
  * @param params - CollectAllPositionParams object
  * @returns A set of transaction-builders to resolve ATA for affliated tokens, collect fee & rewards for all positions.
  */
 export async function collectAllForPositionsTxns(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   params: CollectAllPositionParams
 ): Promise<TransactionBuilder[]> {
   const { positions, receiver, positionAuthority, positionOwner, payer } = params;
@@ -116,7 +116,7 @@ export async function collectAllForPositionsTxns(
   const whirlpoolAddrs = positionList.map(([, pos]) => pos.whirlpool.toBase58());
   const whirlpools = await ctx.fetcher.getPools(whirlpoolAddrs, PREFER_CACHE);
 
-  const allMints = getTokenMintsFromWhirlpools(Array.from(whirlpools.values()));
+  const allMints = getTokenMintsFromElysiumPools(Array.from(whirlpools.values()));
   const accountExemption = await ctx.fetcher.getAccountRentExempt();
 
   // resolvedAtas[mint] => Instruction & { address }
@@ -205,10 +205,10 @@ export async function collectAllForPositionsTxns(
 
 // TODO: Once individual collect ix for positions is implemented, maybe migrate over if it can take custom ATA?
 const constructCollectIxForPosition = (
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   positionKey: PublicKey,
   position: PositionData,
-  whirlpools: ReadonlyMap<string, WhirlpoolData | null>,
+  whirlpools: ReadonlyMap<string, ElysiumPoolData | null>,
   positionOwner: PublicKey,
   positionAuthority: PublicKey,
   resolvedAtas: Record<string, ResolvedTokenAddressInstruction>,
@@ -270,7 +270,7 @@ const constructCollectIxForPosition = (
     touchedMints.add(mintB);
   }
   ixForPosition.push(
-    WhirlpoolIx.collectFeesIx(ctx.program, {
+    ElysiumPoolIx.collectFeesIx(ctx.program, {
       whirlpool: whirlpoolKey,
       position: positionKey,
       positionAuthority,
@@ -293,7 +293,7 @@ const constructCollectIxForPosition = (
         touchedMints.add(mintReward);
       }
       ixForPosition.push(
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           whirlpool: whirlpoolKey,
           position: positionKey,
           positionAuthority,

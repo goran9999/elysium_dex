@@ -1,6 +1,18 @@
 import * as anchor from "@coral-xyz/anchor";
-import { MathUtil, SendTxRequest, TransactionBuilder, TransactionProcessor, ZERO } from "@orca-so/common-sdk";
-import { NATIVE_MINT, createAssociatedTokenAccountInstruction, createBurnInstruction, createCloseAccountInstruction, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import {
+  MathUtil,
+  SendTxRequest,
+  TransactionBuilder,
+  TransactionProcessor,
+  ZERO,
+} from "@orca-so/common-sdk";
+import {
+  NATIVE_MINT,
+  createAssociatedTokenAccountInstruction,
+  createBurnInstruction,
+  createCloseAccountInstruction,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import * as assert from "assert";
 import { BN } from "bn.js";
@@ -9,48 +21,48 @@ import {
   NUM_REWARDS,
   PDAUtil,
   PoolUtil,
-  Whirlpool,
-  WhirlpoolClient,
-  WhirlpoolContext,
-  WhirlpoolIx,
-  buildWhirlpoolClient,
+  ElysiumPool,
+  ElysiumPoolClient,
+  ElysiumPoolContext,
+  ElysiumPoolIx,
+  buildElysiumPoolClient,
   collectFeesQuote,
   collectRewardsQuote,
-  toTx
+  toTx,
 } from "../../../src";
 import { IGNORE_CACHE } from "../../../src/network/public/fetcher";
 import { TickSpacing, ZERO_BN } from "../../utils";
 import { defaultConfirmOptions } from "../../utils/const";
-import { WhirlpoolTestFixture } from "../../utils/fixture";
+import { ElysiumPoolTestFixture } from "../../utils/fixture";
 import { FundedPositionInfo } from "../../utils/init-utils";
 
 interface SharedTestContext {
   provider: anchor.AnchorProvider;
-  program: Whirlpool;
-  whirlpoolCtx: WhirlpoolContext;
-  whirlpoolClient: WhirlpoolClient;
+  program: ElysiumPool;
+  whirlpoolCtx: ElysiumPoolContext;
+  whirlpoolClient: ElysiumPoolClient;
 }
 
-describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
+describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
   let testCtx: SharedTestContext;
   const tickLowerIndex = 29440;
   const tickUpperIndex = 33536;
   const tickSpacing = TickSpacing.Standard;
   const vaultStartBalance = 1_000_000;
   const liquidityAmount = new BN(10_000_000);
-  const sleep = (second: number) => new Promise(resolve => setTimeout(resolve, second * 1000))
+  const sleep = (second: number) => new Promise((resolve) => setTimeout(resolve, second * 1000));
 
   before(() => {
     const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
     anchor.setProvider(provider);
-    const program = anchor.workspace.Whirlpool;
-    const whirlpoolCtx = WhirlpoolContext.fromWorkspace(provider, program, undefined, undefined, {
+    const program = anchor.workspace.ElysiumPool;
+    const whirlpoolCtx = ElysiumPoolContext.fromWorkspace(provider, program, undefined, undefined, {
       userDefaultBuildOptions: {
         maxSupportedTransactionVersion: "legacy",
-      }
+      },
     });
-    const whirlpoolClient = buildWhirlpoolClient(whirlpoolCtx);
+    const whirlpoolClient = buildElysiumPoolClient(whirlpoolCtx);
 
     testCtx = {
       provider,
@@ -60,14 +72,9 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
     };
   });
 
-  async function accrueFees(fixture: WhirlpoolTestFixture) {
+  async function accrueFees(fixture: ElysiumPoolTestFixture) {
     const ctx = testCtx.whirlpoolCtx;
-    const {
-      poolInitInfo,
-      positions,
-      tokenAccountA,
-      tokenAccountB,
-    } = fixture.getInfos();
+    const { poolInitInfo, positions, tokenAccountA, tokenAccountB } = fixture.getInfos();
 
     const { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair } = poolInitInfo;
 
@@ -79,7 +86,7 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
     // Accrue fees in token A
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
@@ -101,7 +108,7 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
     // Accrue fees in token B
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
@@ -140,7 +147,7 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
     }
   }
 
-  async function stopRewardsEmission(fixture: WhirlpoolTestFixture) {
+  async function stopRewardsEmission(fixture: ElysiumPoolTestFixture) {
     const ctx = testCtx.whirlpoolCtx;
     const { poolInitInfo, configKeypairs } = fixture.getInfos();
     const { whirlpoolPda } = poolInitInfo;
@@ -150,18 +157,20 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
     for (let i = 0; i < NUM_REWARDS; i++) {
       await toTx(
         ctx,
-        WhirlpoolIx.setRewardEmissionsIx(ctx.program, {
+        ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
           whirlpool: pool.getAddress(),
           rewardVaultKey: pool.getData().rewardInfos[i].vault,
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           rewardIndex: i,
           emissionsPerSecondX64: ZERO,
         })
-      ).addSigner(configKeypairs.rewardEmissionsSuperAuthorityKeypair).buildAndExecute();
+      )
+        .addSigner(configKeypairs.rewardEmissionsSuperAuthorityKeypair)
+        .buildAndExecute();
     }
   }
 
-  async function burnAndCloseATAs(fixture: WhirlpoolTestFixture) {
+  async function burnAndCloseATAs(fixture: ElysiumPoolTestFixture) {
     const ctx = testCtx.whirlpoolCtx;
     const { poolInitInfo, configKeypairs } = fixture.getInfos();
     const { whirlpoolPda } = poolInitInfo;
@@ -184,12 +193,17 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
     }
   }
 
-  async function burnAndCloseATA(ctx: WhirlpoolContext, ata: PublicKey) {
+  async function burnAndCloseATA(ctx: ElysiumPoolContext, ata: PublicKey) {
     const account = await ctx.fetcher.getTokenInfo(ata, IGNORE_CACHE);
     if (account === null) return;
 
     const burnIx = createBurnInstruction(ata, account.mint, ctx.wallet.publicKey, account.amount);
-    const closeIx = createCloseAccountInstruction(ata, ctx.wallet.publicKey, ctx.wallet.publicKey, []);
+    const closeIx = createCloseAccountInstruction(
+      ata,
+      ctx.wallet.publicKey,
+      ctx.wallet.publicKey,
+      []
+    );
 
     const tx = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
     tx.addInstruction({
@@ -200,7 +214,7 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
     await tx.buildAndExecute();
   }
 
-  async function createATAs(fixture: WhirlpoolTestFixture) {
+  async function createATAs(fixture: ElysiumPoolTestFixture) {
     const ctx = testCtx.whirlpoolCtx;
     const { poolInitInfo, configKeypairs } = fixture.getInfos();
     const { whirlpoolPda } = poolInitInfo;
@@ -223,7 +237,7 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
     }
   }
 
-  async function createATA(ctx: WhirlpoolContext, ata: PublicKey, mint: PublicKey) {
+  async function createATA(ctx: ElysiumPoolContext, ata: PublicKey, mint: PublicKey) {
     if (mint.equals(NATIVE_MINT)) return;
 
     const account = await ctx.fetcher.getTokenInfo(ata, IGNORE_CACHE);
@@ -232,7 +246,7 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
       ctx.wallet.publicKey,
       ata,
       ctx.wallet.publicKey,
-      mint,
+      mint
     );
 
     const tx = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
@@ -245,12 +259,12 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
   }
 
   async function baseTestSenario(tokenAIsNative: boolean, ataExists: boolean) {
-    const fixtures: WhirlpoolTestFixture[] = [];
+    const fixtures: ElysiumPoolTestFixture[] = [];
     const positions: FundedPositionInfo[] = [];
     const numOfPool = 3;
 
     for (let i = 0; i < numOfPool; i++) {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tokenAIsNative,
         tickSpacing,
         positions: [
@@ -290,7 +304,10 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
     for (const positionInfo of positions) {
       const position = await testCtx.whirlpoolClient.getPosition(positionInfo.publicKey);
 
-      const poolData = await testCtx.whirlpoolCtx.fetcher.getPool(position.getData().whirlpool, IGNORE_CACHE);
+      const poolData = await testCtx.whirlpoolCtx.fetcher.getPool(
+        position.getData().whirlpool,
+        IGNORE_CACHE
+      );
       const positionData = await position.refreshData();
       const tickLowerData = position.getLowerTickData();
       const tickUpperData = position.getLowerTickData();
@@ -319,7 +336,7 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
 
     const txs = await testCtx.whirlpoolClient.collectFeesAndRewardsForPositions(
       positions.map((p) => p.publicKey),
-      IGNORE_CACHE,
+      IGNORE_CACHE
     );
     assert.ok(txs.length >= 2);
 
@@ -327,11 +344,14 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
     // Remove when we have an official multi-transaction sending solution.
     const requests: SendTxRequest[] = [];
     for (const tx of txs) {
-      requests.push(await tx.build() as SendTxRequest);
+      requests.push((await tx.build()) as SendTxRequest);
     }
 
     const parallel = true;
-    const processor = new TransactionProcessor(testCtx.whirlpoolCtx.connection, testCtx.whirlpoolCtx.wallet);
+    const processor = new TransactionProcessor(
+      testCtx.whirlpoolCtx.connection,
+      testCtx.whirlpoolCtx.wallet
+    );
     const { execute } = await processor.signAndConstructTransactions(requests, parallel);
 
     const txResults = await execute();
@@ -346,7 +366,10 @@ describe("WhirlpoolImpl#collectFeesAndRewardsForPositions()", () => {
     for (const positionInfo of positions) {
       const position = await testCtx.whirlpoolClient.getPosition(positionInfo.publicKey);
 
-      const poolData = await testCtx.whirlpoolCtx.fetcher.getPool(position.getData().whirlpool, IGNORE_CACHE);
+      const poolData = await testCtx.whirlpoolCtx.fetcher.getPool(
+        position.getData().whirlpool,
+        IGNORE_CACHE
+      );
       const positionData = await position.refreshData();
       const tickLowerData = position.getLowerTickData();
       const tickUpperData = position.getLowerTickData();

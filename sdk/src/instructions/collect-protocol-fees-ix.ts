@@ -2,19 +2,19 @@ import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
- * Parameters to collect protocol fees for a Whirlpool
+ * Parameters to collect protocol fees for a ElysiumPool
  *
  * @category Instruction Types
- * @param whirlpoolsConfig - The public key for the WhirlpoolsConfig this pool is initialized in
+ * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
  * @param whirlpool - PublicKey for the whirlpool that the position will be opened for.
  * @param tokenVaultA - PublicKey for the tokenA vault for this whirlpool.
  * @param tokenVaultB - PublicKey for the tokenB vault for this whirlpool.
  * @param tokenOwnerAccountA - PublicKey for the associated token account for tokenA in the collection wallet
  * @param tokenOwnerAccountB - PublicKey for the associated token account for tokenA in the collection wallet
- * @param collectProtocolFeesAuthority - assigned authority in the WhirlpoolsConfig that can collect protocol fees
+ * @param collectProtocolFeesAuthority - assigned authority in the ElysiumPoolsConfig that can collect protocol fees
  */
 export type CollectProtocolFeesParams = {
   whirlpoolsConfig: PublicKey;
@@ -27,7 +27,7 @@ export type CollectProtocolFeesParams = {
 };
 
 /**
- * Collect protocol fees accrued in this Whirlpool.
+ * Collect protocol fees accrued in this ElysiumPool.
  *
  * @category Instructions
  * @param context - Context object containing services required to generate the instruction
@@ -35,7 +35,7 @@ export type CollectProtocolFeesParams = {
  * @returns - Instruction to perform the action.
  */
 export function collectProtocolFeesIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: CollectProtocolFeesParams
 ): Instruction {
   const {

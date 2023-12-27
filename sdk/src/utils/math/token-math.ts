@@ -1,6 +1,6 @@
 import { Percentage, U64_MAX, ZERO } from "@orca-so/common-sdk";
 import BN from "bn.js";
-import { MathErrorCode, TokenErrorCode, WhirlpoolsError } from "../../errors/errors";
+import { MathErrorCode, TokenErrorCode, ElysiumPoolsError } from "../../errors/errors";
 import { MAX_SQRT_PRICE, MIN_SQRT_PRICE } from "../../types/public";
 import { BitMath } from "./bit-math";
 
@@ -22,7 +22,7 @@ export function getAmountDeltaA(
   let result = roundUp && !remainder.eq(ZERO) ? quotient.add(new BN(1)) : quotient;
 
   if (result.gt(U64_MAX)) {
-    throw new WhirlpoolsError("Results larger than U64", TokenErrorCode.TokenMaxExceeded);
+    throw new ElysiumPoolsError("Results larger than U64", TokenErrorCode.TokenMaxExceeded);
   }
 
   return result;
@@ -86,7 +86,7 @@ function getNextSqrtPriceFromARoundUp(
   let p = BitMath.mul(sqrtPrice, amount, 256);
   let numerator = BitMath.mul(currLiquidity, sqrtPrice, 256).shln(64);
   if (BitMath.isOverLimit(numerator, 256)) {
-    throw new WhirlpoolsError(
+    throw new ElysiumPoolsError(
       "getNextSqrtPriceFromARoundUp - numerator overflow u256",
       MathErrorCode.MultiplicationOverflow
     );
@@ -94,7 +94,7 @@ function getNextSqrtPriceFromARoundUp(
 
   let currLiquidityShiftLeft = currLiquidity.shln(64);
   if (!amountSpecifiedIsInput && currLiquidityShiftLeft.lte(p)) {
-    throw new WhirlpoolsError(
+    throw new ElysiumPoolsError(
       "getNextSqrtPriceFromARoundUp - Unable to divide currLiquidityX64 by product",
       MathErrorCode.DivideByZero
     );
@@ -107,12 +107,12 @@ function getNextSqrtPriceFromARoundUp(
   let price = BitMath.divRoundUp(numerator, denominator);
 
   if (price.lt(new BN(MIN_SQRT_PRICE))) {
-    throw new WhirlpoolsError(
+    throw new ElysiumPoolsError(
       "getNextSqrtPriceFromARoundUp - price less than min sqrt price",
       TokenErrorCode.TokenMinSubceeded
     );
   } else if (price.gt(new BN(MAX_SQRT_PRICE))) {
-    throw new WhirlpoolsError(
+    throw new ElysiumPoolsError(
       "getNextSqrtPriceFromARoundUp - price less than max sqrt price",
       TokenErrorCode.TokenMaxExceeded
     );

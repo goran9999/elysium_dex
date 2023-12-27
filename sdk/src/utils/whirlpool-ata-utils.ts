@@ -8,8 +8,8 @@ import {
 } from "@orca-so/common-sdk";
 import { NATIVE_MINT } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-import { PoolUtil, WhirlpoolContext } from "..";
-import { WhirlpoolData } from "../types/public";
+import { PoolUtil, ElysiumPoolContext } from "..";
+import { ElysiumPoolData } from "../types/public";
 import { convertListToMap } from "./txn-utils";
 
 export enum TokenMintTypes {
@@ -18,7 +18,7 @@ export enum TokenMintTypes {
   REWARD_ONLY = "REWARDS_ONLY",
 }
 
-export type WhirlpoolsTokenMints = {
+export type ElysiumPoolsTokenMints = {
   mintMap: PublicKey[];
   hasNativeMint: boolean;
 };
@@ -31,10 +31,10 @@ export type WhirlpoolsTokenMints = {
  * @param mintTypes The set of mints to collect from these whirlpools
  * @returns All the whirlpool, reward token mints in the given set of whirlpools
  */
-export function getTokenMintsFromWhirlpools(
-  whirlpoolDatas: (WhirlpoolData | null)[],
+export function getTokenMintsFromElysiumPools(
+  whirlpoolDatas: (ElysiumPoolData | null)[],
   mintTypes = TokenMintTypes.ALL
-): WhirlpoolsTokenMints {
+): ElysiumPoolsTokenMints {
   let hasNativeMint = false;
   const mints = Array.from(
     whirlpoolDatas.reduce<Set<string>>((accu, whirlpoolData) => {
@@ -78,7 +78,7 @@ export function getTokenMintsFromWhirlpools(
 }
 
 /**
- * Parameters to resolve ATAs for affliated tokens in a list of Whirlpools
+ * Parameters to resolve ATAs for affliated tokens in a list of ElysiumPools
  *
  * @category Instruction Types
  * @param mints - The list of mints to generate affliated tokens for.
@@ -106,15 +106,15 @@ export type ResolvedATAInstructionSet = {
 };
 
 /**
- * Build instructions to resolve ATAs (Associated Tokens Addresses) for affliated tokens in a list of Whirlpools.
- * Affliated tokens are tokens that are part of the trade pair or reward in a Whirlpool.
+ * Build instructions to resolve ATAs (Associated Tokens Addresses) for affliated tokens in a list of ElysiumPools.
+ * Affliated tokens are tokens that are part of the trade pair or reward in a ElysiumPool.
  *
- * @param ctx - WhirlpoolContext object for the current environment.
+ * @param ctx - ElysiumPoolContext object for the current environment.
  * @param params - ResolveAtaInstructionParams
  * @returns a ResolvedTokenAddressesIxSet containing the derived ATA addresses & ix set to initialize the accounts.
  */
 export async function resolveAtaForMints(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   params: ResolveAtaInstructionParams
 ): Promise<ResolvedATAInstructionSet> {
   const { mints, receiver, payer, accountExemption } = params;

@@ -10,7 +10,7 @@ use crate::util::{to_timestamp_u64, transfer_from_vault_to_owner, verify_positio
 use super::ModifyLiquidity;
 
 /*
-  Removes liquidity from an existing Whirlpool Position.
+  Removes liquidity from an existing ElysiumPool Position.
 */
 pub fn handler(
     ctx: Context<ModifyLiquidity>,

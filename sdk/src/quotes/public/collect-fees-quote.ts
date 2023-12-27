@@ -1,12 +1,12 @@
 import { BN } from "@coral-xyz/anchor";
 import { MathUtil } from "@orca-so/common-sdk";
-import { PositionData, TickData, WhirlpoolData } from "../../types/public";
+import { PositionData, TickData, ElysiumPoolData } from "../../types/public";
 
 /**
  * @category Quotes
  */
 export type CollectFeesQuoteParam = {
-  whirlpool: WhirlpoolData;
+  whirlpool: ElysiumPoolData;
   position: PositionData;
   tickLower: TickData;
   tickUpper: TickData;
@@ -24,7 +24,7 @@ export type CollectFeesQuote = {
  * Get a quote on the outstanding fees owed to a position.
  *
  * @category Quotes
- * @param param A collection of fetched Whirlpool accounts to faciliate the quote.
+ * @param param A collection of fetched ElysiumPool accounts to faciliate the quote.
  * @returns A quote object containing the fees owed for each token in the pool.
  */
 export function collectFeesQuote(param: CollectFeesQuoteParam): CollectFeesQuote {

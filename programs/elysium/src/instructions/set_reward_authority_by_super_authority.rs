@@ -1,14 +1,14 @@
 use anchor_lang::prelude::*;
 
-use crate::state::{Whirlpool, WhirlpoolsConfig};
+use crate::state::{ElysiumPool, ElysiumPoolsConfig};
 
 #[derive(Accounts)]
 #[instruction(reward_index: u8)]
 pub struct SetRewardAuthorityBySuperAuthority<'info> {
-    pub whirlpools_config: Account<'info, WhirlpoolsConfig>,
+    pub whirlpools_config: Account<'info, ElysiumPoolsConfig>,
 
     #[account(mut, has_one = whirlpools_config)]
-    pub whirlpool: Account<'info, Whirlpool>,
+    pub whirlpool: Account<'info, ElysiumPool>,
 
     #[account(address = whirlpools_config.reward_emissions_super_authority)]
     pub reward_emissions_super_authority: Signer<'info>,

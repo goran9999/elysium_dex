@@ -4,7 +4,7 @@ use anchor_spl::token::TokenAccount;
 use crate::errors::ErrorCode;
 use crate::manager::whirlpool_manager::next_whirlpool_reward_infos;
 use crate::math::checked_mul_shift_right;
-use crate::state::Whirlpool;
+use crate::state::ElysiumPool;
 use crate::util::to_timestamp_u64;
 
 const DAY_IN_SECONDS: u128 = 60 * 60 * 24;
@@ -13,7 +13,7 @@ const DAY_IN_SECONDS: u128 = 60 * 60 * 24;
 #[instruction(reward_index: u8)]
 pub struct SetRewardEmissions<'info> {
     #[account(mut)]
-    pub whirlpool: Account<'info, Whirlpool>,
+    pub whirlpool: Account<'info, ElysiumPool>,
 
     #[account(address = whirlpool.reward_infos[reward_index as usize].authority)]
     pub reward_authority: Signer<'info>,

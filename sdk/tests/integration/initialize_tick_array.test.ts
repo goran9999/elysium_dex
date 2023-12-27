@@ -5,9 +5,9 @@ import {
   InitTickArrayParams,
   TICK_ARRAY_SIZE,
   TickArrayData,
-  WhirlpoolContext,
-  WhirlpoolIx,
-  toTx
+  ElysiumPoolContext,
+  ElysiumPoolIx,
+  toTx,
 } from "../../src";
 import { ONE_SOL, TickSpacing, systemTransferTx } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
@@ -17,8 +17,8 @@ import { generateDefaultInitTickArrayParams } from "../utils/test-builders";
 describe("initialize_tick_array", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully init a TickArray account", async () => {
@@ -33,7 +33,10 @@ describe("initialize_tick_array", () => {
       startTick
     );
 
-    await toTx(ctx, WhirlpoolIx.initTickArrayIx(ctx.program, tickArrayInitInfo)).buildAndExecute();
+    await toTx(
+      ctx,
+      ElysiumPoolIx.initTickArrayIx(ctx.program, tickArrayInitInfo)
+    ).buildAndExecute();
     assertTickArrayInitialized(ctx, tickArrayInitInfo, poolInitInfo, startTick);
   });
 
@@ -49,7 +52,10 @@ describe("initialize_tick_array", () => {
       startTick
     );
 
-    await toTx(ctx, WhirlpoolIx.initTickArrayIx(ctx.program, tickArrayInitInfo)).buildAndExecute();
+    await toTx(
+      ctx,
+      ElysiumPoolIx.initTickArrayIx(ctx.program, tickArrayInitInfo)
+    ).buildAndExecute();
     assertTickArrayInitialized(ctx, tickArrayInitInfo, poolInitInfo, startTick);
   });
 
@@ -76,7 +82,7 @@ describe("initialize_tick_array", () => {
     );
 
     try {
-      await toTx(ctx, WhirlpoolIx.initTickArrayIx(ctx.program, params)).buildAndExecute();
+      await toTx(ctx, ElysiumPoolIx.initTickArrayIx(ctx.program, params)).buildAndExecute();
       assert.fail(
         "should fail if start-tick is not a multiple of tick spacing and num ticks in array"
       );
@@ -87,7 +93,7 @@ describe("initialize_tick_array", () => {
   });
 
   async function assertTickArrayInitialized(
-    ctx: WhirlpoolContext,
+    ctx: ElysiumPoolContext,
     tickArrayInitInfo: InitTickArrayParams,
     poolInitInfo: InitPoolParams,
     startTick: number

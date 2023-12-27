@@ -3,8 +3,8 @@ import { AddressUtil } from "@orca-so/common-sdk";
 import BN from "bn.js";
 import invariant from "tiny-invariant";
 import {
-  WhirlpoolAccountFetcherInterface,
-  WhirlpoolAccountFetchOptions,
+  ElysiumPoolAccountFetcherInterface,
+  ElysiumPoolAccountFetchOptions,
 } from "../network/public/fetcher";
 import { SwapQuoteParam } from "../quotes/public";
 import { PoolUtil, SwapDirection, SwapUtils } from "../utils/public";
@@ -19,8 +19,8 @@ export interface SwapQuoteRequest {
 export async function batchBuildSwapQuoteParams(
   quoteRequests: SwapQuoteRequest[],
   programId: Address,
-  fetcher: WhirlpoolAccountFetcherInterface,
-  opts?: WhirlpoolAccountFetchOptions
+  fetcher: ElysiumPoolAccountFetcherInterface,
+  opts?: ElysiumPoolAccountFetchOptions
 ): Promise<SwapQuoteParam[]> {
   const whirlpools = await fetcher.getPools(
     quoteRequests.map((req) => req.whirlpool),

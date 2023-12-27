@@ -2,10 +2,10 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Instruction, PDA } from "@orca-so/common-sdk";
 import { PublicKey, SystemProgram } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
- * Parameters to open a bundled position in a Whirlpool.
+ * Parameters to open a bundled position in a ElysiumPool.
  *
  * @category Instruction Types
  * @param whirlpool - PublicKey for the whirlpool that the bundled position will be opened for.
@@ -31,7 +31,7 @@ export type OpenBundledPositionParams = {
 };
 
 /**
- * Open a bundled position in a Whirlpool.
+ * Open a bundled position in a ElysiumPool.
  * No new tokens are issued because the owner of the position bundle becomes the owner of the position.
  * The position will start off with 0 liquidity.
  *
@@ -45,7 +45,7 @@ export type OpenBundledPositionParams = {
  * @returns - Instruction to perform the action.
  */
 export function openBundledPositionIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: OpenBundledPositionParams
 ): Instruction {
   const {

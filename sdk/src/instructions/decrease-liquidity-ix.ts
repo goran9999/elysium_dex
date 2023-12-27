@@ -2,7 +2,7 @@ import { BN, Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
  * Parameters to remove liquidity from a position.
@@ -45,7 +45,7 @@ export type DecreaseLiquidityInput = {
 };
 
 /**
- * Remove liquidity to a position in the Whirlpool.
+ * Remove liquidity to a position in the ElysiumPool.
  *
  * #### Special Errors
  * - `LiquidityZero` - Provided liquidity amount is zero.
@@ -58,7 +58,7 @@ export type DecreaseLiquidityInput = {
  * @returns - Instruction to perform the action.
  */
 export function decreaseLiquidityIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: DecreaseLiquidityParams
 ): Instruction {
   const {

@@ -3,7 +3,7 @@ import {
   TransactionBuilderOptions,
   defaultTransactionBuilderOptions,
 } from "@orca-so/common-sdk";
-import { WhirlpoolContext, WhirlpoolContextOpts as WhirlpoolContextOptions } from "..";
+import { ElysiumPoolContext, ElysiumPoolContextOpts as ElysiumPoolContextOptions } from "..";
 
 export function convertListToMap<T>(fetchedData: T[], addresses: string[]): Record<string, T> {
   const result: Record<string, T> = {};
@@ -35,7 +35,7 @@ export function filterNullObjects<T, K>(
 }
 
 export async function checkMergedTransactionSizeIsValid(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   builders: TransactionBuilder[],
   latestBlockhash: Readonly<{
     blockhash: string;
@@ -55,7 +55,7 @@ export async function checkMergedTransactionSizeIsValid(
 }
 
 export function contextOptionsToBuilderOptions(
-  opts: WhirlpoolContextOptions
+  opts: ElysiumPoolContextOptions
 ): TransactionBuilderOptions | undefined {
   return {
     defaultBuildOption: {

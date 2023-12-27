@@ -10,13 +10,13 @@ import {
   PositionUtil,
 } from "../../utils/position-util";
 import { PriceMath, TickUtil } from "../../utils/public";
-import { Position, Whirlpool } from "../../whirlpool-client";
+import { Position, ElysiumPool } from "../../whirlpool-client";
 
 /**
  * @category Quotes
- * @param liquidity - The desired liquidity to withdraw from the Whirlpool
- * @param tickCurrentIndex - The Whirlpool's current tickIndex
- * @param sqrtPrice - The Whirlpool's current sqrtPrice
+ * @param liquidity - The desired liquidity to withdraw from the ElysiumPool
+ * @param tickCurrentIndex - The ElysiumPool's current tickIndex
+ * @param sqrtPrice - The ElysiumPool's current sqrtPrice
  * @param tickLowerIndex - The lower index of the position that we are withdrawing from.
  * @param tickUpperIndex - The upper index of the position that we are withdrawing from.
  * @param slippageTolerance - The maximum slippage allowed when calculating the minimum tokens received.
@@ -40,17 +40,17 @@ export type DecreaseLiquidityQuote = DecreaseLiquidityInput & { tokenEstA: BN; t
  * Get an estimated quote on the minimum tokens receivable based on the desired withdraw liquidity value.
  *
  * @category Quotes
- * @param liquidity - The desired liquidity to withdraw from the Whirlpool
+ * @param liquidity - The desired liquidity to withdraw from the ElysiumPool
  * @param slippageTolerance - The maximum slippage allowed when calculating the minimum tokens received.
  * @param position - A Position helper class to help interact with the Position account.
- * @param whirlpool - A Whirlpool helper class to help interact with the Whirlpool account.
+ * @param whirlpool - A ElysiumPool helper class to help interact with the ElysiumPool account.
  * @returns An DecreaseLiquidityQuote object detailing the tokenMin & liquidity values to use when calling decrease-liquidity-ix.
  */
 export function decreaseLiquidityQuoteByLiquidity(
   liquidity: BN,
   slippageTolerance: Percentage,
   position: Position,
-  whirlpool: Whirlpool
+  whirlpool: ElysiumPool
 ) {
   const positionData = position.getData();
   const whirlpoolData = whirlpool.getData();

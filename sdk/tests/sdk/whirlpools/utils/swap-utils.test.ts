@@ -2,49 +2,49 @@ import * as anchor from "@coral-xyz/anchor";
 import { Keypair } from "@solana/web3.js";
 import * as assert from "assert";
 import { PDAUtil, SwapDirection, SwapUtils, TICK_ARRAY_SIZE } from "../../../../src";
-import { WhirlpoolContext } from "../../../../src/context";
+import { ElysiumPoolContext } from "../../../../src/context";
 import { defaultConfirmOptions } from "../../../utils/const";
-import { testWhirlpoolData } from "../../../utils/testDataTypes";
+import { testElysiumPoolData } from "../../../utils/testDataTypes";
 
 describe("SwapUtils tests", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
 
   describe("getSwapDirection", () => {
     it("SwapToken is tokenA and is an input", async () => {
-      const whirlpoolData = testWhirlpoolData;
+      const whirlpoolData = testElysiumPoolData;
       const result = SwapUtils.getSwapDirection(whirlpoolData, whirlpoolData.tokenMintA, true);
       assert.equal(result, SwapDirection.AtoB);
     });
 
     it("SwapToken is tokenB and is an input", async () => {
-      const whirlpoolData = testWhirlpoolData;
+      const whirlpoolData = testElysiumPoolData;
       const result = SwapUtils.getSwapDirection(whirlpoolData, whirlpoolData.tokenMintB, true);
       assert.equal(result, SwapDirection.BtoA);
     });
 
     it("SwapToken is tokenA and is not an input", async () => {
-      const whirlpoolData = testWhirlpoolData;
+      const whirlpoolData = testElysiumPoolData;
       const result = SwapUtils.getSwapDirection(whirlpoolData, whirlpoolData.tokenMintA, false);
       assert.equal(result, SwapDirection.BtoA);
     });
 
     it("SwapToken is tokenB and is not an input", async () => {
-      const whirlpoolData = testWhirlpoolData;
+      const whirlpoolData = testElysiumPoolData;
       const result = SwapUtils.getSwapDirection(whirlpoolData, whirlpoolData.tokenMintB, false);
       assert.equal(result, SwapDirection.AtoB);
     });
 
     it("SwapToken is a random mint and is an input", async () => {
-      const whirlpoolData = testWhirlpoolData;
+      const whirlpoolData = testElysiumPoolData;
       const result = SwapUtils.getSwapDirection(whirlpoolData, Keypair.generate().publicKey, true);
       assert.equal(result, undefined);
     });
 
     it("SwapToken is a random mint and is not an input", async () => {
-      const whirlpoolData = testWhirlpoolData;
+      const whirlpoolData = testElysiumPoolData;
       const result = SwapUtils.getSwapDirection(whirlpoolData, Keypair.generate().publicKey, false);
       assert.equal(result, undefined);
     });
@@ -64,7 +64,7 @@ describe("SwapUtils tests", () => {
         tickSpacing,
         aToB,
         ctx.program.programId,
-        whirlpoolPubkey,
+        whirlpoolPubkey
       );
 
       const expected = [
@@ -88,7 +88,7 @@ describe("SwapUtils tests", () => {
         tickSpacing,
         aToB,
         ctx.program.programId,
-        whirlpoolPubkey,
+        whirlpoolPubkey
       );
 
       const expected = [
@@ -112,7 +112,7 @@ describe("SwapUtils tests", () => {
         tickSpacing,
         aToB,
         ctx.program.programId,
-        whirlpoolPubkey,
+        whirlpoolPubkey
       );
 
       const expected = [
@@ -136,7 +136,7 @@ describe("SwapUtils tests", () => {
         tickSpacing,
         aToB,
         ctx.program.programId,
-        whirlpoolPubkey,
+        whirlpoolPubkey
       );
 
       const expected = [
@@ -160,7 +160,7 @@ describe("SwapUtils tests", () => {
         tickSpacing,
         aToB,
         ctx.program.programId,
-        whirlpoolPubkey,
+        whirlpoolPubkey
       );
 
       const expected = [
@@ -184,7 +184,7 @@ describe("SwapUtils tests", () => {
         tickSpacing,
         aToB,
         ctx.program.programId,
-        whirlpoolPubkey,
+        whirlpoolPubkey
       );
 
       const expected = [
@@ -208,7 +208,7 @@ describe("SwapUtils tests", () => {
         tickSpacing,
         aToB,
         ctx.program.programId,
-        whirlpoolPubkey,
+        whirlpoolPubkey
       );
 
       const expected = [
@@ -219,5 +219,4 @@ describe("SwapUtils tests", () => {
       result.forEach((k, i) => assert.equal(k.toBase58(), expected[i].toBase58()));
     });
   });
-
 });

@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import * as assert from "assert";
-import { toTx, WhirlpoolIx } from "../../../src";
-import { WhirlpoolContext } from "../../../src/context";
+import { toTx, ElysiumPoolIx } from "../../../src";
+import { ElysiumPoolContext } from "../../../src/context";
 import { TickSpacing } from "../../utils";
 import { defaultConfirmOptions } from "../../utils/const";
 import { initTestPool, openPosition } from "../../utils/init-utils";
@@ -10,8 +10,8 @@ import { generateDefaultOpenPositionParams } from "../../utils/test-builders";
 describe("position management tests", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully closes and opens a position in one transaction", async () => {
@@ -31,7 +31,7 @@ describe("position management tests", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.closePositionIx(ctx.program, {
+      ElysiumPoolIx.closePositionIx(ctx.program, {
         positionAuthority: provider.wallet.publicKey,
         receiver: receiverKeypair.publicKey,
         position: params.positionPda.publicKey,
@@ -39,7 +39,7 @@ describe("position management tests", () => {
         positionTokenAccount: params.positionTokenAccount,
       })
     )
-      .addInstruction(WhirlpoolIx.openPositionIx(ctx.program, newParams))
+      .addInstruction(ElysiumPoolIx.openPositionIx(ctx.program, newParams))
       .addSigner(mint)
       .buildAndExecute();
 

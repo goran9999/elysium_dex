@@ -2,7 +2,7 @@ import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
  * Parameters to delete a PositionBundle account.
@@ -34,7 +34,7 @@ export type DeletePositionBundleParams = {
  * @returns - Instruction to perform the action.
  */
 export function deletePositionBundleIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: DeletePositionBundleParams
 ): Instruction {
   const { owner, positionBundle, positionBundleMint, positionBundleTokenAccount, receiver } =

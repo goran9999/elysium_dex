@@ -5,8 +5,11 @@ import * as assert from "assert";
 import { BN } from "bn.js";
 import Decimal from "decimal.js";
 import {
-  GetPricesConfig, GetPricesThresholdConfig, PriceModule,
-  PriceModuleUtils, WhirlpoolContext
+  GetPricesConfig,
+  GetPricesThresholdConfig,
+  PriceModule,
+  PriceModuleUtils,
+  ElysiumPoolContext,
 } from "../../src";
 import { TickSpacing } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
@@ -14,25 +17,33 @@ import {
   FundedPositionParams,
   buildTestAquariums,
   getDefaultAquarium,
-  initTestPoolWithLiquidity
+  initTestPoolWithLiquidity,
 } from "../utils/init-utils";
 
 // TODO: Move these tests to use mock data instead of relying on solana localnet. It's very slow.
 describe("get_pool_prices", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
-  const program = anchor.workspace.Whirlpool;
-  const context = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const context = ElysiumPoolContext.fromWorkspace(provider, program);
 
-  async function fetchMaps(context: WhirlpoolContext, mints: PublicKey[], config: GetPricesConfig) {
+  async function fetchMaps(
+    context: ElysiumPoolContext,
+    mints: PublicKey[],
+    config: GetPricesConfig
+  ) {
     const poolMap = await PriceModuleUtils.fetchPoolDataFromMints(context.fetcher, mints, config);
-    const tickArrayMap = await PriceModuleUtils.fetchTickArraysForPools(context.fetcher, poolMap, config);
+    const tickArrayMap = await PriceModuleUtils.fetchTickArraysForPools(
+      context.fetcher,
+      poolMap,
+      config
+    );
     const decimalsMap = await PriceModuleUtils.fetchDecimalsForMints(context.fetcher, mints);
 
     return { poolMap, tickArrayMap, decimalsMap };
   }
 
   async function fetchAndCalculate(
-    context: WhirlpoolContext,
+    context: ElysiumPoolContext,
     mints: PublicKey[],
     config: GetPricesConfig,
     thresholdConfig: GetPricesThresholdConfig
@@ -149,7 +160,10 @@ describe("get_pool_prices", () => {
     const fetchedTickArrayForPool1 = 3; // B to A direction (mintKeys[2] to mintKeys[1])
 
     assert.equal(Object.keys(poolMap).length, 2);
-    assert.equal(Object.keys(tickArrayMap).length, fetchedTickArrayForPool0 + fetchedTickArrayForPool1);
+    assert.equal(
+      Object.keys(tickArrayMap).length,
+      fetchedTickArrayForPool0 + fetchedTickArrayForPool1
+    );
     assert.equal(Object.keys(priceMap).length, 3);
   });
 
@@ -271,7 +285,10 @@ describe("get_pool_prices", () => {
     const fetchedTickArrayForPool1 = 1; // A to B direction (mintKeys[1] to mintKeys[2])
 
     assert.equal(Object.keys(poolMap).length, 2);
-    assert.equal(Object.keys(tickArrayMap).length, fetchedTickArrayForPool0 + fetchedTickArrayForPool1);
+    assert.equal(
+      Object.keys(tickArrayMap).length,
+      fetchedTickArrayForPool0 + fetchedTickArrayForPool1
+    );
     assert.equal(Object.keys(priceMap).length, 3);
   });
 });

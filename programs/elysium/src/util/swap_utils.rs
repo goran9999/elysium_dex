@@ -1,12 +1,12 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount};
 
-use crate::{manager::swap_manager::PostSwapUpdate, state::Whirlpool};
+use crate::{manager::swap_manager::PostSwapUpdate, state::ElysiumPool};
 
 use super::{transfer_from_owner_to_vault, transfer_from_vault_to_owner};
 
 pub fn update_and_swap_whirlpool<'info>(
-    whirlpool: &mut Account<'info, Whirlpool>,
+    whirlpool: &mut Account<'info, ElysiumPool>,
     token_authority: &Signer<'info>,
     token_owner_account_a: &Account<'info, TokenAccount>,
     token_owner_account_b: &Account<'info, TokenAccount>,
@@ -43,7 +43,7 @@ pub fn update_and_swap_whirlpool<'info>(
 }
 
 fn perform_swap<'info>(
-    whirlpool: &Account<'info, Whirlpool>,
+    whirlpool: &Account<'info, ElysiumPool>,
     token_authority: &Signer<'info>,
     token_owner_account_a: &Account<'info, TokenAccount>,
     token_owner_account_b: &Account<'info, TokenAccount>,

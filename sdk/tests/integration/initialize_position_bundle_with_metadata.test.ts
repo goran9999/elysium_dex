@@ -6,7 +6,7 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAssociatedTokenAddressSync,
   Mint,
-  TOKEN_PROGRAM_ID
+  TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram } from "@solana/web3.js";
 import * as assert from "assert";
@@ -17,24 +17,21 @@ import {
   PositionBundleData,
   toTx,
   WHIRLPOOL_NFT_UPDATE_AUTH,
-  WhirlpoolContext,
+  ElysiumPoolContext,
 } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
-import {
-  createMintInstructions,
-  mintToDestination
-} from "../utils";
+import { createMintInstructions, mintToDestination } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
 import { initializePositionBundleWithMetadata } from "../utils/init-utils";
 
 describe("initialize_position_bundle_with_metadata", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
 
   async function createInitializePositionBundleWithMetadataTx(
-    ctx: WhirlpoolContext,
+    ctx: ElysiumPoolContext,
     overwrite: any,
     mintKeypair?: Keypair
   ) {
@@ -139,9 +136,9 @@ describe("initialize_position_bundle_with_metadata", () => {
     assert.ok(metadata.mint.toBase58() === positionMint.toString());
     assert.ok(metadata.updateAuthority.toBase58() === WHIRLPOOL_NFT_UPDATE_AUTH.toBase58());
     assert.ok(metadata.isMutable);
-    assert.strictEqual(metadata.data.name.replace(/\0/g, ''), nftName);
-    assert.strictEqual(metadata.data.symbol.replace(/\0/g, ''), WPB_METADATA_SYMBOL);
-    assert.strictEqual(metadata.data.uri.replace(/\0/g, ''), WPB_METADATA_URI);
+    assert.strictEqual(metadata.data.name.replace(/\0/g, ""), nftName);
+    assert.strictEqual(metadata.data.symbol.replace(/\0/g, ""), WPB_METADATA_SYMBOL);
+    assert.strictEqual(metadata.data.uri.replace(/\0/g, ""), WPB_METADATA_URI);
   }
 
   async function createOtherWallet(): Promise<Keypair> {
@@ -238,7 +235,12 @@ describe("initialize_position_bundle_with_metadata", () => {
     );
 
     await assert.rejects(
-      mintToDestination(provider, positionBundleInfo.positionBundleMintKeypair.publicKey, positionBundleInfo.positionBundleTokenAccount, 1),
+      mintToDestination(
+        provider,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        positionBundleInfo.positionBundleTokenAccount,
+        1
+      ),
       /0x5/ // the total supply of this token is fixed
     );
   });

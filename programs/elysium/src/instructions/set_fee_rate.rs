@@ -1,13 +1,13 @@
 use anchor_lang::prelude::*;
 
-use crate::state::{Whirlpool, WhirlpoolsConfig};
+use crate::state::{ElysiumPool, ElysiumPoolsConfig};
 
 #[derive(Accounts)]
 pub struct SetFeeRate<'info> {
-    pub whirlpools_config: Account<'info, WhirlpoolsConfig>,
+    pub whirlpools_config: Account<'info, ElysiumPoolsConfig>,
 
     #[account(mut, has_one = whirlpools_config)]
-    pub whirlpool: Account<'info, Whirlpool>,
+    pub whirlpool: Account<'info, ElysiumPool>,
 
     #[account(address = whirlpools_config.fee_authority)]
     pub fee_authority: Signer<'info>,

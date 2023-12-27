@@ -4,8 +4,8 @@ use crate::state::*;
 
 #[derive(Accounts)]
 pub struct InitializeConfig<'info> {
-    #[account(init, payer = funder, space = WhirlpoolsConfig::LEN)]
-    pub config: Account<'info, WhirlpoolsConfig>,
+    #[account(init, payer = funder, space = ElysiumPoolsConfig::LEN)]
+    pub config: Account<'info, ElysiumPoolsConfig>,
 
     #[account(mut)]
     pub funder: Signer<'info>,

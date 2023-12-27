@@ -1,33 +1,36 @@
 import { Address } from "@coral-xyz/anchor";
-import { WhirlpoolRouter } from ".";
-import { WhirlpoolContext } from "../..";
+import { ElysiumPoolRouter } from ".";
+import { ElysiumPoolContext } from "../..";
 import { PoolGraph, PoolGraphBuilder } from "../../utils/public";
-import { WhirlpoolRouterImpl } from "../router-impl";
+import { ElysiumPoolRouterImpl } from "../router-impl";
 
 /**
- * Builder to build instances of the {@link WhirlpoolRouter}
+ * Builder to build instances of the {@link ElysiumPoolRouter}
  * @category Router
  */
-export class WhirlpoolRouterBuilder {
+export class ElysiumPoolRouterBuilder {
   /**
-   * Builds a {@link WhirlpoolRouter} with a prebuilt {@link PoolGraph}
+   * Builds a {@link ElysiumPoolRouter} with a prebuilt {@link PoolGraph}
    *
-   * @param ctx A {@link WhirlpoolContext} for the current execution environment
+   * @param ctx A {@link ElysiumPoolContext} for the current execution environment
    * @param graph A {@link PoolGraph} that represents the connections between all pools.
-   * @returns A {@link WhirlpoolRouter} that can be used to find routes and execute swaps
+   * @returns A {@link ElysiumPoolRouter} that can be used to find routes and execute swaps
    */
-  static buildWithPoolGraph(ctx: WhirlpoolContext, graph: PoolGraph): WhirlpoolRouter {
-    return new WhirlpoolRouterImpl(ctx, graph);
+  static buildWithPoolGraph(ctx: ElysiumPoolContext, graph: PoolGraph): ElysiumPoolRouter {
+    return new ElysiumPoolRouterImpl(ctx, graph);
   }
 
   /**
-   * Fetch and builds a {@link WhirlpoolRouter} with a list of pool addresses.
-   * @param ctx A {@link WhirlpoolContext} for the current execution environment
+   * Fetch and builds a {@link ElysiumPoolRouter} with a list of pool addresses.
+   * @param ctx A {@link ElysiumPoolContext} for the current execution environment
    * @param pools A list of {@link Address}es that the router will find routes through.
-   * @returns A {@link WhirlpoolRouter} that can be used to find routes and execute swaps
+   * @returns A {@link ElysiumPoolRouter} that can be used to find routes and execute swaps
    */
-  static async buildWithPools(ctx: WhirlpoolContext, pools: Address[]): Promise<WhirlpoolRouter> {
+  static async buildWithPools(
+    ctx: ElysiumPoolContext,
+    pools: Address[]
+  ): Promise<ElysiumPoolRouter> {
     const poolGraph = await PoolGraphBuilder.buildPoolGraphWithFetch(pools, ctx.fetcher);
-    return new WhirlpoolRouterImpl(ctx, poolGraph);
+    return new ElysiumPoolRouterImpl(ctx, poolGraph);
   }
 }

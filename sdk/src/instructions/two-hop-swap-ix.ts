@@ -3,10 +3,10 @@ import { Instruction } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
- * Parameters to execute a two-hop swap on a Whirlpool.
+ * Parameters to execute a two-hop swap on a ElysiumPool.
  *
  * @category Instruction Types
  * @param whirlpoolOne - PublicKey for the whirlpool that the swap-one will occur on
@@ -41,7 +41,7 @@ export type TwoHopSwapParams = TwoHopSwapInput & {
 };
 
 /**
- * Parameters that define a two-hop swap on a Whirlpool.
+ * Parameters that define a two-hop swap on a ElysiumPool.
  *
  * @category Instruction Types
  * @param amount - The amount of input or output token to swap from (depending on amountSpecifiedIsInput).
@@ -52,10 +52,10 @@ export type TwoHopSwapParams = TwoHopSwapInput & {
  * @param aToBTwo - The direction of the swap-two. True if swapping from A to B. False if swapping from B to A.
  * @param sqrtPriceLimitOne - The maximum/minimum price that swap-one will swap to.
  * @param sqrtPriceLimitTwo - The maximum/minimum price that swap-two will swap to.
- * @param tickArrayOne0 - PublicKey of the tick-array of swap-One where the Whirlpool's currentTickIndex resides in
+ * @param tickArrayOne0 - PublicKey of the tick-array of swap-One where the ElysiumPool's currentTickIndex resides in
  * @param tickArrayOne1 - The next tick-array in the swap direction of swap-One. If the swap will not reach the next tick-aray, input the same array as tickArray0.
  * @param tickArrayOne2 - The next tick-array in the swap direction after tickArray2 of swap-One. If the swap will not reach the next tick-aray, input the same array as tickArray1.
- * @param tickArrayTwo0 - PublicKey of the tick-array of swap-Two where the Whirlpool's currentTickIndex resides in
+ * @param tickArrayTwo0 - PublicKey of the tick-array of swap-Two where the ElysiumPool's currentTickIndex resides in
  * @param tickArrayTwo1 - The next tick-array in the swap direction of swap-Two. If the swap will not reach the next tick-aray, input the same array as tickArray0.
  * @param tickArrayTwo2 - The next tick-array in the swap direction after tickArray2 of swap-Two. If the swap will not reach the next tick-aray, input the same array as tickArray1.
  */
@@ -76,7 +76,7 @@ export type TwoHopSwapInput = {
 };
 
 /**
- * Perform a two-hop swap in this Whirlpool
+ * Perform a two-hop swap in this ElysiumPool
  *
  * #### Special Errors
  * - `ZeroTradableAmount` - User provided parameter `amount` is 0.
@@ -96,7 +96,7 @@ export type TwoHopSwapInput = {
  * @param params - {@link TwoHopSwapParams} object
  * @returns - Instruction to perform the action.
  */
-export function twoHopSwapIx(program: Program<Whirlpool>, params: TwoHopSwapParams): Instruction {
+export function twoHopSwapIx(program: Program<ElysiumPool>, params: TwoHopSwapParams): Instruction {
   const {
     amount,
     otherAmountThreshold,

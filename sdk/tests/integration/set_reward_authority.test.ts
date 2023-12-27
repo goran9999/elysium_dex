@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { TransactionBuilder } from "@orca-so/common-sdk";
 import * as assert from "assert";
-import { NUM_REWARDS, toTx, WhirlpoolContext, WhirlpoolData, WhirlpoolIx } from "../../src";
+import { NUM_REWARDS, toTx, ElysiumPoolContext, ElysiumPoolData, ElysiumPoolIx } from "../../src";
 import { TickSpacing } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
 import { initTestPool } from "../utils/init-utils";
@@ -9,18 +9,22 @@ import { initTestPool } from "../utils/init-utils";
 describe("set_reward_authority", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully set_reward_authority at every reward index", async () => {
     const { configKeypairs, poolInitInfo } = await initTestPool(ctx, TickSpacing.Standard);
 
     const newKeypairs = generateKeypairs(NUM_REWARDS);
-    const txBuilder = new TransactionBuilder(provider.connection, provider.wallet, ctx.txBuilderOpts);
+    const txBuilder = new TransactionBuilder(
+      provider.connection,
+      provider.wallet,
+      ctx.txBuilderOpts
+    );
     for (let i = 0; i < NUM_REWARDS; i++) {
       txBuilder.addInstruction(
-        WhirlpoolIx.setRewardAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setRewardAuthorityIx(ctx.program, {
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           newRewardAuthority: newKeypairs[i].publicKey,
@@ -28,13 +32,11 @@ describe("set_reward_authority", () => {
         })
       );
     }
-    await txBuilder
-      .addSigner(configKeypairs.rewardEmissionsSuperAuthorityKeypair)
-      .buildAndExecute({
-        maxSupportedTransactionVersion: undefined,
-      });
+    await txBuilder.addSigner(configKeypairs.rewardEmissionsSuperAuthorityKeypair).buildAndExecute({
+      maxSupportedTransactionVersion: undefined,
+    });
 
-    const pool = (await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey)) as WhirlpoolData;
+    const pool = (await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey)) as ElysiumPoolData;
     for (let i = 0; i < NUM_REWARDS; i++) {
       assert.ok(pool.rewardInfos[i].authority.equals(newKeypairs[i].publicKey));
     }
@@ -48,7 +50,7 @@ describe("set_reward_authority", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setRewardAuthorityIx(ctx.program, {
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardAuthority: fakeAuthority.publicKey,
           newRewardAuthority: newAuthority.publicKey,
@@ -68,7 +70,7 @@ describe("set_reward_authority", () => {
     assert.throws(() => {
       toTx(
         ctx,
-        WhirlpoolIx.setRewardAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setRewardAuthorityIx(ctx.program, {
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           newRewardAuthority: newAuthority.publicKey,
@@ -80,7 +82,7 @@ describe("set_reward_authority", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setRewardAuthorityIx(ctx.program, {
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           newRewardAuthority: newAuthority.publicKey,
@@ -100,7 +102,7 @@ describe("set_reward_authority", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setRewardAuthorityIx(ctx.program, {
           whirlpool: poolInitInfo.whirlpoolPda.publicKey,
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           newRewardAuthority: newAuthority.publicKey,

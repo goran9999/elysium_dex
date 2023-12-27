@@ -2,7 +2,7 @@ use crate::errors::ErrorCode;
 use crate::state::NUM_REWARDS;
 use anchor_lang::prelude::*;
 
-use super::Whirlpool;
+use super::ElysiumPool;
 
 // Max & min tick index based on sqrt(1.0001) & max.min price of 2^64
 pub const MAX_TICK_INDEX: i32 = 443636;
@@ -219,10 +219,10 @@ impl TickArray {
     /// - `start_tick_index` - A u8 integer of the tick spacing for this whirlpool
     ///
     /// # Errors
-    /// - `InvalidStartTick`: - The provided start-tick-index is not an initializable tick index in this Whirlpool w/ this tick-spacing.
+    /// - `InvalidStartTick`: - The provided start-tick-index is not an initializable tick index in this ElysiumPool w/ this tick-spacing.
     pub fn initialize(
         &mut self,
-        whirlpool: &Account<Whirlpool>,
+        whirlpool: &Account<ElysiumPool>,
         start_tick_index: i32,
     ) -> Result<()> {
         if !Tick::check_is_valid_start_tick(start_tick_index, whirlpool.tick_spacing) {
@@ -242,7 +242,7 @@ impl TickArray {
     ///
     /// # Returns
     /// - `&Tick`: A reference to the desired Tick object
-    /// - `TickNotFound`: - The provided tick-index is not an initializable tick index in this Whirlpool w/ this tick-spacing.
+    /// - `TickNotFound`: - The provided tick-index is not an initializable tick index in this ElysiumPool w/ this tick-spacing.
     pub fn get_tick(&self, tick_index: i32, tick_spacing: u16) -> Result<&Tick> {
         if !self.check_in_array_bounds(tick_index, tick_spacing)
             || !Tick::check_is_usable_tick(tick_index, tick_spacing)
@@ -264,7 +264,7 @@ impl TickArray {
     /// - `update` - A reference to a TickUpdate object to update the Tick object at the given index
     ///
     /// # Errors
-    /// - `TickNotFound`: - The provided tick-index is not an initializable tick index in this Whirlpool w/ this tick-spacing.
+    /// - `TickNotFound`: - The provided tick-index is not an initializable tick index in this ElysiumPool w/ this tick-spacing.
     pub fn update_tick(
         &mut self,
         tick_index: i32,

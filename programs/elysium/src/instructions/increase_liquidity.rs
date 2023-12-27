@@ -12,7 +12,7 @@ use crate::util::{to_timestamp_u64, transfer_from_owner_to_vault, verify_positio
 #[derive(Accounts)]
 pub struct ModifyLiquidity<'info> {
     #[account(mut)]
-    pub whirlpool: Account<'info, Whirlpool>,
+    pub whirlpool: Account<'info, ElysiumPool>,
 
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,

@@ -1,5 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Account, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync, Mint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import {
+  Account,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddressSync,
+  Mint,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram } from "@solana/web3.js";
 import * as assert from "assert";
 import {
@@ -7,28 +13,34 @@ import {
   POSITION_BUNDLE_SIZE,
   PositionBundleData,
   toTx,
-  WhirlpoolContext
+  ElysiumPoolContext,
 } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
-import {
-  createMintInstructions,
-  mintToDestination
-} from "../utils";
+import { createMintInstructions, mintToDestination } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
 import { initializePositionBundle } from "../utils/init-utils";
 
 describe("initialize_position_bundle", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
-  async function createInitializePositionBundleTx(ctx: WhirlpoolContext, overwrite: any, mintKeypair?: Keypair) {
+  async function createInitializePositionBundleTx(
+    ctx: ElysiumPoolContext,
+    overwrite: any,
+    mintKeypair?: Keypair
+  ) {
     const positionBundleMintKeypair = mintKeypair ?? Keypair.generate();
-    const positionBundlePda = PDAUtil.getPositionBundle(ctx.program.programId, positionBundleMintKeypair.publicKey);
-    const positionBundleTokenAccount = getAssociatedTokenAddressSync(positionBundleMintKeypair.publicKey, ctx.wallet.publicKey);
+    const positionBundlePda = PDAUtil.getPositionBundle(
+      ctx.program.programId,
+      positionBundleMintKeypair.publicKey
+    );
+    const positionBundleTokenAccount = getAssociatedTokenAddressSync(
+      positionBundleMintKeypair.publicKey,
+      ctx.wallet.publicKey
+    );
 
     const defaultAccounts = {
       positionBundle: positionBundlePda.publicKey,
@@ -46,7 +58,7 @@ describe("initialize_position_bundle", () => {
       accounts: {
         ...defaultAccounts,
         ...overwrite,
-      }
+      },
     });
 
     return toTx(ctx, {
@@ -58,7 +70,10 @@ describe("initialize_position_bundle", () => {
 
   async function checkPositionBundleMint(positionBundleMintPubkey: PublicKey) {
     // verify position bundle Mint account
-    const positionBundleMint = (await ctx.fetcher.getMintInfo(positionBundleMintPubkey, IGNORE_CACHE)) as Mint;
+    const positionBundleMint = (await ctx.fetcher.getMintInfo(
+      positionBundleMintPubkey,
+      IGNORE_CACHE
+    )) as Mint;
     // should have NFT characteristics
     assert.strictEqual(positionBundleMint.decimals, 0);
     assert.ok(positionBundleMint.supply === 1n);
@@ -67,17 +82,30 @@ describe("initialize_position_bundle", () => {
     assert.ok(positionBundleMint.freezeAuthority === null);
   }
 
-  async function checkPositionBundleTokenAccount(positionBundleTokenAccountPubkey: PublicKey, owner: PublicKey, positionBundleMintPubkey: PublicKey) {
+  async function checkPositionBundleTokenAccount(
+    positionBundleTokenAccountPubkey: PublicKey,
+    owner: PublicKey,
+    positionBundleMintPubkey: PublicKey
+  ) {
     // verify position bundle Token account
-    const positionBundleTokenAccount = (await ctx.fetcher.getTokenInfo(positionBundleTokenAccountPubkey, IGNORE_CACHE)) as Account;
+    const positionBundleTokenAccount = (await ctx.fetcher.getTokenInfo(
+      positionBundleTokenAccountPubkey,
+      IGNORE_CACHE
+    )) as Account;
     assert.ok(positionBundleTokenAccount.amount === 1n);
     assert.ok(positionBundleTokenAccount.mint.equals(positionBundleMintPubkey));
     assert.ok(positionBundleTokenAccount.owner.equals(owner));
   }
 
-  async function checkPositionBundle(positionBundlePubkey: PublicKey, positionBundleMintPubkey: PublicKey) {
+  async function checkPositionBundle(
+    positionBundlePubkey: PublicKey,
+    positionBundleMintPubkey: PublicKey
+  ) {
     // verify PositionBundle account
-    const positionBundle = (await ctx.fetcher.getPositionBundle(positionBundlePubkey, IGNORE_CACHE)) as PositionBundleData;
+    const positionBundle = (await ctx.fetcher.getPositionBundle(
+      positionBundlePubkey,
+      IGNORE_CACHE
+    )) as PositionBundleData;
     assert.ok(positionBundle.positionBundleMint.equals(positionBundleMintPubkey));
     assert.strictEqual(positionBundle.positionBitmap.length * 8, POSITION_BUNDLE_SIZE);
     for (const bitmap of positionBundle.positionBitmap) {
@@ -87,7 +115,10 @@ describe("initialize_position_bundle", () => {
 
   async function createOtherWallet(): Promise<Keypair> {
     const keypair = Keypair.generate();
-    const signature = await provider.connection.requestAirdrop(keypair.publicKey, 100 * LAMPORTS_PER_SOL);
+    const signature = await provider.connection.requestAirdrop(
+      keypair.publicKey,
+      100 * LAMPORTS_PER_SOL
+    );
     await provider.connection.confirmTransaction(signature, "confirmed");
     return keypair;
   }
@@ -95,18 +126,19 @@ describe("initialize_position_bundle", () => {
   it("successfully initialize position bundle and verify initialized account contents", async () => {
     const positionBundleInfo = await initializePositionBundle(
       ctx,
-      ctx.wallet.publicKey,
+      ctx.wallet.publicKey
       // funder = ctx.wallet.publicKey
     );
 
-    const {
-      positionBundleMintKeypair,
-      positionBundlePda,
-      positionBundleTokenAccount,
-    } = positionBundleInfo;
+    const { positionBundleMintKeypair, positionBundlePda, positionBundleTokenAccount } =
+      positionBundleInfo;
 
     await checkPositionBundleMint(positionBundleMintKeypair.publicKey);
-    await checkPositionBundleTokenAccount(positionBundleTokenAccount, ctx.wallet.publicKey, positionBundleMintKeypair.publicKey);
+    await checkPositionBundleTokenAccount(
+      positionBundleTokenAccount,
+      ctx.wallet.publicKey,
+      positionBundleMintKeypair.publicKey
+    );
     await checkPositionBundle(positionBundlePda.publicKey, positionBundleMintKeypair.publicKey);
   });
 
@@ -117,7 +149,7 @@ describe("initialize_position_bundle", () => {
     const positionBundleInfo = await initializePositionBundle(
       ctx,
       ctx.wallet.publicKey,
-      otherWallet,
+      otherWallet
     );
 
     const postBalance = await ctx.connection.getBalance(ctx.wallet.publicKey);
@@ -125,34 +157,32 @@ describe("initialize_position_bundle", () => {
     const minRent = await ctx.connection.getMinimumBalanceForRentExemption(0);
     assert.ok(diffBalance < minRent); // ctx.wallet didn't pay any rent
 
-    const {
-      positionBundleMintKeypair,
-      positionBundlePda,
-      positionBundleTokenAccount,
-    } = positionBundleInfo;
+    const { positionBundleMintKeypair, positionBundlePda, positionBundleTokenAccount } =
+      positionBundleInfo;
 
     await checkPositionBundleMint(positionBundleMintKeypair.publicKey);
-    await checkPositionBundleTokenAccount(positionBundleTokenAccount, ctx.wallet.publicKey, positionBundleMintKeypair.publicKey);
+    await checkPositionBundleTokenAccount(
+      positionBundleTokenAccount,
+      ctx.wallet.publicKey,
+      positionBundleMintKeypair.publicKey
+    );
     await checkPositionBundle(positionBundlePda.publicKey, positionBundleMintKeypair.publicKey);
   });
 
   it("PositionBundle account has reserved space", async () => {
     const positionBundleAccountSizeIncludingReserve = 8 + 32 + 32 + 64;
 
-    const positionBundleInfo = await initializePositionBundle(
-      ctx,
-      ctx.wallet.publicKey,
-    );
+    const positionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
 
-    const account = await ctx.connection.getAccountInfo(positionBundleInfo.positionBundlePda.publicKey, "confirmed");
+    const account = await ctx.connection.getAccountInfo(
+      positionBundleInfo.positionBundlePda.publicKey,
+      "confirmed"
+    );
     assert.equal(account!.data.length, positionBundleAccountSizeIncludingReserve);
   });
 
   it("should be failed: cannot mint additional NFT by owner", async () => {
-    const positionBundleInfo = await initializePositionBundle(
-      ctx,
-      ctx.wallet.publicKey,
-    );
+    const positionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
 
     await assert.rejects(
       mintToDestination(
@@ -177,22 +207,24 @@ describe("initialize_position_bundle", () => {
     const createMintTx = toTx(ctx, {
       instructions: createMintIx,
       cleanupInstructions: [],
-      signers: [positionBundleMintKeypair]
+      signers: [positionBundleMintKeypair],
     });
     await createMintTx.buildAndExecute();
 
     const tx = await createInitializePositionBundleTx(ctx, {}, positionBundleMintKeypair);
-    await assert.rejects(
-      tx.buildAndExecute(),
-      (err) => { return JSON.stringify(err).includes("already in use") }
-    );
+    await assert.rejects(tx.buildAndExecute(), (err) => {
+      return JSON.stringify(err).includes("already in use");
+    });
   });
 
   describe("invalid input account", () => {
     it("should be failed: invalid position bundle address", async () => {
       const tx = await createInitializePositionBundleTx(ctx, {
         // invalid parameter
-        positionBundle: PDAUtil.getPositionBundle(ctx.program.programId, Keypair.generate().publicKey).publicKey,
+        positionBundle: PDAUtil.getPositionBundle(
+          ctx.program.programId,
+          Keypair.generate().publicKey
+        ).publicKey,
       });
 
       await assert.rejects(
@@ -204,7 +236,10 @@ describe("initialize_position_bundle", () => {
     it("should be failed: invalid ATA address", async () => {
       const tx = await createInitializePositionBundleTx(ctx, {
         // invalid parameter
-        positionBundleTokenAccount: getAssociatedTokenAddressSync(Keypair.generate().publicKey, ctx.wallet.publicKey),
+        positionBundleTokenAccount: getAssociatedTokenAddressSync(
+          Keypair.generate().publicKey,
+          ctx.wallet.publicKey
+        ),
       });
 
       await assert.rejects(

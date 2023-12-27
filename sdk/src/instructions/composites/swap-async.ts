@@ -1,26 +1,26 @@
 import { resolveOrCreateATAs, TransactionBuilder, ZERO } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { SwapUtils, TickArrayUtil, Whirlpool, WhirlpoolContext } from "../..";
-import { WhirlpoolAccountFetchOptions } from "../../network/public/fetcher";
+import { SwapUtils, TickArrayUtil, ElysiumPool, ElysiumPoolContext } from "../..";
+import { ElysiumPoolAccountFetchOptions } from "../../network/public/fetcher";
 import { SwapInput, swapIx } from "../swap-ix";
 
 export type SwapAsyncParams = {
   swapInput: SwapInput;
-  whirlpool: Whirlpool;
+  whirlpool: ElysiumPool;
   wallet: PublicKey;
 };
 
 /**
  * Swap instruction builder method with resolveATA & additional checks.
- * @param ctx - WhirlpoolContext object for the current environment.
+ * @param ctx - ElysiumPoolContext object for the current environment.
  * @param params - {@link SwapAsyncParams}
- * @param opts - {@link WhirlpoolAccountFetchOptions} to use for account fetching.
+ * @param opts - {@link ElysiumPoolAccountFetchOptions} to use for account fetching.
  * @returns
  */
 export async function swapAsync(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   params: SwapAsyncParams,
-  opts: WhirlpoolAccountFetchOptions
+  opts: ElysiumPoolAccountFetchOptions
 ): Promise<TransactionBuilder> {
   const { wallet, whirlpool, swapInput } = params;
   const { aToB, amount } = swapInput;

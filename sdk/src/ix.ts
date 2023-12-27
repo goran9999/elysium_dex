@@ -1,28 +1,28 @@
 import { Program } from "@coral-xyz/anchor";
 import { PDA } from "@orca-so/common-sdk";
-import { Whirlpool } from "./artifacts/whirlpool";
+import { ElysiumPool } from "./artifacts/whirlpool";
 import * as ix from "./instructions";
 
 /**
- * Instruction builders for the Whirlpools program.
+ * Instruction builders for the ElysiumPools program.
  *
  * @category Core
  */
-export class WhirlpoolIx {
+export class ElysiumPoolIx {
   /**
-   * Initializes a WhirlpoolsConfig account that hosts info & authorities
-   * required to govern a set of Whirlpools.
+   * Initializes a ElysiumPoolsConfig account that hosts info & authorities
+   * required to govern a set of ElysiumPools.
    *
    * @param program - program object containing services required to generate the instruction
    * @param params - InitConfigParams object
    * @returns - Instruction to perform the action.
    */
-  public static initializeConfigIx(program: Program<Whirlpool>, params: ix.InitConfigParams) {
+  public static initializeConfigIx(program: Program<ElysiumPool>, params: ix.InitConfigParams) {
     return ix.initializeConfigIx(program, params);
   }
 
   /**
-   * Initializes a fee tier account usable by Whirlpools in this WhirlpoolsConfig space.
+   * Initializes a fee tier account usable by ElysiumPools in this ElysiumPoolsConfig space.
    *
    *  Special Errors
    * `FeeRateMaxExceeded` - If the provided default_fee_rate exceeds MAX_FEE_RATE.
@@ -31,12 +31,12 @@ export class WhirlpoolIx {
    * @param params - InitFeeTierParams object
    * @returns - Instruction to perform the action.
    */
-  public static initializeFeeTierIx(program: Program<Whirlpool>, params: ix.InitFeeTierParams) {
+  public static initializeFeeTierIx(program: Program<ElysiumPool>, params: ix.InitFeeTierParams) {
     return ix.initializeFeeTierIx(program, params);
   }
 
   /**
-   * Initializes a tick_array account to represent a tick-range in a Whirlpool.
+   * Initializes a tick_array account to represent a tick-range in a ElysiumPool.
    *
    * Special Errors
    * `InvalidTokenMintOrder` - The order of mints have to be ordered by
@@ -46,12 +46,12 @@ export class WhirlpoolIx {
    * @param params - InitPoolParams object
    * @returns - Instruction to perform the action.
    */
-  public static initializePoolIx(program: Program<Whirlpool>, params: ix.InitPoolParams) {
+  public static initializePoolIx(program: Program<ElysiumPool>, params: ix.InitPoolParams) {
     return ix.initializePoolIx(program, params);
   }
 
   /**
-   * Initialize reward for a Whirlpool. A pool can only support up to a set number of rewards.
+   * Initialize reward for a ElysiumPool. A pool can only support up to a set number of rewards.
    * The initial emissionsPerSecond is set to 0.
    *
    * #### Special Errors
@@ -62,7 +62,10 @@ export class WhirlpoolIx {
    * @param params - InitializeRewardParams object
    * @returns - Instruction to perform the action.
    */
-  public static initializeRewardIx(program: Program<Whirlpool>, params: ix.InitializeRewardParams) {
+  public static initializeRewardIx(
+    program: Program<ElysiumPool>,
+    params: ix.InitializeRewardParams
+  ) {
     return ix.initializeRewardIx(program, params);
   }
 
@@ -76,12 +79,12 @@ export class WhirlpoolIx {
    * @param params - InitTickArrayParams object
    * @returns - Instruction to perform the action.
    */
-  public static initTickArrayIx(program: Program<Whirlpool>, params: ix.InitTickArrayParams) {
+  public static initTickArrayIx(program: Program<ElysiumPool>, params: ix.InitTickArrayParams) {
     return ix.initTickArrayIx(program, params);
   }
 
   /**
-   * Open a position in a Whirlpool. A unique token will be minted to represent the position in the users wallet.
+   * Open a position in a ElysiumPool. A unique token will be minted to represent the position in the users wallet.
    * The position will start off with 0 liquidity.
    *
    * #### Special Errors
@@ -91,12 +94,12 @@ export class WhirlpoolIx {
    * @param params - OpenPositionParams object
    * @returns - Instruction to perform the action.
    */
-  public static openPositionIx(program: Program<Whirlpool>, params: ix.OpenPositionParams) {
+  public static openPositionIx(program: Program<ElysiumPool>, params: ix.OpenPositionParams) {
     return ix.openPositionIx(program, params);
   }
 
   /**
-   * Open a position in a Whirlpool. A unique token will be minted to represent the position
+   * Open a position in a ElysiumPool. A unique token will be minted to represent the position
    * in the users wallet. Additional Metaplex metadata is appended to identify the token.
    * The position will start off with 0 liquidity.
    *
@@ -108,14 +111,14 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static openPositionWithMetadataIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.OpenPositionParams & { metadataPda: PDA }
   ) {
     return ix.openPositionWithMetadataIx(program, params);
   }
 
   /**
-   * Add liquidity to a position in the Whirlpool. This call also updates the position's accrued fees and rewards.
+   * Add liquidity to a position in the ElysiumPool. This call also updates the position's accrued fees and rewards.
    *
    * #### Special Errors
    * `LiquidityZero` - Provided liquidity amount is zero.
@@ -127,14 +130,14 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static increaseLiquidityIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.IncreaseLiquidityParams
   ) {
     return ix.increaseLiquidityIx(program, params);
   }
 
   /**
-   * Remove liquidity to a position in the Whirlpool. This call also updates the position's accrued fees and rewards.
+   * Remove liquidity to a position in the ElysiumPool. This call also updates the position's accrued fees and rewards.
    *
    * #### Special Errors
    * - `LiquidityZero` - Provided liquidity amount is zero.
@@ -146,25 +149,25 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static decreaseLiquidityIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.DecreaseLiquidityParams
   ) {
     return ix.decreaseLiquidityIx(program, params);
   }
 
   /**
-   * Close a position in a Whirlpool. Burns the position token in the owner's wallet.
+   * Close a position in a ElysiumPool. Burns the position token in the owner's wallet.
    *
    * @param program - program object containing services required to generate the instruction
    * @param params - ClosePositionParams object
    * @returns - Instruction to perform the action.
    */
-  public static closePositionIx(program: Program<Whirlpool>, params: ix.ClosePositionParams) {
+  public static closePositionIx(program: Program<ElysiumPool>, params: ix.ClosePositionParams) {
     return ix.closePositionIx(program, params);
   }
 
   /**
-   * Perform a swap in this Whirlpool
+   * Perform a swap in this ElysiumPool
    *
    * #### Special Errors
    * - `ZeroTradableAmount` - User provided parameter `amount` is 0.
@@ -181,12 +184,12 @@ export class WhirlpoolIx {
    * @param params - {@link SwapParams}
    * @returns - Instruction to perform the action.
    */
-  public static swapIx(program: Program<Whirlpool>, params: ix.SwapParams) {
+  public static swapIx(program: Program<ElysiumPool>, params: ix.SwapParams) {
     return ix.swapIx(program, params);
   }
 
   /**
-   * Perform a two-hop-swap in this Whirlpool
+   * Perform a two-hop-swap in this ElysiumPool
    *
    * #### Special Errors
    * - `ZeroTradableAmount` - User provided parameter `amount` is 0.
@@ -205,7 +208,7 @@ export class WhirlpoolIx {
    * @param params - TwoHopSwapParams object
    * @returns - Instruction to perform the action.
    */
-  public static twoHopSwapIx(program: Program<Whirlpool>, params: ix.TwoHopSwapParams) {
+  public static twoHopSwapIx(program: Program<ElysiumPool>, params: ix.TwoHopSwapParams) {
     return ix.twoHopSwapIx(program, params);
   }
 
@@ -221,7 +224,7 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static updateFeesAndRewardsIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.UpdateFeesAndRewardsParams
   ) {
     return ix.updateFeesAndRewardsIx(program, params);
@@ -235,19 +238,19 @@ export class WhirlpoolIx {
    * @param params - CollectFeesParams object
    * @returns - Instruction to perform the action.
    */
-  public static collectFeesIx(program: Program<Whirlpool>, params: ix.CollectFeesParams) {
+  public static collectFeesIx(program: Program<ElysiumPool>, params: ix.CollectFeesParams) {
     return ix.collectFeesIx(program, params);
   }
 
   /**
-   * Collect protocol fees accrued in this Whirlpool.
+   * Collect protocol fees accrued in this ElysiumPool.
    *
    * @param program - program object containing services required to generate the instruction
    * @param params - CollectProtocolFeesParams object
    * @returns - Instruction to perform the action.
    */
   public static collectProtocolFeesIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.CollectProtocolFeesParams
   ) {
     return ix.collectProtocolFeesIx(program, params);
@@ -261,12 +264,12 @@ export class WhirlpoolIx {
    * @param params - CollectRewardParams object
    * @returns - Instruction to perform the action.
    */
-  public static collectRewardIx(program: Program<Whirlpool>, params: ix.CollectRewardParams) {
+  public static collectRewardIx(program: Program<ElysiumPool>, params: ix.CollectRewardParams) {
     return ix.collectRewardIx(program, params);
   }
 
   /**
-   * Sets the fee authority to collect protocol fees for a WhirlpoolsConfig.
+   * Sets the fee authority to collect protocol fees for a ElysiumPoolsConfig.
    * Only the current collect protocol fee authority has permission to invoke this instruction.
    *
    * @param program - program object containing services required to generate the instruction
@@ -274,7 +277,7 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static setCollectProtocolFeesAuthorityIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.SetCollectProtocolFeesAuthorityParams
   ) {
     return ix.setCollectProtocolFeesAuthorityIx(program, params);
@@ -292,14 +295,14 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static setDefaultFeeRateIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.SetDefaultFeeRateParams
   ) {
     return ix.setDefaultFeeRateIx(program, params);
   }
 
   /**
-   * Updates a WhirlpoolsConfig with a new default protocol fee rate. The new rate will not retroactively update
+   * Updates a ElysiumPoolsConfig with a new default protocol fee rate. The new rate will not retroactively update
    * initialized pools.
    *
    * #### Special Errors
@@ -310,14 +313,14 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static setDefaultProtocolFeeRateIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.SetDefaultProtocolFeeRateParams
   ) {
     return ix.setDefaultProtocolFeeRateIx(program, params);
   }
 
   /**
-   * Sets the fee authority for a WhirlpoolsConfig.
+   * Sets the fee authority for a ElysiumPoolsConfig.
    * The fee authority can set the fee & protocol fee rate for individual pools or set the default fee rate for newly minted pools.
    * Only the current fee authority has permission to invoke this instruction.
    *
@@ -325,12 +328,12 @@ export class WhirlpoolIx {
    * @param params - SetFeeAuthorityParams object
    * @returns - Instruction to perform the action.
    */
-  public static setFeeAuthorityIx(program: Program<Whirlpool>, params: ix.SetFeeAuthorityParams) {
+  public static setFeeAuthorityIx(program: Program<ElysiumPool>, params: ix.SetFeeAuthorityParams) {
     return ix.setFeeAuthorityIx(program, params);
   }
 
   /**
-   * Sets the fee rate for a Whirlpool.
+   * Sets the fee rate for a ElysiumPool.
    * Only the current fee authority has permission to invoke this instruction.
    *
    * #### Special Errors
@@ -340,12 +343,12 @@ export class WhirlpoolIx {
    * @param params - SetFeeRateParams object
    * @returns - Instruction to perform the action.
    */
-  public static setFeeRateIx(program: Program<Whirlpool>, params: ix.SetFeeRateParams) {
+  public static setFeeRateIx(program: Program<ElysiumPool>, params: ix.SetFeeRateParams) {
     return ix.setFeeRateIx(program, params);
   }
 
   /**
-   * Sets the protocol fee rate for a Whirlpool.
+   * Sets the protocol fee rate for a ElysiumPool.
    * Only the current fee authority has permission to invoke this instruction.
    *
    * #### Special Errors
@@ -356,7 +359,7 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static setProtocolFeeRateIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.SetProtocolFeeRateParams
   ) {
     return ix.setProtocolFeeRateIx(program, params);
@@ -375,7 +378,7 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static setRewardAuthorityBySuperAuthorityIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.SetRewardAuthorityBySuperAuthorityParams
   ) {
     return ix.setRewardAuthorityBySuperAuthorityIx(program, params);
@@ -394,14 +397,14 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static setRewardAuthorityIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.SetRewardAuthorityParams
   ) {
     return ix.setRewardAuthorityIx(program, params);
   }
 
   /**
-   * Set the reward emissions for a reward in a Whirlpool.
+   * Set the reward emissions for a reward in a ElysiumPool.
    *
    * #### Special Errors
    * - `RewardVaultAmountInsufficient` - The amount of rewards in the reward vault cannot emit more than a day of desired emissions.
@@ -414,23 +417,23 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static setRewardEmissionsIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.SetRewardEmissionsParams
   ) {
     return ix.setRewardEmissionsIx(program, params);
   }
 
   /**
-   * Set the whirlpool reward super authority for a WhirlpoolsConfig
+   * Set the whirlpool reward super authority for a ElysiumPoolsConfig
    * Only the current reward super authority has permission to invoke this instruction.
-   * This instruction will not change the authority on any `WhirlpoolRewardInfo` whirlpool rewards.
+   * This instruction will not change the authority on any `ElysiumPoolRewardInfo` whirlpool rewards.
    *
    * @param program - program object containing services required to generate the instruction
    * @param params - SetRewardEmissionsSuperAuthorityParams object
    * @returns - Instruction to perform the action.
    */
   public static setRewardEmissionsSuperAuthorityIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.SetRewardEmissionsSuperAuthorityParams
   ) {
     return ix.setRewardEmissionsSuperAuthorityIx(program, params);
@@ -444,7 +447,7 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static initializePositionBundleIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.InitializePositionBundleParams
   ) {
     return ix.initializePositionBundleIx(program, params);
@@ -459,7 +462,7 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static initializePositionBundleWithMetadataIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.InitializePositionBundleParams & { positionBundleMetadataPda: PDA }
   ) {
     return ix.initializePositionBundleWithMetadataIx(program, params);
@@ -476,14 +479,14 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static deletePositionBundleIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.DeletePositionBundleParams
   ) {
     return ix.deletePositionBundleIx(program, params);
   }
 
   /**
-   * Open a bundled position in a Whirlpool.
+   * Open a bundled position in a ElysiumPool.
    * No new tokens are issued because the owner of the position bundle becomes the owner of the position.
    * The position will start off with 0 liquidity.
    *
@@ -496,14 +499,14 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static openBundledPositionIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.OpenBundledPositionParams
   ) {
     return ix.openBundledPositionIx(program, params);
   }
 
   /**
-   * Close a bundled position in a Whirlpool.
+   * Close a bundled position in a ElysiumPool.
    *
    * #### Special Errors
    * `InvalidBundleIndex` - If the provided bundle index is out of bounds.
@@ -514,7 +517,7 @@ export class WhirlpoolIx {
    * @returns - Instruction to perform the action.
    */
   public static closeBundledPositionIx(
-    program: Program<Whirlpool>,
+    program: Program<ElysiumPool>,
     params: ix.CloseBundledPositionParams
   ) {
     return ix.closeBundledPositionIx(program, params);

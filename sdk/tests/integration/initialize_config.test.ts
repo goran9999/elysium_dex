@@ -3,9 +3,9 @@ import * as assert from "assert";
 import {
   InitConfigParams,
   toTx,
-  WhirlpoolContext,
-  WhirlpoolIx,
-  WhirlpoolsConfigData
+  ElysiumPoolContext,
+  ElysiumPoolIx,
+  ElysiumPoolsConfigData,
 } from "../../src";
 import { ONE_SOL, systemTransferTx } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
@@ -14,19 +14,22 @@ import { generateDefaultConfigParams } from "../utils/test-builders";
 describe("initialize_config", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   let initializedConfigInfo: InitConfigParams;
 
-  it("successfully init a WhirlpoolsConfig account", async () => {
+  it("successfully init a ElysiumPoolsConfig account", async () => {
     const { configInitInfo } = generateDefaultConfigParams(ctx);
-    await toTx(ctx, WhirlpoolIx.initializeConfigIx(ctx.program, configInitInfo)).buildAndExecute();
+    await toTx(
+      ctx,
+      ElysiumPoolIx.initializeConfigIx(ctx.program, configInitInfo)
+    ).buildAndExecute();
 
     const configAccount = (await fetcher.getConfig(
       configInitInfo.whirlpoolsConfigKeypair.publicKey
-    )) as WhirlpoolsConfigData;
+    )) as ElysiumPoolsConfigData;
 
     assert.ok(
       configAccount.collectProtocolFeesAuthority.equals(configInitInfo.collectProtocolFeesAuthority)
@@ -53,7 +56,7 @@ describe("initialize_config", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.initializeConfigIx(ctx.program, infoWithDupeConfigKey)
+        ElysiumPoolIx.initializeConfigIx(ctx.program, infoWithDupeConfigKey)
       ).buildAndExecute(),
       /0x0/
     );
@@ -63,7 +66,7 @@ describe("initialize_config", () => {
     const funderKeypair = anchor.web3.Keypair.generate();
     await systemTransferTx(provider, funderKeypair.publicKey, ONE_SOL).buildAndExecute();
     const { configInitInfo } = generateDefaultConfigParams(ctx, funderKeypair.publicKey);
-    await toTx(ctx, WhirlpoolIx.initializeConfigIx(ctx.program, configInitInfo))
+    await toTx(ctx, ElysiumPoolIx.initializeConfigIx(ctx.program, configInitInfo))
       .addSigner(funderKeypair)
       .buildAndExecute();
   });

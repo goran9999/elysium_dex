@@ -1,15 +1,15 @@
 import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
- * Parameters to set the collect fee authority in a WhirlpoolsConfig
+ * Parameters to set the collect fee authority in a ElysiumPoolsConfig
  *
  * @category Instruction Types
- * @param whirlpoolsConfig - The public key for the WhirlpoolsConfig this pool is initialized in
- * @param collectProtocolFeesAuthority - The current collectProtocolFeesAuthority in the WhirlpoolsConfig
- * @param newCollectProtocolFeesAuthority - The new collectProtocolFeesAuthority in the WhirlpoolsConfig
+ * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
+ * @param collectProtocolFeesAuthority - The current collectProtocolFeesAuthority in the ElysiumPoolsConfig
+ * @param newCollectProtocolFeesAuthority - The new collectProtocolFeesAuthority in the ElysiumPoolsConfig
  */
 export type SetCollectProtocolFeesAuthorityParams = {
   whirlpoolsConfig: PublicKey;
@@ -18,7 +18,7 @@ export type SetCollectProtocolFeesAuthorityParams = {
 };
 
 /**
- * Sets the fee authority to collect protocol fees for a WhirlpoolsConfig.
+ * Sets the fee authority to collect protocol fees for a ElysiumPoolsConfig.
  * Only the current collect protocol fee authority has permission to invoke this instruction.
  *
  * @category Instructions
@@ -27,7 +27,7 @@ export type SetCollectProtocolFeesAuthorityParams = {
  * @returns - Instruction to perform the action.
  */
 export function setCollectProtocolFeesAuthorityIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: SetCollectProtocolFeesAuthorityParams
 ): Instruction {
   const { whirlpoolsConfig, collectProtocolFeesAuthority, newCollectProtocolFeesAuthority } =

@@ -1,10 +1,10 @@
 import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
- * Parameters to close a bundled position in a Whirlpool.
+ * Parameters to close a bundled position in a ElysiumPool.
  *
  * @category Instruction Types
  * @param bundledPosition - PublicKey for the bundled position.
@@ -24,7 +24,7 @@ export type CloseBundledPositionParams = {
 };
 
 /**
- * Close a bundled position in a Whirlpool.
+ * Close a bundled position in a ElysiumPool.
  *
  * #### Special Errors
  * `InvalidBundleIndex` - If the provided bundle index is out of bounds.
@@ -36,7 +36,7 @@ export type CloseBundledPositionParams = {
  * @returns - Instruction to perform the action.
  */
 export function closeBundledPositionIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: CloseBundledPositionParams
 ): Instruction {
   const {

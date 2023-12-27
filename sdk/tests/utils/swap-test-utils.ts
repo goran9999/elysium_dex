@@ -4,17 +4,17 @@ import { NATIVE_MINT } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { TickSpacing } from ".";
-import { TICK_ARRAY_SIZE, Whirlpool, WhirlpoolClient, WhirlpoolContext } from "../../src";
+import { TICK_ARRAY_SIZE, ElysiumPool, ElysiumPoolClient, ElysiumPoolContext } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import {
   FundedPositionParams,
   fundPositionsWithClient,
-  initTestPoolWithTokens
+  initTestPoolWithTokens,
 } from "./init-utils";
 
 export interface SwapTestPoolParams {
-  ctx: WhirlpoolContext;
-  client: WhirlpoolClient;
+  ctx: ElysiumPoolContext;
+  client: ElysiumPoolClient;
   tickSpacing: TickSpacing;
   initSqrtPrice: anchor.BN;
   initArrayStartTicks: number[];
@@ -31,7 +31,7 @@ export interface SwapTestSwapParams {
 }
 
 export interface SwapTestSetup {
-  whirlpool: Whirlpool;
+  whirlpool: ElysiumPool;
   tickArrayAddresses: PublicKey[];
 }
 

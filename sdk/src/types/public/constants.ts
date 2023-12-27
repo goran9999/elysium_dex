@@ -2,7 +2,7 @@ import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 
 /**
- * Program ID hosting Orca's Whirlpool program.
+ * Program ID hosting Orca's ElysiumPool program.
  * @category Constants
  */
 export const ORCA_WHIRLPOOL_PROGRAM_ID = new PublicKey(
@@ -10,7 +10,7 @@ export const ORCA_WHIRLPOOL_PROGRAM_ID = new PublicKey(
 );
 
 /**
- * Orca's WhirlpoolsConfig PublicKey.
+ * Orca's ElysiumPoolsConfig PublicKey.
  * @category Constants
  */
 export const ORCA_WHIRLPOOLS_CONFIG = new PublicKey("2LecshUwdy9xi7meFgHtFJQNSKk4KdTrcpvaB56dP2NQ");
@@ -28,25 +28,25 @@ export const ORCA_SUPPORTED_TICK_SPACINGS = [1, 2, 4, 8, 16, 64, 128, 256];
 export const NUM_REWARDS = 3;
 
 /**
- * The maximum tick index supported by the Whirlpool program.
+ * The maximum tick index supported by the ElysiumPool program.
  * @category Constants
  */
 export const MAX_TICK_INDEX = 443636;
 
 /**
- * The minimum tick index supported by the Whirlpool program.
+ * The minimum tick index supported by the ElysiumPool program.
  * @category Constants
  */
 export const MIN_TICK_INDEX = -443636;
 
 /**
- * The maximum sqrt-price supported by the Whirlpool program.
+ * The maximum sqrt-price supported by the ElysiumPool program.
  * @category Constants
  */
 export const MAX_SQRT_PRICE = "79226673515401279992447579055";
 
 /**
- * The minimum sqrt-price supported by the Whirlpool program.
+ * The minimum sqrt-price supported by the ElysiumPool program.
  * @category Constants
  */
 export const MIN_SQRT_PRICE = "4295048016";
@@ -89,7 +89,7 @@ export const PROTOCOL_FEE_RATE_MUL_VALUE = new BN(10_000);
 export const FEE_RATE_MUL_VALUE = new BN(1_000_000);
 
 /**
- * The public key that is allowed to update the metadata of Whirlpool NFTs.
+ * The public key that is allowed to update the metadata of ElysiumPool NFTs.
  * @category Constants
  */
 export const WHIRLPOOL_NFT_UPDATE_AUTH = new PublicKey(

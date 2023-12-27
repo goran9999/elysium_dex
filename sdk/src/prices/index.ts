@@ -6,7 +6,7 @@ import {
   ORCA_WHIRLPOOLS_CONFIG,
   ORCA_WHIRLPOOL_PROGRAM_ID,
   TickArrayData,
-  WhirlpoolData,
+  ElysiumPoolData,
 } from "../types/public";
 import { TOKEN_MINTS } from "../utils/constants";
 
@@ -16,12 +16,12 @@ export * from "./price-module";
  * A config object for the {@link PriceModule} functions.
  *
  * @category PriceModule
- * @param quoteTokens The group of quote tokens that you want to search Whirlpools for.
+ * @param quoteTokens The group of quote tokens that you want to search ElysiumPools for.
  *                    The first token must be the token that is being priced against the other tokens.
  *                    The subsequent tokens are alternative tokens that can be used to price the first token.
- * @param tickSpacings The group of tick spacings that you want to search Whirlpools for.
- * @param programId The public key of the Whirlpool Program account that you want to search Whirlpools for.
- * @param whirlpoolsConfig The public key of the {@link WhirlpoolsConfig} account that you want to search Whirlpools for.
+ * @param tickSpacings The group of tick spacings that you want to search ElysiumPools for.
+ * @param programId The public key of the ElysiumPool Program account that you want to search ElysiumPools for.
+ * @param whirlpoolsConfig The public key of the {@link ElysiumPoolsConfig} account that you want to search ElysiumPools for.
  */
 export type GetPricesConfig = {
   quoteTokens: PublicKey[];
@@ -32,12 +32,12 @@ export type GetPricesConfig = {
 
 /**
  * A config object for the {@link PriceModule} functions to define thresholds for price calculations.
- * Whirlpools that do not fit the criteria set by the parameters below will be excluded in the price calculation.
+ * ElysiumPools that do not fit the criteria set by the parameters below will be excluded in the price calculation.
  *
  * @category PriceModule
- * @param amountOut The token amount in terms of the first quote token amount to evaluate a Whirlpool's liquidity against.
+ * @param amountOut The token amount in terms of the first quote token amount to evaluate a ElysiumPool's liquidity against.
  * @param priceImpactThreshold Using amountOut to perform a swap quote on a pool, this value is the maximum price impact
- *                             that a Whirlpool can have to be included in the price calculation.
+ *                             that a ElysiumPool can have to be included in the price calculation.
  */
 export type GetPricesThresholdConfig = {
   amountOut: BN;
@@ -48,7 +48,7 @@ export type GetPricesThresholdConfig = {
  * A set of fetched accounts that are used for price calculations in {@link PriceModule} functions.
  *
  * @category PriceModule
- * @param poolMap A map of {@link WhirlpoolData} accounts that are used for price calculations.
+ * @param poolMap A map of {@link ElysiumPoolData} accounts that are used for price calculations.
  * @param tickArrayMap A map of {@link TickArrayData} accounts that are used for price calculations.
  * @param decimalsMap A map of token decimals that are used for price calculations.
  */
@@ -59,10 +59,10 @@ export type PriceCalculationData = {
 };
 
 /**
- * A map of whirlpool addresses against {@link WhirlpoolData} accounts
+ * A map of whirlpool addresses against {@link ElysiumPoolData} accounts
  * @category PriceModule
  */
-export type PoolMap = Record<string, WhirlpoolData>;
+export type PoolMap = Record<string, ElysiumPoolData>;
 
 /**
  * A map of tick-array addresses against {@link TickArrayData} accounts

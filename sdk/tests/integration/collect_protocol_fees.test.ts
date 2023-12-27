@@ -3,18 +3,18 @@ import { BN } from "@coral-xyz/anchor";
 import { MathUtil } from "@orca-so/common-sdk";
 import * as assert from "assert";
 import Decimal from "decimal.js";
-import { PDAUtil, toTx, WhirlpoolContext, WhirlpoolData, WhirlpoolIx } from "../../src";
+import { PDAUtil, toTx, ElysiumPoolContext, ElysiumPoolData, ElysiumPoolIx } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import { createTokenAccount, getTokenBalance, TickSpacing, ZERO_BN } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
-import { WhirlpoolTestFixture } from "../utils/fixture";
+import { ElysiumPoolTestFixture } from "../utils/fixture";
 import { initTestPool } from "../utils/init-utils";
 
 describe("collect_protocol_fees", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully collects fees", async () => {
@@ -23,7 +23,7 @@ describe("collect_protocol_fees", () => {
     const tickUpperIndex = 33536;
 
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(10_000_000) }],
     });
@@ -44,7 +44,7 @@ describe("collect_protocol_fees", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.setProtocolFeeRateIx(ctx.program, {
+      ElysiumPoolIx.setProtocolFeeRateIx(ctx.program, {
         whirlpool: whirlpoolPda.publicKey,
         whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
         feeAuthority: feeAuthorityKeypair.publicKey,
@@ -54,7 +54,10 @@ describe("collect_protocol_fees", () => {
       .addSigner(feeAuthorityKeypair)
       .buildAndExecute();
 
-    const poolBefore = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolBefore = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
     assert.ok(poolBefore?.protocolFeeOwedA.eq(ZERO_BN));
     assert.ok(poolBefore?.protocolFeeOwedB.eq(ZERO_BN));
 
@@ -65,7 +68,7 @@ describe("collect_protocol_fees", () => {
     // Accrue fees in token A
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
@@ -87,7 +90,7 @@ describe("collect_protocol_fees", () => {
     // Accrue fees in token B
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
@@ -106,7 +109,10 @@ describe("collect_protocol_fees", () => {
       })
     ).buildAndExecute();
 
-    const poolAfter = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolAfter = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
     assert.ok(poolAfter?.protocolFeeOwedA.eq(new BN(150)));
     assert.ok(poolAfter?.protocolFeeOwedB.eq(new BN(150)));
 
@@ -115,7 +121,7 @@ describe("collect_protocol_fees", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.collectProtocolFeesIx(ctx.program, {
+      ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
         whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
         whirlpool: whirlpoolPda.publicKey,
         collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
@@ -138,10 +144,14 @@ describe("collect_protocol_fees", () => {
 
   it("fails to collect fees without the authority's signature", async () => {
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [
-        { tickLowerIndex: 29440, tickUpperIndex: 33536, liquidityAmount: new anchor.BN(10_000_000) },
+        {
+          tickLowerIndex: 29440,
+          tickUpperIndex: 33536,
+          liquidityAmount: new anchor.BN(10_000_000),
+        },
       ],
     });
     const {
@@ -155,7 +165,7 @@ describe("collect_protocol_fees", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectProtocolFeesIx(ctx.program, {
+        ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
           whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
           whirlpool: whirlpoolPda.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
@@ -171,10 +181,14 @@ describe("collect_protocol_fees", () => {
 
   it("fails when collect_protocol_fees_authority is invalid", async () => {
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [
-        { tickLowerIndex: 29440, tickUpperIndex: 33536, liquidityAmount: new anchor.BN(10_000_000) },
+        {
+          tickLowerIndex: 29440,
+          tickUpperIndex: 33536,
+          liquidityAmount: new anchor.BN(10_000_000),
+        },
       ],
     });
     const {
@@ -188,7 +202,7 @@ describe("collect_protocol_fees", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectProtocolFeesIx(ctx.program, {
+        ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
           whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
           whirlpool: whirlpoolPda.publicKey,
           collectProtocolFeesAuthority: rewardEmissionsSuperAuthorityKeypair.publicKey,
@@ -206,10 +220,14 @@ describe("collect_protocol_fees", () => {
 
   it("fails when whirlpool does not match config", async () => {
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [
-        { tickLowerIndex: 29440, tickUpperIndex: 33536, liquidityAmount: new anchor.BN(10_000_000) },
+        {
+          tickLowerIndex: 29440,
+          tickUpperIndex: 33536,
+          liquidityAmount: new anchor.BN(10_000_000),
+        },
       ],
     });
     const {
@@ -226,7 +244,7 @@ describe("collect_protocol_fees", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectProtocolFeesIx(ctx.program, {
+        ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
           whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
           whirlpool: whirlpoolPda2.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
@@ -244,10 +262,14 @@ describe("collect_protocol_fees", () => {
 
   it("fails when vaults do not match whirlpool vaults", async () => {
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [
-        { tickLowerIndex: 29440, tickUpperIndex: 33536, liquidityAmount: new anchor.BN(10_000_000) },
+        {
+          tickLowerIndex: 29440,
+          tickUpperIndex: 33536,
+          liquidityAmount: new anchor.BN(10_000_000),
+        },
       ],
     });
     const {
@@ -270,7 +292,7 @@ describe("collect_protocol_fees", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectProtocolFeesIx(ctx.program, {
+        ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
           whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
           whirlpool: whirlpoolPda.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
@@ -288,7 +310,7 @@ describe("collect_protocol_fees", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectProtocolFeesIx(ctx.program, {
+        ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
           whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
           whirlpool: whirlpoolPda.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
@@ -306,10 +328,14 @@ describe("collect_protocol_fees", () => {
 
   it("fails when destination mints do not match whirlpool mints", async () => {
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [
-        { tickLowerIndex: 29440, tickUpperIndex: 33536, liquidityAmount: new anchor.BN(10_000_000) },
+        {
+          tickLowerIndex: 29440,
+          tickUpperIndex: 33536,
+          liquidityAmount: new anchor.BN(10_000_000),
+        },
       ],
     });
     const {
@@ -332,7 +358,7 @@ describe("collect_protocol_fees", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectProtocolFeesIx(ctx.program, {
+        ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
           whirlpoolsConfig: whirlpoolsConfigKepair.publicKey,
           whirlpool: whirlpoolPda.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
@@ -350,7 +376,7 @@ describe("collect_protocol_fees", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.collectProtocolFeesIx(ctx.program, {
+        ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
           whirlpoolsConfig: whirlpoolsConfigKepair.publicKey,
           whirlpool: whirlpoolPda.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,

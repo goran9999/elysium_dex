@@ -19,15 +19,15 @@ pub mod tests;
 #[doc(hidden)]
 pub mod util;
 
-use crate::state::{OpenPositionBumps, OpenPositionWithMetadataBumps, WhirlpoolBumps};
+use crate::state::{ElysiumPoolBumps, OpenPositionBumps, OpenPositionWithMetadataBumps};
 use instructions::*;
 
 #[program]
 pub mod elysium {
     use super::*;
 
-    /// Initializes a WhirlpoolsConfig account that hosts info & authorities
-    /// required to govern a set of Whirlpools.
+    /// Initializes a ElysiumPoolsConfig account that hosts info & authorities
+    /// required to govern a set of ElysiumPools.
     ///
     /// ### Parameters
     /// - `fee_authority` - Authority authorized to initialize fee-tiers and set customs fees.
@@ -49,11 +49,11 @@ pub mod elysium {
         );
     }
 
-    /// Initializes a Whirlpool account.
+    /// Initializes a ElysiumPool account.
     /// Fee rate is set to the default values on the config and supplied fee_tier.
     ///
     /// ### Parameters
-    /// - `bumps` - The bump value when deriving the PDA of the Whirlpool address.
+    /// - `bumps` - The bump value when deriving the PDA of the ElysiumPool address.
     /// - `tick_spacing` - The desired tick spacing for this pool.
     /// - `initial_sqrt_price` - The desired initial sqrt-price for this pool
     ///
@@ -63,7 +63,7 @@ pub mod elysium {
     ///
     pub fn initialize_pool(
         ctx: Context<InitializePool>,
-        bumps: WhirlpoolBumps,
+        bumps: ElysiumPoolBumps,
         tick_spacing: u16,
         initial_sqrt_price: u128,
     ) -> Result<()> {
@@ -75,7 +75,7 @@ pub mod elysium {
         );
     }
 
-    /// Initializes a tick_array account to represent a tick-range in a Whirlpool.
+    /// Initializes a tick_array account to represent a tick-range in a ElysiumPool.
     ///
     /// ### Parameters
     /// - `start_tick_index` - The starting tick index for this tick-array.
@@ -91,10 +91,10 @@ pub mod elysium {
         return instructions::initialize_tick_array::handler(ctx, start_tick_index);
     }
 
-    /// Initializes a fee_tier account usable by Whirlpools in a WhirlpoolConfig space.
+    /// Initializes a fee_tier account usable by ElysiumPools in a ElysiumPoolConfig space.
     ///
     /// ### Authority
-    /// - "fee_authority" - Set authority in the WhirlpoolConfig
+    /// - "fee_authority" - Set authority in the ElysiumPoolConfig
     ///
     /// ### Parameters
     /// - `tick_spacing` - The tick-spacing that this fee-tier suggests the default_fee_rate for.
@@ -111,11 +111,11 @@ pub mod elysium {
         return instructions::initialize_fee_tier::handler(ctx, tick_spacing, default_fee_rate);
     }
 
-    /// Initialize reward for a Whirlpool. A pool can only support up to a set number of rewards.
+    /// Initialize reward for a ElysiumPool. A pool can only support up to a set number of rewards.
     ///
     /// ### Authority
     /// - "reward_authority" - assigned authority by the reward_super_authority for the specified
-    ///                        reward-index in this Whirlpool
+    ///                        reward-index in this ElysiumPool
     ///
     /// ### Parameters
     /// - `reward_index` - The reward index that we'd like to initialize. (0 <= index <= NUM_REWARDS)
@@ -128,11 +128,11 @@ pub mod elysium {
         return instructions::initialize_reward::handler(ctx, reward_index);
     }
 
-    /// Set the reward emissions for a reward in a Whirlpool.
+    /// Set the reward emissions for a reward in a ElysiumPool.
     ///
     /// ### Authority
     /// - "reward_authority" - assigned authority by the reward_super_authority for the specified
-    ///                        reward-index in this Whirlpool
+    ///                        reward-index in this ElysiumPool
     ///
     /// ### Parameters
     /// - `reward_index` - The reward index (0 <= index <= NUM_REWARDS) that we'd like to modify.
@@ -157,7 +157,7 @@ pub mod elysium {
         );
     }
 
-    /// Open a position in a Whirlpool. A unique token will be minted to represent the position
+    /// Open a position in a ElysiumPool. A unique token will be minted to represent the position
     /// in the users wallet. The position will start off with 0 liquidity.
     ///
     /// ### Parameters
@@ -181,7 +181,7 @@ pub mod elysium {
         );
     }
 
-    /// Open a position in a Whirlpool. A unique token will be minted to represent the position
+    /// Open a position in a ElysiumPool. A unique token will be minted to represent the position
     /// in the users wallet. Additional Metaplex metadata is appended to identify the token.
     /// The position will start off with 0 liquidity.
     ///
@@ -206,7 +206,7 @@ pub mod elysium {
         );
     }
 
-    /// Add liquidity to a position in the Whirlpool. This call also updates the position's accrued fees and rewards.
+    /// Add liquidity to a position in the ElysiumPool. This call also updates the position's accrued fees and rewards.
     ///
     /// ### Authority
     /// - `position_authority` - authority that owns the token corresponding to this desired position.
@@ -234,7 +234,7 @@ pub mod elysium {
         );
     }
 
-    /// Withdraw liquidity from a position in the Whirlpool. This call also updates the position's accrued fees and rewards.
+    /// Withdraw liquidity from a position in the ElysiumPool. This call also updates the position's accrued fees and rewards.
     ///
     /// ### Authority
     /// - `position_authority` - authority that owns the token corresponding to this desired position.
@@ -287,15 +287,15 @@ pub mod elysium {
         return instructions::collect_reward::handler(ctx, reward_index);
     }
 
-    /// Collect the protocol fees accrued in this Whirlpool
+    /// Collect the protocol fees accrued in this ElysiumPool
     ///
     /// ### Authority
-    /// - `collect_protocol_fees_authority` - assigned authority in the WhirlpoolConfig that can collect protocol fees
+    /// - `collect_protocol_fees_authority` - assigned authority in the ElysiumPoolConfig that can collect protocol fees
     pub fn collect_protocol_fees(ctx: Context<CollectProtocolFees>) -> Result<()> {
         return instructions::collect_protocol_fees::handler(ctx);
     }
 
-    /// Perform a swap in this Whirlpool
+    /// Perform a swap in this ElysiumPool
     ///
     /// ### Authority
     /// - "token_authority" - The authority to withdraw tokens from the input token account.
@@ -334,7 +334,7 @@ pub mod elysium {
         );
     }
 
-    /// Close a position in a Whirlpool. Burns the position token in the owner's wallet.
+    /// Close a position in a ElysiumPool. Burns the position token in the owner's wallet.
     ///
     /// ### Authority
     /// - "position_authority" - The authority that owns the position token.
@@ -349,7 +349,7 @@ pub mod elysium {
     /// Only the current fee authority has permission to invoke this instruction.
     ///
     /// ### Authority
-    /// - "fee_authority" - Set authority in the WhirlpoolConfig
+    /// - "fee_authority" - Set authority in the ElysiumPoolConfig
     ///
     /// ### Parameters
     /// - `default_fee_rate` - The default fee rate that a pool will use if the pool uses this
@@ -364,15 +364,15 @@ pub mod elysium {
         return instructions::set_default_fee_rate::handler(ctx, default_fee_rate);
     }
 
-    /// Sets the default protocol fee rate for a WhirlpoolConfig
+    /// Sets the default protocol fee rate for a ElysiumPoolConfig
     /// Protocol fee rate is represented as a basis point.
     /// Only the current fee authority has permission to invoke this instruction.
     ///
     /// ### Authority
-    /// - "fee_authority" - Set authority that can modify pool fees in the WhirlpoolConfig
+    /// - "fee_authority" - Set authority that can modify pool fees in the ElysiumPoolConfig
     ///
     /// ### Parameters
-    /// - `default_protocol_fee_rate` - Rate that is referenced during the initialization of a Whirlpool using this config.
+    /// - `default_protocol_fee_rate` - Rate that is referenced during the initialization of a ElysiumPool using this config.
     ///
     /// #### Special Errors
     /// - `ProtocolFeeRateMaxExceeded` - If the provided default_protocol_fee_rate exceeds MAX_PROTOCOL_FEE_RATE.
@@ -386,12 +386,12 @@ pub mod elysium {
         );
     }
 
-    /// Sets the fee rate for a Whirlpool.
+    /// Sets the fee rate for a ElysiumPool.
     /// Fee rate is represented as hundredths of a basis point.
     /// Only the current fee authority has permission to invoke this instruction.
     ///
     /// ### Authority
-    /// - "fee_authority" - Set authority that can modify pool fees in the WhirlpoolConfig
+    /// - "fee_authority" - Set authority that can modify pool fees in the ElysiumPoolConfig
     ///
     /// ### Parameters
     /// - `fee_rate` - The rate that the pool will use to calculate fees going onwards.
@@ -402,12 +402,12 @@ pub mod elysium {
         return instructions::set_fee_rate::handler(ctx, fee_rate);
     }
 
-    /// Sets the protocol fee rate for a Whirlpool.
+    /// Sets the protocol fee rate for a ElysiumPool.
     /// Protocol fee rate is represented as a basis point.
     /// Only the current fee authority has permission to invoke this instruction.
     ///
     /// ### Authority
-    /// - "fee_authority" - Set authority that can modify pool fees in the WhirlpoolConfig
+    /// - "fee_authority" - Set authority that can modify pool fees in the ElysiumPoolConfig
     ///
     /// ### Parameters
     /// - `protocol_fee_rate` - The rate that the pool will use to calculate protocol fees going onwards.
@@ -421,22 +421,22 @@ pub mod elysium {
         return instructions::set_protocol_fee_rate::handler(ctx, protocol_fee_rate);
     }
 
-    /// Sets the fee authority for a WhirlpoolConfig.
+    /// Sets the fee authority for a ElysiumPoolConfig.
     /// The fee authority can set the fee & protocol fee rate for individual pools or
     /// set the default fee rate for newly minted pools.
     /// Only the current fee authority has permission to invoke this instruction.
     ///
     /// ### Authority
-    /// - "fee_authority" - Set authority that can modify pool fees in the WhirlpoolConfig
+    /// - "fee_authority" - Set authority that can modify pool fees in the ElysiumPoolConfig
     pub fn set_fee_authority(ctx: Context<SetFeeAuthority>) -> Result<()> {
         return instructions::set_fee_authority::handler(ctx);
     }
 
-    /// Sets the fee authority to collect protocol fees for a WhirlpoolConfig.
+    /// Sets the fee authority to collect protocol fees for a ElysiumPoolConfig.
     /// Only the current collect protocol fee authority has permission to invoke this instruction.
     ///
     /// ### Authority
-    /// - "fee_authority" - Set authority that can collect protocol fees in the WhirlpoolConfig
+    /// - "fee_authority" - Set authority that can collect protocol fees in the ElysiumPoolConfig
     pub fn set_collect_protocol_fees_authority(
         ctx: Context<SetCollectProtocolFeesAuthority>,
     ) -> Result<()> {
@@ -474,9 +474,9 @@ pub mod elysium {
         return instructions::set_reward_authority_by_super_authority::handler(ctx, reward_index);
     }
 
-    /// Set the whirlpool reward super authority for a WhirlpoolConfig
+    /// Set the whirlpool reward super authority for a ElysiumPoolConfig
     /// Only the current reward super authority has permission to invoke this instruction.
-    /// This instruction will not change the authority on any `WhirlpoolRewardInfo` whirlpool rewards.
+    /// This instruction will not change the authority on any `ElysiumPoolRewardInfo` whirlpool rewards.
     ///
     /// ### Authority
     /// - "reward_emissions_super_authority" - Set authority that can control reward authorities for all pools in this config space.
@@ -486,7 +486,7 @@ pub mod elysium {
         return instructions::set_reward_emissions_super_authority::handler(ctx);
     }
 
-    /// Perform a two-hop swap in this Whirlpool
+    /// Perform a two-hop swap in this ElysiumPool
     ///
     /// ### Authority
     /// - "token_authority" - The authority to withdraw tokens from the input token account.
@@ -559,7 +559,7 @@ pub mod elysium {
         return instructions::delete_position_bundle::handler(ctx);
     }
 
-    /// Open a bundled position in a Whirlpool. No new tokens are issued
+    /// Open a bundled position in a ElysiumPool. No new tokens are issued
     /// because the owner of the position bundle becomes the owner of the position.
     /// The position will start off with 0 liquidity.
     ///
@@ -589,7 +589,7 @@ pub mod elysium {
         );
     }
 
-    /// Close a bundled position in a Whirlpool.
+    /// Close a bundled position in a ElysiumPool.
     ///
     /// ### Authority
     /// - `position_bundle_authority` - authority that owns the token corresponding to this desired position bundle.

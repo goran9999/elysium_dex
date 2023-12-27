@@ -11,11 +11,11 @@ import {
   TickArray,
   TickArrayData,
   TickData,
-  WhirlpoolContext
+  ElysiumPoolContext,
 } from "../../src";
-import { IGNORE_CACHE, WhirlpoolAccountFetcherInterface } from "../../src/network/public/fetcher";
+import { IGNORE_CACHE, ElysiumPoolAccountFetcherInterface } from "../../src/network/public/fetcher";
 
-export const testWhirlpoolData = {
+export const testElysiumPoolData = {
   whirlpoolsConfig: Keypair.generate().publicKey,
   whirlpoolBump: [],
   feeRate: 300,
@@ -84,9 +84,9 @@ export const buildTickArrayData = (startTick: number, initializedOffsets: number
 
 export async function getTickArrays(
   startIndices: number[],
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   whirlpoolKey: PublicKey,
-  fetcher: WhirlpoolAccountFetcherInterface
+  fetcher: ElysiumPoolAccountFetcherInterface
 ) {
   const tickArrayPdas = await startIndices.map((value) =>
     PDAUtil.getTickArray(ctx.program.programId, whirlpoolKey, value)

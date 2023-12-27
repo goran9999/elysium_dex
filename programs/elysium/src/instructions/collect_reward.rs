@@ -9,7 +9,7 @@ use crate::{
 #[derive(Accounts)]
 #[instruction(reward_index: u8)]
 pub struct CollectReward<'info> {
-    pub whirlpool: Box<Account<'info, Whirlpool>>,
+    pub whirlpool: Box<Account<'info, ElysiumPool>>,
 
     pub position_authority: Signer<'info>,
 
@@ -35,7 +35,7 @@ pub struct CollectReward<'info> {
 
 /// Collects all harvestable tokens for a specified reward.
 ///
-/// If the Whirlpool reward vault does not have enough tokens, the maximum number of available
+/// If the ElysiumPool reward vault does not have enough tokens, the maximum number of available
 /// tokens will be debited to the user. The unharvested amount remains tracked, and it can be
 /// harvested in the future.
 ///

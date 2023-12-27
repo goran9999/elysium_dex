@@ -14,9 +14,9 @@ import {
   OpenPositionWithMetadataBumpsData,
   PDAUtil,
   PositionData,
-  WhirlpoolContext,
-  WhirlpoolIx,
-  toTx
+  ElysiumPoolContext,
+  ElysiumPoolIx,
+  toTx,
 } from "../../src";
 import { openPositionAccounts } from "../../src/utils/instructions-util";
 import {
@@ -26,7 +26,7 @@ import {
   createMint,
   createMintInstructions,
   mintToDestination,
-  systemTransferTx
+  systemTransferTx,
 } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
 import { initTestPool, openPositionWithMetadata } from "../utils/init-utils";
@@ -35,8 +35,8 @@ import { generateDefaultOpenPositionParams } from "../utils/test-builders";
 describe("open_position_with_metadata", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   let defaultParams: Required<OpenPositionParams & { metadataPda: PDA }>;
@@ -67,10 +67,13 @@ describe("open_position_with_metadata", () => {
     assert.ok(metadataPda != null);
 
     const metadata = await Metadata.fromAccountAddress(provider.connection, metadataPda.publicKey);
-    assert.ok(metadata.updateAuthority.toBase58() === "3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr");
+    assert.ok(
+      metadata.updateAuthority.toBase58() === "3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr"
+    );
     assert.ok(metadata.mint.toBase58() === positionMint.toString());
     assert.ok(
-      metadata.data.uri.replace(/\0/g, '') === `https://arweave.net/E19ZNY2sqMqddm1Wx7mrXPUZ0ZZ5ISizhebb0UsVEws`
+      metadata.data.uri.replace(/\0/g, "") ===
+        `https://arweave.net/E19ZNY2sqMqddm1Wx7mrXPUZ0ZZ5ISizhebb0UsVEws`
     );
   }
 
@@ -141,12 +144,15 @@ describe("open_position_with_metadata", () => {
 
   it("user must pass the valid token ATA account", async () => {
     const anotherMintKey = await createMint(provider, provider.wallet.publicKey);
-    const positionTokenAccountAddress = getAssociatedTokenAddressSync(anotherMintKey, provider.wallet.publicKey)
+    const positionTokenAccountAddress = getAssociatedTokenAddressSync(
+      anotherMintKey,
+      provider.wallet.publicKey
+    );
 
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.openPositionWithMetadataIx(ctx.program, {
+        ElysiumPoolIx.openPositionWithMetadataIx(ctx.program, {
           ...defaultParams,
           positionTokenAccount: positionTokenAccountAddress,
         })
@@ -202,7 +208,10 @@ describe("open_position_with_metadata", () => {
     const positionPda = PDAUtil.getPosition(ctx.program.programId, positionMintKeypair.publicKey);
     const metadataPda = PDAUtil.getPositionMetadata(positionMintKeypair.publicKey);
 
-    const positionTokenAccountAddress = getAssociatedTokenAddressSync(positionMintKeypair.publicKey, provider.wallet.publicKey);
+    const positionTokenAccountAddress = getAssociatedTokenAddressSync(
+      positionMintKeypair.publicKey,
+      provider.wallet.publicKey
+    );
 
     const tx = new web3.Transaction();
     tx.add(
@@ -218,7 +227,7 @@ describe("open_position_with_metadata", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.openPositionWithMetadataIx(ctx.program, {
+        ElysiumPoolIx.openPositionWithMetadataIx(ctx.program, {
           ...defaultParams,
           positionPda,
           metadataPda,
@@ -282,7 +291,7 @@ describe("open_position_with_metadata", () => {
       };
 
       await assert.rejects(
-        toTx(ctx, WhirlpoolIx.openPositionWithMetadataIx(ctx.program, invalidParams))
+        toTx(ctx, ElysiumPoolIx.openPositionWithMetadataIx(ctx.program, invalidParams))
           .addSigner(defaultMint)
           .buildAndExecute(),
         // Invalid Metadata Key
@@ -293,7 +302,11 @@ describe("open_position_with_metadata", () => {
 
     it("fails with non-program metadata program", async () => {
       const notMetadataProgram = Keypair.generate();
-      const tx = new TransactionBuilder(ctx.provider.connection, ctx.wallet, ctx.txBuilderOpts).addInstruction(
+      const tx = new TransactionBuilder(
+        ctx.provider.connection,
+        ctx.wallet,
+        ctx.txBuilderOpts
+      ).addInstruction(
         buildOpenWithAccountOverrides({
           metadataProgram: notMetadataProgram.publicKey,
         })
@@ -308,7 +321,11 @@ describe("open_position_with_metadata", () => {
     });
 
     it("fails with non-metadata program ", async () => {
-      const tx = new TransactionBuilder(ctx.provider.connection, ctx.wallet, ctx.txBuilderOpts).addInstruction(
+      const tx = new TransactionBuilder(
+        ctx.provider.connection,
+        ctx.wallet,
+        ctx.txBuilderOpts
+      ).addInstruction(
         buildOpenWithAccountOverrides({
           metadataProgram: TOKEN_PROGRAM_ID,
         })
@@ -324,7 +341,11 @@ describe("open_position_with_metadata", () => {
 
     it("fails with non-valid update_authority program", async () => {
       const notUpdateAuth = Keypair.generate();
-      const tx = new TransactionBuilder(ctx.provider.connection, ctx.wallet, ctx.txBuilderOpts).addInstruction(
+      const tx = new TransactionBuilder(
+        ctx.provider.connection,
+        ctx.wallet,
+        ctx.txBuilderOpts
+      ).addInstruction(
         buildOpenWithAccountOverrides({
           metadataUpdateAuth: notUpdateAuth.publicKey,
         })

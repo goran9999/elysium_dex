@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Instruction, PDA } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
  * Parameters to initialize a TickArray account.
@@ -32,7 +32,7 @@ export type InitTickArrayParams = {
  * @returns - Instruction to perform the action.
  */
 export function initTickArrayIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: InitTickArrayParams
 ): Instruction {
   const { whirlpool, funder, tickArrayPda } = params;

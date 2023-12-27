@@ -1,12 +1,12 @@
 use anchor_lang::prelude::*;
 
-use crate::state::Whirlpool;
+use crate::state::ElysiumPool;
 
 #[derive(Accounts)]
 #[instruction(reward_index: u8)]
 pub struct SetRewardAuthority<'info> {
     #[account(mut)]
-    pub whirlpool: Account<'info, Whirlpool>,
+    pub whirlpool: Account<'info, ElysiumPool>,
 
     #[account(address = whirlpool.reward_infos[reward_index as usize].authority)]
     pub reward_authority: Signer<'info>,

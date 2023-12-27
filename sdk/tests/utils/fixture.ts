@@ -2,14 +2,14 @@ import { BN } from "@coral-xyz/anchor";
 import { NATIVE_MINT } from "@solana/spl-token";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { TickSpacing, ZERO_BN } from ".";
-import { InitConfigParams, InitPoolParams, TickUtil, WhirlpoolContext } from "../../src";
+import { InitConfigParams, InitPoolParams, TickUtil, ElysiumPoolContext } from "../../src";
 import {
   FundedPositionInfo,
   FundedPositionParams,
   fundPositions,
   initRewardAndSetEmissions,
   initTestPoolWithTokens,
-  initTickArray
+  initTickArray,
 } from "./init-utils";
 
 interface InitFixtureParams {
@@ -30,8 +30,8 @@ interface InitializedRewardInfo {
   rewardVaultKeypair: Keypair;
 }
 
-export class WhirlpoolTestFixture {
-  private ctx: WhirlpoolContext;
+export class ElysiumPoolTestFixture {
+  private ctx: ElysiumPoolContext;
   private poolInitInfo: InitPoolParams = defaultPoolInitInfo;
   private configInitInfo: InitConfigParams = defaultConfigInitInfo;
   private configKeypairs = defaultConfigKeypairs;
@@ -41,11 +41,11 @@ export class WhirlpoolTestFixture {
   private tokenAccountB = PublicKey.default;
   private initialized = false;
 
-  constructor(ctx: WhirlpoolContext) {
+  constructor(ctx: ElysiumPoolContext) {
     this.ctx = ctx;
   }
 
-  async init(params: InitFixtureParams): Promise<WhirlpoolTestFixture> {
+  async init(params: InitFixtureParams): Promise<ElysiumPoolTestFixture> {
     const { tickSpacing, initialSqrtPrice, positions, rewards, tokenAIsNative } = params;
 
     const { poolInitInfo, configInitInfo, configKeypairs, tokenAccountA, tokenAccountB } =
@@ -113,7 +113,7 @@ export class WhirlpoolTestFixture {
 }
 
 async function initTickArrays(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   poolInitInfo: InitPoolParams,
   positions: FundedPositionParams[]
 ) {

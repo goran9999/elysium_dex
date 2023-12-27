@@ -34,7 +34,7 @@ impl<'info> SwapTickSequence<'info> {
     /// # Returns
     /// - `&Tick`: A reference to the desired Tick object
     /// - `TickArrayIndexOutofBounds` - The provided array-index is out of bounds
-    /// - `TickNotFound`: - The provided tick-index is not an initializable tick index in this Whirlpool w/ this tick-spacing.
+    /// - `TickNotFound`: - The provided tick-index is not an initializable tick index in this ElysiumPool w/ this tick-spacing.
     pub fn get_tick(
         &self,
         array_index: usize,
@@ -58,7 +58,7 @@ impl<'info> SwapTickSequence<'info> {
     ///
     /// # Errors
     /// - `TickArrayIndexOutofBounds` - The provided array-index is out of bounds
-    /// - `TickNotFound`: - The provided tick-index is not an initializable tick index in this Whirlpool w/ this tick-spacing.
+    /// - `TickNotFound`: - The provided tick-index is not an initializable tick index in this ElysiumPool w/ this tick-spacing.
     pub fn update_tick(
         &mut self,
         array_index: usize,

@@ -1,9 +1,10 @@
 use crate::manager::swap_manager::*;
 use crate::math::tick_math::*;
 use crate::state::{
-    tick::*, tick_builder::TickBuilder, whirlpool_builder::WhirlpoolBuilder, TickArray, Whirlpool,
+    tick::*, tick_builder::TickBuilder, whirlpool_builder::ElysiumPoolBuilder, ElysiumPool,
+    TickArray,
 };
-use crate::state::{WhirlpoolRewardInfo, NUM_REWARDS};
+use crate::state::{ElysiumPoolRewardInfo, NUM_REWARDS};
 use crate::util::SwapTickSequence;
 use anchor_lang::prelude::*;
 use std::cell::RefCell;
@@ -14,7 +15,7 @@ pub const TS_128: u16 = 128;
 const NO_TICKS_VEC: &Vec<TestTickInfo> = &vec![];
 
 pub struct SwapTestFixture {
-    pub whirlpool: Whirlpool,
+    pub whirlpool: ElysiumPool,
     pub tick_arrays: Vec<RefCell<TickArray>>,
     pub trade_amount: u64,
     pub sqrt_price_limit: u128,
@@ -42,7 +43,7 @@ pub struct SwapTestFixtureInfo<'info> {
     pub amount_specified_is_input: bool,
     pub a_to_b: bool,
     pub reward_last_updated_timestamp: u64,
-    pub reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+    pub reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
     pub fee_growth_global_a: u128,
     pub fee_growth_global_b: u128,
     pub array_1_ticks: &'info Vec<TestTickInfo>,
@@ -65,9 +66,9 @@ impl<'info> Default for SwapTestFixtureInfo<'info> {
             a_to_b: false,
             reward_last_updated_timestamp: 0,
             reward_infos: [
-                WhirlpoolRewardInfo::default(),
-                WhirlpoolRewardInfo::default(),
-                WhirlpoolRewardInfo::default(),
+                ElysiumPoolRewardInfo::default(),
+                ElysiumPoolRewardInfo::default(),
+                ElysiumPoolRewardInfo::default(),
             ],
             fee_growth_global_a: 0,
             fee_growth_global_b: 0,
@@ -101,7 +102,7 @@ pub fn assert_swap(swap_update: &PostSwapUpdate, expect: &SwapTestExpectation) {
     assert_eq!(swap_update.next_tick_index, expect.end_tick_index);
     assert_eq!(swap_update.next_liquidity, expect.end_liquidity);
     assert_eq!(
-        WhirlpoolRewardInfo::to_reward_growths(&swap_update.next_reward_infos),
+        ElysiumPoolRewardInfo::to_reward_growths(&swap_update.next_reward_infos),
         expect.end_reward_growths
     );
 }
@@ -132,7 +133,7 @@ pub fn build_filled_tick_array(start_index: i32, tick_spacing: u16) -> Vec<TestT
 
 impl SwapTestFixture {
     pub fn new<'info>(info: SwapTestFixtureInfo) -> SwapTestFixture {
-        let whirlpool = WhirlpoolBuilder::new()
+        let whirlpool = ElysiumPoolBuilder::new()
             .liquidity(info.liquidity)
             .sqrt_price(sqrt_price_from_tick_index(info.curr_tick_index))
             .tick_spacing(info.tick_spacing)

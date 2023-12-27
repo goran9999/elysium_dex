@@ -1,14 +1,14 @@
 import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
  * Parameters to set the default fee rate for a FeeTier.
  *
  * @category Instruction Types
- * @param whirlpoolsConfig - The public key for the WhirlpoolsConfig this pool is initialized in
- * @param feeAuthority - Authority authorized in the WhirlpoolsConfig to set default fee rates.
+ * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
+ * @param feeAuthority - Authority authorized in the ElysiumPoolsConfig to set default fee rates.
  * @param defaultProtocolFeeRate - The new default protocol fee rate for this config. Stored as a basis point of the total fees collected by feeRate.
  */
 export type SetDefaultProtocolFeeRateParams = {
@@ -18,7 +18,7 @@ export type SetDefaultProtocolFeeRateParams = {
 };
 
 /**
- * Updates a WhirlpoolsConfig with a new default protocol fee rate. The new rate will not retroactively update
+ * Updates a ElysiumPoolsConfig with a new default protocol fee rate. The new rate will not retroactively update
  * initialized pools.
  *
  * #### Special Errors
@@ -30,7 +30,7 @@ export type SetDefaultProtocolFeeRateParams = {
  * @returns - Instruction to perform the action.
  */
 export function setDefaultProtocolFeeRateIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: SetDefaultProtocolFeeRateParams
 ): Instruction {
   const { whirlpoolsConfig, feeAuthority, defaultProtocolFeeRate } = params;

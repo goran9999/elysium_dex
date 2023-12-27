@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
-use crate::state::Whirlpool;
+use crate::state::ElysiumPool;
 
 #[derive(Accounts)]
 #[instruction(reward_index: u8)]
@@ -13,7 +13,7 @@ pub struct InitializeReward<'info> {
     pub funder: Signer<'info>,
 
     #[account(mut)]
-    pub whirlpool: Box<Account<'info, Whirlpool>>,
+    pub whirlpool: Box<Account<'info, ElysiumPool>>,
 
     pub reward_mint: Box<Account<'info, Mint>>,
 

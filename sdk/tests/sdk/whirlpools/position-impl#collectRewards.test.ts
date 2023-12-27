@@ -6,22 +6,22 @@ import { BN } from "bn.js";
 import Decimal from "decimal.js";
 import {
   NUM_REWARDS,
-  Whirlpool,
-  WhirlpoolClient,
-  WhirlpoolContext,
-  buildWhirlpoolClient,
-  collectRewardsQuote
+  ElysiumPool,
+  ElysiumPoolClient,
+  ElysiumPoolContext,
+  buildElysiumPoolClient,
+  collectRewardsQuote,
 } from "../../../src";
 import { IGNORE_CACHE } from "../../../src/network/public/fetcher";
 import { TickSpacing, sleep } from "../../utils";
 import { defaultConfirmOptions } from "../../utils/const";
-import { WhirlpoolTestFixture } from "../../utils/fixture";
+import { ElysiumPoolTestFixture } from "../../utils/fixture";
 
 interface SharedTestContext {
   provider: anchor.AnchorProvider;
-  program: Whirlpool;
-  whirlpoolCtx: WhirlpoolContext;
-  whirlpoolClient: WhirlpoolClient;
+  program: ElysiumPool;
+  whirlpoolCtx: ElysiumPoolContext;
+  whirlpoolClient: ElysiumPoolClient;
 }
 
 describe("PositionImpl#collectRewards()", () => {
@@ -35,9 +35,9 @@ describe("PositionImpl#collectRewards()", () => {
   before(() => {
     const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
     anchor.setProvider(provider);
-    const program = anchor.workspace.Whirlpool;
-    const whirlpoolCtx = WhirlpoolContext.fromWorkspace(provider, program);
-    const whirlpoolClient = buildWhirlpoolClient(whirlpoolCtx);
+    const program = anchor.workspace.ElysiumPool;
+    const whirlpoolCtx = ElysiumPoolContext.fromWorkspace(provider, program);
+    const whirlpoolClient = buildElysiumPoolClient(whirlpoolCtx);
 
     testCtx = {
       provider,
@@ -49,7 +49,7 @@ describe("PositionImpl#collectRewards()", () => {
 
   context("when the whirlpool is SPL-only", () => {
     it("should collect rewards", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -72,8 +72,14 @@ describe("PositionImpl#collectRewards()", () => {
 
       const { positions, poolInitInfo, rewards } = fixture.getInfos();
 
-      const pool = await testCtx.whirlpoolClient.getPool(poolInitInfo.whirlpoolPda.publicKey, IGNORE_CACHE);
-      const position = await testCtx.whirlpoolClient.getPosition(positions[0].publicKey, IGNORE_CACHE);
+      const pool = await testCtx.whirlpoolClient.getPool(
+        poolInitInfo.whirlpoolPda.publicKey,
+        IGNORE_CACHE
+      );
+      const position = await testCtx.whirlpoolClient.getPosition(
+        positions[0].publicKey,
+        IGNORE_CACHE
+      );
 
       const otherWallet = anchor.web3.Keypair.generate();
       const preCollectPoolData = pool.getData();
@@ -109,8 +115,14 @@ describe("PositionImpl#collectRewards()", () => {
       }
 
       for (let i = 0; i < NUM_REWARDS; i++) {
-        const rewardATA = getAssociatedTokenAddressSync(rewards[i].rewardMint, otherWallet.publicKey);
-        const rewardTokenAccount = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(rewardATA, IGNORE_CACHE);
+        const rewardATA = getAssociatedTokenAddressSync(
+          rewards[i].rewardMint,
+          otherWallet.publicKey
+        );
+        const rewardTokenAccount = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(
+          rewardATA,
+          IGNORE_CACHE
+        );
         assert.equal(rewardTokenAccount?.amount.toString(), quote[i]?.toString());
       }
     });
@@ -118,7 +130,7 @@ describe("PositionImpl#collectRewards()", () => {
 
   context("when the whirlpool is SOL-SPL", () => {
     it("should collect rewards", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -142,8 +154,14 @@ describe("PositionImpl#collectRewards()", () => {
 
       const { positions, poolInitInfo, rewards } = fixture.getInfos();
 
-      const pool = await testCtx.whirlpoolClient.getPool(poolInitInfo.whirlpoolPda.publicKey, IGNORE_CACHE);
-      const position = await testCtx.whirlpoolClient.getPosition(positions[0].publicKey, IGNORE_CACHE);
+      const pool = await testCtx.whirlpoolClient.getPool(
+        poolInitInfo.whirlpoolPda.publicKey,
+        IGNORE_CACHE
+      );
+      const position = await testCtx.whirlpoolClient.getPosition(
+        positions[0].publicKey,
+        IGNORE_CACHE
+      );
       const otherWallet = anchor.web3.Keypair.generate();
       const preCollectPoolData = pool.getData();
 
@@ -178,8 +196,14 @@ describe("PositionImpl#collectRewards()", () => {
       }
 
       for (let i = 0; i < NUM_REWARDS; i++) {
-        const rewardATA = getAssociatedTokenAddressSync(rewards[i].rewardMint, otherWallet.publicKey);
-        const rewardTokenAccount = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(rewardATA, IGNORE_CACHE);
+        const rewardATA = getAssociatedTokenAddressSync(
+          rewards[i].rewardMint,
+          otherWallet.publicKey
+        );
+        const rewardTokenAccount = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(
+          rewardATA,
+          IGNORE_CACHE
+        );
         assert.equal(rewardTokenAccount?.amount.toString(), quote[i]?.toString());
       }
     });

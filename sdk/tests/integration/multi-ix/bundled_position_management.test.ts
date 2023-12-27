@@ -5,20 +5,32 @@ import { Keypair, SystemProgram } from "@solana/web3.js";
 import * as assert from "assert";
 import { BN } from "bn.js";
 import Decimal from "decimal.js";
-import { NUM_REWARDS, PDAUtil, POSITION_BUNDLE_SIZE, PoolUtil, PositionBundleData, PriceMath, Whirlpool, WhirlpoolClient, WhirlpoolIx, buildWhirlpoolClient, collectFeesQuote, toTx } from "../../../src";
-import { WhirlpoolContext } from "../../../src/context";
+import {
+  NUM_REWARDS,
+  PDAUtil,
+  POSITION_BUNDLE_SIZE,
+  PoolUtil,
+  PositionBundleData,
+  PriceMath,
+  ElysiumPool,
+  ElysiumPoolClient,
+  ElysiumPoolIx,
+  buildElysiumPoolClient,
+  collectFeesQuote,
+  toTx,
+} from "../../../src";
+import { ElysiumPoolContext } from "../../../src/context";
 import { IGNORE_CACHE } from "../../../src/network/public/fetcher";
 import { TickSpacing, ZERO_BN, createTokenAccount } from "../../utils";
 import { defaultConfirmOptions } from "../../utils/const";
-import { WhirlpoolTestFixture } from "../../utils/fixture";
+import { ElysiumPoolTestFixture } from "../../utils/fixture";
 import { initializePositionBundle, openBundledPosition } from "../../utils/init-utils";
-
 
 interface SharedTestContext {
   provider: anchor.AnchorProvider;
-  program: Whirlpool;
-  whirlpoolCtx: WhirlpoolContext;
-  whirlpoolClient: WhirlpoolClient;
+  program: ElysiumPool;
+  whirlpoolCtx: ElysiumPoolContext;
+  whirlpoolClient: ElysiumPoolClient;
 }
 
 describe("bundled position management tests", () => {
@@ -30,13 +42,13 @@ describe("bundled position management tests", () => {
   const tickSpacing = TickSpacing.Standard;
   const vaultStartBalance = 1_000_000;
   const liquidityAmount = new BN(10_000_000);
-  const sleep = (second: number) => new Promise(resolve => setTimeout(resolve, second * 1000))
+  const sleep = (second: number) => new Promise((resolve) => setTimeout(resolve, second * 1000));
 
   before(() => {
     anchor.setProvider(provider);
-    const program = anchor.workspace.Whirlpool;
-    const whirlpoolCtx = WhirlpoolContext.fromWorkspace(provider, program);
-    const whirlpoolClient = buildWhirlpoolClient(whirlpoolCtx);
+    const program = anchor.workspace.ElysiumPool;
+    const whirlpoolCtx = ElysiumPoolContext.fromWorkspace(provider, program);
+    const whirlpoolClient = buildElysiumPoolClient(whirlpoolCtx);
 
     testCtx = {
       provider,
@@ -47,7 +59,8 @@ describe("bundled position management tests", () => {
   });
 
   function checkBitmapIsOpened(account: PositionBundleData, bundleIndex: number): boolean {
-    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE) throw Error("bundleIndex is out of bounds");
+    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE)
+      throw Error("bundleIndex is out of bounds");
 
     const bitmapIndex = Math.floor(bundleIndex / 8);
     const bitmapOffset = bundleIndex % 8;
@@ -55,7 +68,8 @@ describe("bundled position management tests", () => {
   }
 
   function checkBitmapIsClosed(account: PositionBundleData, bundleIndex: number): boolean {
-    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE) throw Error("bundleIndex is out of bounds");
+    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE)
+      throw Error("bundleIndex is out of bounds");
 
     const bitmapIndex = Math.floor(bundleIndex / 8);
     const bitmapOffset = bundleIndex % 8;
@@ -66,21 +80,15 @@ describe("bundled position management tests", () => {
     for (let i = 0; i < POSITION_BUNDLE_SIZE; i++) {
       if (openedBundleIndexes.includes(i)) {
         assert.ok(checkBitmapIsOpened(account, i));
-      }
-      else {
+      } else {
         assert.ok(checkBitmapIsClosed(account, i));
       }
     }
   }
 
-  async function accrueFees(fixture: WhirlpoolTestFixture) {
+  async function accrueFees(fixture: ElysiumPoolTestFixture) {
     const ctx = testCtx.whirlpoolCtx;
-    const {
-      poolInitInfo,
-      positions,
-      tokenAccountA,
-      tokenAccountB,
-    } = fixture.getInfos();
+    const { poolInitInfo, positions, tokenAccountA, tokenAccountB } = fixture.getInfos();
 
     const { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair } = poolInitInfo;
 
@@ -92,7 +100,7 @@ describe("bundled position management tests", () => {
     // Accrue fees in token A
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
@@ -114,7 +122,7 @@ describe("bundled position management tests", () => {
     // Accrue fees in token B
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
@@ -153,7 +161,7 @@ describe("bundled position management tests", () => {
     }
   }
 
-  async function stopRewardsEmission(fixture: WhirlpoolTestFixture) {
+  async function stopRewardsEmission(fixture: ElysiumPoolTestFixture) {
     const ctx = testCtx.whirlpoolCtx;
     const { poolInitInfo, configKeypairs } = fixture.getInfos();
     const { whirlpoolPda } = poolInitInfo;
@@ -163,21 +171,23 @@ describe("bundled position management tests", () => {
     for (let i = 0; i < NUM_REWARDS; i++) {
       await toTx(
         ctx,
-        WhirlpoolIx.setRewardEmissionsIx(ctx.program, {
+        ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
           whirlpool: pool.getAddress(),
           rewardVaultKey: pool.getData().rewardInfos[i].vault,
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           rewardIndex: i,
           emissionsPerSecondX64: ZERO,
         })
-      ).addSigner(configKeypairs.rewardEmissionsSuperAuthorityKeypair).buildAndExecute();
+      )
+        .addSigner(configKeypairs.rewardEmissionsSuperAuthorityKeypair)
+        .buildAndExecute();
     }
   }
 
   it(`successfully open POSITION_BUNDLE_SIZE(${POSITION_BUNDLE_SIZE}) bundled positions and then close them`, async () => {
     // create test pool
     const ctx = testCtx.whirlpoolCtx;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [],
       rewards: [],
@@ -192,56 +202,82 @@ describe("bundled position management tests", () => {
     const openedBundleIndexes: number[] = [];
 
     // open all
-    for (let startBundleIndex = 0; startBundleIndex < POSITION_BUNDLE_SIZE; startBundleIndex += batchSize) {
+    for (
+      let startBundleIndex = 0;
+      startBundleIndex < POSITION_BUNDLE_SIZE;
+      startBundleIndex += batchSize
+    ) {
       const minBundleIndex = startBundleIndex;
       const maxBundleIndex = Math.min(startBundleIndex + batchSize, POSITION_BUNDLE_SIZE) - 1;
 
       const builder = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
 
       for (let bundleIndex = minBundleIndex; bundleIndex <= maxBundleIndex; bundleIndex++) {
-        const bundledPositionPda = PDAUtil.getBundledPosition(ctx.program.programId, positionBundleInfo.positionBundleMintKeypair.publicKey, bundleIndex);
-        builder.addInstruction(WhirlpoolIx.openBundledPositionIx(ctx.program, {
-          bundledPositionPda,
-          bundleIndex,
-          positionBundle: positionBundlePubkey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          tickLowerIndex,
-          tickUpperIndex,
-          whirlpool: whirlpoolPubkey,
-          funder: ctx.wallet.publicKey
-        }));
+        const bundledPositionPda = PDAUtil.getBundledPosition(
+          ctx.program.programId,
+          positionBundleInfo.positionBundleMintKeypair.publicKey,
+          bundleIndex
+        );
+        builder.addInstruction(
+          ElysiumPoolIx.openBundledPositionIx(ctx.program, {
+            bundledPositionPda,
+            bundleIndex,
+            positionBundle: positionBundlePubkey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            tickLowerIndex,
+            tickUpperIndex,
+            whirlpool: whirlpoolPubkey,
+            funder: ctx.wallet.publicKey,
+          })
+        );
         openedBundleIndexes.push(bundleIndex);
       }
 
       await builder.buildAndExecute();
-      const positionBundleAccount = await ctx.fetcher.getPositionBundle(positionBundlePubkey, IGNORE_CACHE);
+      const positionBundleAccount = await ctx.fetcher.getPositionBundle(
+        positionBundlePubkey,
+        IGNORE_CACHE
+      );
       checkBitmap(positionBundleAccount!, openedBundleIndexes);
     }
     assert.equal(openedBundleIndexes.length, POSITION_BUNDLE_SIZE);
 
     // close all
-    for (let startBundleIndex = 0; startBundleIndex < POSITION_BUNDLE_SIZE; startBundleIndex += batchSize) {
+    for (
+      let startBundleIndex = 0;
+      startBundleIndex < POSITION_BUNDLE_SIZE;
+      startBundleIndex += batchSize
+    ) {
       const minBundleIndex = startBundleIndex;
       const maxBundleIndex = Math.min(startBundleIndex + batchSize, POSITION_BUNDLE_SIZE) - 1;
 
       const builder = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
 
       for (let bundleIndex = minBundleIndex; bundleIndex <= maxBundleIndex; bundleIndex++) {
-        const bundledPositionPda = PDAUtil.getBundledPosition(ctx.program.programId, positionBundleInfo.positionBundleMintKeypair.publicKey, bundleIndex);
-        builder.addInstruction(WhirlpoolIx.closeBundledPositionIx(ctx.program, {
-          bundledPosition: bundledPositionPda.publicKey,
-          bundleIndex,
-          positionBundle: positionBundlePubkey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          receiver: ctx.wallet.publicKey
-        }));
+        const bundledPositionPda = PDAUtil.getBundledPosition(
+          ctx.program.programId,
+          positionBundleInfo.positionBundleMintKeypair.publicKey,
+          bundleIndex
+        );
+        builder.addInstruction(
+          ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
+            bundledPosition: bundledPositionPda.publicKey,
+            bundleIndex,
+            positionBundle: positionBundlePubkey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            receiver: ctx.wallet.publicKey,
+          })
+        );
         openedBundleIndexes.shift();
       }
 
       await builder.buildAndExecute();
-      const positionBundleAccount = await ctx.fetcher.getPositionBundle(positionBundlePubkey, IGNORE_CACHE);
+      const positionBundleAccount = await ctx.fetcher.getPositionBundle(
+        positionBundlePubkey,
+        IGNORE_CACHE
+      );
       checkBitmap(positionBundleAccount!, openedBundleIndexes);
     }
     assert.equal(openedBundleIndexes.length, 0);
@@ -249,7 +285,7 @@ describe("bundled position management tests", () => {
     // delete position bundle
     await toTx(
       ctx,
-      WhirlpoolIx.deletePositionBundleIx(ctx.program, {
+      ElysiumPoolIx.deletePositionBundleIx(ctx.program, {
         positionBundle: positionBundlePubkey,
         positionBundleMint: positionBundleInfo.positionBundleMintKeypair.publicKey,
         positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
@@ -257,14 +293,17 @@ describe("bundled position management tests", () => {
         receiver: ctx.wallet.publicKey,
       })
     ).buildAndExecute();
-    const positionBundleAccount = await ctx.fetcher.getPositionBundle(positionBundlePubkey, IGNORE_CACHE);
+    const positionBundleAccount = await ctx.fetcher.getPositionBundle(
+      positionBundlePubkey,
+      IGNORE_CACHE
+    );
     assert.ok(positionBundleAccount === null);
   });
 
   it("successfully increase/decrease liquidity and harvest on bundled position", async () => {
     // create test pool
     const ctx = testCtx.whirlpoolCtx;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [
         { liquidityAmount, tickLowerIndex, tickUpperIndex }, // non bundled position (to create TickArrays)
@@ -302,11 +341,27 @@ describe("bundled position management tests", () => {
     const { bundledPositionPda } = positionInitInfo.params;
 
     const bundledPositionPubkey = bundledPositionPda.publicKey;
-    const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(positionInitInfo.params.tickLowerIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
-    const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(positionInitInfo.params.tickUpperIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
+    const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(
+      positionInitInfo.params.tickLowerIndex,
+      poolInitInfo.tickSpacing,
+      poolInitInfo.whirlpoolPda.publicKey,
+      ctx.program.programId
+    ).publicKey;
+    const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(
+      positionInitInfo.params.tickUpperIndex,
+      poolInitInfo.tickSpacing,
+      poolInitInfo.whirlpoolPda.publicKey,
+      ctx.program.programId
+    ).publicKey;
     const whirlpoolPubkey = poolInitInfo.whirlpoolPda.publicKey;
-    const tokenOwnerAccountA = getAssociatedTokenAddressSync(poolInitInfo.tokenMintA, ctx.wallet.publicKey);
-    const tokenOwnerAccountB = getAssociatedTokenAddressSync(poolInitInfo.tokenMintB, ctx.wallet.publicKey);
+    const tokenOwnerAccountA = getAssociatedTokenAddressSync(
+      poolInitInfo.tokenMintA,
+      ctx.wallet.publicKey
+    );
+    const tokenOwnerAccountB = getAssociatedTokenAddressSync(
+      poolInitInfo.tokenMintB,
+      ctx.wallet.publicKey
+    );
 
     const modifyLiquidityParams = {
       liquidityAmount,
@@ -320,7 +375,7 @@ describe("bundled position management tests", () => {
       tokenVaultA: poolInitInfo.tokenVaultAKeypair.publicKey,
       tokenVaultB: poolInitInfo.tokenVaultBKeypair.publicKey,
       whirlpool: whirlpoolPubkey,
-    }
+    };
 
     // increaseLiquidity
     const depositAmounts = PoolUtil.getTokenAmountsFromLiquidity(
@@ -335,7 +390,7 @@ describe("bundled position management tests", () => {
     assert.ok(preIncrease!.liquidity.isZero());
     await toTx(
       ctx,
-      WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
         ...modifyLiquidityParams,
         tokenMaxA: depositAmounts.tokenA,
         tokenMaxB: depositAmounts.tokenB,
@@ -355,7 +410,7 @@ describe("bundled position management tests", () => {
     assert.ok(preUpdate!.rewardInfos.every((r) => r.amountOwed.isZero()));
     await toTx(
       ctx,
-      WhirlpoolIx.updateFeesAndRewardsIx(ctx.program, {
+      ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
         position: bundledPositionPubkey,
         tickArrayLower,
         tickArrayUpper,
@@ -370,7 +425,7 @@ describe("bundled position management tests", () => {
     // collectFees
     await toTx(
       ctx,
-      WhirlpoolIx.collectFeesIx(ctx.program, {
+      ElysiumPoolIx.collectFeesIx(ctx.program, {
         position: bundledPositionPubkey,
         positionAuthority: ctx.wallet.publicKey,
         positionTokenAccount: positionBundleInfo.positionBundleTokenAccount,
@@ -387,17 +442,13 @@ describe("bundled position management tests", () => {
 
     // collectReward
     for (let i = 0; i < NUM_REWARDS; i++) {
-      const ata = await createTokenAccount(
-        provider,
-        rewards[i].rewardMint,
-        ctx.wallet.publicKey
-      );
+      const ata = await createTokenAccount(provider, rewards[i].rewardMint, ctx.wallet.publicKey);
 
       const preCollectReward = await ctx.fetcher.getPosition(bundledPositionPubkey, IGNORE_CACHE);
       assert.ok(preCollectReward!.rewardInfos[i].amountOwed.gtn(0));
       await toTx(
         ctx,
-        WhirlpoolIx.collectRewardIx(ctx.program, {
+        ElysiumPoolIx.collectRewardIx(ctx.program, {
           position: bundledPositionPubkey,
           positionAuthority: ctx.wallet.publicKey,
           positionTokenAccount: positionBundleInfo.positionBundleTokenAccount,
@@ -423,7 +474,7 @@ describe("bundled position management tests", () => {
     assert.ok(preDecrease!.liquidity.eq(liquidityAmount));
     await toTx(
       ctx,
-      WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
         ...modifyLiquidityParams,
         tokenMinA: withdrawAmounts.tokenA,
         tokenMinB: withdrawAmounts.tokenB,
@@ -435,7 +486,7 @@ describe("bundled position management tests", () => {
     // close bundled position
     await toTx(
       ctx,
-      WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+      ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
         bundledPosition: bundledPositionPubkey,
         bundleIndex,
         positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -453,7 +504,7 @@ describe("bundled position management tests", () => {
 
     // create test pool
     const ctx = testCtx.whirlpoolCtx;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [
         { liquidityAmount, tickLowerIndex, tickUpperIndex }, // non bundled position (to create TickArrays)
@@ -498,11 +549,27 @@ describe("bundled position management tests", () => {
       const { bundledPositionPda } = positionInitInfo.params;
 
       const bundledPositionPubkey = bundledPositionPda.publicKey;
-      const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(positionInitInfo.params.tickLowerIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
-      const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(positionInitInfo.params.tickUpperIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
+      const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(
+        positionInitInfo.params.tickLowerIndex,
+        poolInitInfo.tickSpacing,
+        poolInitInfo.whirlpoolPda.publicKey,
+        ctx.program.programId
+      ).publicKey;
+      const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(
+        positionInitInfo.params.tickUpperIndex,
+        poolInitInfo.tickSpacing,
+        poolInitInfo.whirlpoolPda.publicKey,
+        ctx.program.programId
+      ).publicKey;
       const whirlpoolPubkey = poolInitInfo.whirlpoolPda.publicKey;
-      const tokenOwnerAccountA = getAssociatedTokenAddressSync(poolInitInfo.tokenMintA, ctx.wallet.publicKey);
-      const tokenOwnerAccountB = getAssociatedTokenAddressSync(poolInitInfo.tokenMintB, ctx.wallet.publicKey);
+      const tokenOwnerAccountA = getAssociatedTokenAddressSync(
+        poolInitInfo.tokenMintA,
+        ctx.wallet.publicKey
+      );
+      const tokenOwnerAccountB = getAssociatedTokenAddressSync(
+        poolInitInfo.tokenMintB,
+        ctx.wallet.publicKey
+      );
 
       // initialized check (No data left over from previous opening)
       const postOpen = await ctx.fetcher.getPosition(bundledPositionPubkey, IGNORE_CACHE);
@@ -522,7 +589,7 @@ describe("bundled position management tests", () => {
         tokenVaultA: poolInitInfo.tokenVaultAKeypair.publicKey,
         tokenVaultB: poolInitInfo.tokenVaultBKeypair.publicKey,
         whirlpool: whirlpoolPubkey,
-      }
+      };
 
       // increaseLiquidity
       const depositAmounts = PoolUtil.getTokenAmountsFromLiquidity(
@@ -536,7 +603,7 @@ describe("bundled position management tests", () => {
       assert.ok(preIncrease!.liquidity.isZero());
       await toTx(
         ctx,
-        WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
           ...modifyLiquidityParams,
           tokenMaxA: depositAmounts.tokenA,
           tokenMaxB: depositAmounts.tokenB,
@@ -565,7 +632,7 @@ describe("bundled position management tests", () => {
       assert.ok(preDecrease!.liquidity.eq(liquidityAmount));
       await toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           ...modifyLiquidityParams,
           tokenMinA: withdrawAmounts.tokenA,
           tokenMinB: withdrawAmounts.tokenB,
@@ -577,7 +644,7 @@ describe("bundled position management tests", () => {
       // collectFees
       await toTx(
         ctx,
-        WhirlpoolIx.collectFeesIx(ctx.program, {
+        ElysiumPoolIx.collectFeesIx(ctx.program, {
           position: bundledPositionPubkey,
           positionAuthority: ctx.wallet.publicKey,
           positionTokenAccount: positionBundleInfo.positionBundleTokenAccount,
@@ -594,17 +661,13 @@ describe("bundled position management tests", () => {
 
       // collectReward
       for (let i = 0; i < NUM_REWARDS; i++) {
-        const ata = await createTokenAccount(
-          provider,
-          rewards[i].rewardMint,
-          ctx.wallet.publicKey
-        );
+        const ata = await createTokenAccount(provider, rewards[i].rewardMint, ctx.wallet.publicKey);
 
         const preCollectReward = await ctx.fetcher.getPosition(bundledPositionPubkey, IGNORE_CACHE);
         assert.ok(preCollectReward!.rewardInfos[i].amountOwed.gtn(0));
         await toTx(
           ctx,
-          WhirlpoolIx.collectRewardIx(ctx.program, {
+          ElysiumPoolIx.collectRewardIx(ctx.program, {
             position: bundledPositionPubkey,
             positionAuthority: ctx.wallet.publicKey,
             positionTokenAccount: positionBundleInfo.positionBundleTokenAccount,
@@ -614,14 +677,17 @@ describe("bundled position management tests", () => {
             whirlpool: whirlpoolPubkey,
           })
         ).buildAndExecute();
-        const postCollectReward = await ctx.fetcher.getPosition(bundledPositionPubkey, IGNORE_CACHE);
+        const postCollectReward = await ctx.fetcher.getPosition(
+          bundledPositionPubkey,
+          IGNORE_CACHE
+        );
         assert.ok(postCollectReward!.rewardInfos[i].amountOwed.isZero());
       }
 
       // close bundled position
       await toTx(
         ctx,
-        WhirlpoolIx.closeBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
           bundledPosition: bundledPositionPubkey,
           bundleIndex,
           positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -639,7 +705,7 @@ describe("bundled position management tests", () => {
     it("successfully openBundledPosition+increaseLiquidity / decreaseLiquidity+closeBundledPosition in single Tx", async () => {
       // create test pool
       const ctx = testCtx.whirlpoolCtx;
-      const fixture = await new WhirlpoolTestFixture(ctx).init({
+      const fixture = await new ElysiumPoolTestFixture(ctx).init({
         tickSpacing,
         positions: [
           { liquidityAmount, tickLowerIndex, tickUpperIndex }, // non bundled position (to create TickArrays)
@@ -652,13 +718,33 @@ describe("bundled position management tests", () => {
       const positionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
       const bundleIndex = Math.floor(Math.random() * POSITION_BUNDLE_SIZE);
 
-      const bundledPositionPda = PDAUtil.getBundledPosition(ctx.program.programId, positionBundleInfo.positionBundleMintKeypair.publicKey, bundleIndex);
+      const bundledPositionPda = PDAUtil.getBundledPosition(
+        ctx.program.programId,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        bundleIndex
+      );
       const bundledPositionPubkey = bundledPositionPda.publicKey;
-      const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(tickLowerIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
-      const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(tickUpperIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
+      const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(
+        tickLowerIndex,
+        poolInitInfo.tickSpacing,
+        poolInitInfo.whirlpoolPda.publicKey,
+        ctx.program.programId
+      ).publicKey;
+      const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(
+        tickUpperIndex,
+        poolInitInfo.tickSpacing,
+        poolInitInfo.whirlpoolPda.publicKey,
+        ctx.program.programId
+      ).publicKey;
       const whirlpoolPubkey = poolInitInfo.whirlpoolPda.publicKey;
-      const tokenOwnerAccountA = getAssociatedTokenAddressSync(poolInitInfo.tokenMintA, ctx.wallet.publicKey);
-      const tokenOwnerAccountB = getAssociatedTokenAddressSync(poolInitInfo.tokenMintB, ctx.wallet.publicKey);
+      const tokenOwnerAccountA = getAssociatedTokenAddressSync(
+        poolInitInfo.tokenMintA,
+        ctx.wallet.publicKey
+      );
+      const tokenOwnerAccountB = getAssociatedTokenAddressSync(
+        poolInitInfo.tokenMintB,
+        ctx.wallet.publicKey
+      );
 
       const modifyLiquidityParams = {
         liquidityAmount,
@@ -672,7 +758,7 @@ describe("bundled position management tests", () => {
         tokenVaultA: poolInitInfo.tokenVaultAKeypair.publicKey,
         tokenVaultB: poolInitInfo.tokenVaultBKeypair.publicKey,
         whirlpool: whirlpoolPubkey,
-      }
+      };
 
       const depositAmounts = PoolUtil.getTokenAmountsFromLiquidity(
         liquidityAmount,
@@ -683,24 +769,32 @@ describe("bundled position management tests", () => {
       );
 
       // openBundledPosition + increaseLiquidity
-      const openIncreaseBuilder = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
+      const openIncreaseBuilder = new TransactionBuilder(
+        ctx.connection,
+        ctx.wallet,
+        ctx.txBuilderOpts
+      );
       openIncreaseBuilder
-        .addInstruction(WhirlpoolIx.openBundledPositionIx(ctx.program, {
-          bundledPositionPda,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          tickLowerIndex,
-          tickUpperIndex,
-          whirlpool: whirlpoolPubkey,
-          funder: ctx.wallet.publicKey
-        }))
-        .addInstruction(WhirlpoolIx.increaseLiquidityIx(ctx.program, {
-          ...modifyLiquidityParams,
-          tokenMaxA: depositAmounts.tokenA,
-          tokenMaxB: depositAmounts.tokenB,
-        }));
+        .addInstruction(
+          ElysiumPoolIx.openBundledPositionIx(ctx.program, {
+            bundledPositionPda,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            tickLowerIndex,
+            tickUpperIndex,
+            whirlpool: whirlpoolPubkey,
+            funder: ctx.wallet.publicKey,
+          })
+        )
+        .addInstruction(
+          ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
+            ...modifyLiquidityParams,
+            tokenMaxA: depositAmounts.tokenA,
+            tokenMaxB: depositAmounts.tokenB,
+          })
+        );
       await openIncreaseBuilder.buildAndExecute();
       const postIncrease = await ctx.fetcher.getPosition(bundledPositionPubkey, IGNORE_CACHE);
       assert.ok(postIncrease!.liquidity.eq(liquidityAmount));
@@ -713,21 +807,29 @@ describe("bundled position management tests", () => {
         false
       );
 
-      const decreaseCloseBuilder = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
+      const decreaseCloseBuilder = new TransactionBuilder(
+        ctx.connection,
+        ctx.wallet,
+        ctx.txBuilderOpts
+      );
       decreaseCloseBuilder
-        .addInstruction(WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
-          ...modifyLiquidityParams,
-          tokenMinA: withdrawAmounts.tokenA,
-          tokenMinB: withdrawAmounts.tokenB,
-        }))
-        .addInstruction(WhirlpoolIx.closeBundledPositionIx(ctx.program, {
-          bundledPosition: bundledPositionPubkey,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          receiver: ctx.wallet.publicKey,
-        }));
+        .addInstruction(
+          ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
+            ...modifyLiquidityParams,
+            tokenMinA: withdrawAmounts.tokenA,
+            tokenMinB: withdrawAmounts.tokenB,
+          })
+        )
+        .addInstruction(
+          ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
+            bundledPosition: bundledPositionPubkey,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            receiver: ctx.wallet.publicKey,
+          })
+        );
       await decreaseCloseBuilder.buildAndExecute();
       const postClose = await ctx.fetcher.getPosition(bundledPositionPubkey, IGNORE_CACHE);
       assert.ok(postClose === null);
@@ -736,7 +838,7 @@ describe("bundled position management tests", () => {
     it("successfully open bundled position & close bundled position in single Tx", async () => {
       // create test pool
       const ctx = testCtx.whirlpoolCtx;
-      const fixture = await new WhirlpoolTestFixture(ctx).init({
+      const fixture = await new ElysiumPoolTestFixture(ctx).init({
         tickSpacing,
         positions: [
           { liquidityAmount, tickLowerIndex, tickUpperIndex }, // non bundled position (to create TickArrays)
@@ -762,13 +864,33 @@ describe("bundled position management tests", () => {
       const positionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
       const bundleIndex = Math.floor(Math.random() * POSITION_BUNDLE_SIZE);
 
-      const bundledPositionPda = PDAUtil.getBundledPosition(ctx.program.programId, positionBundleInfo.positionBundleMintKeypair.publicKey, bundleIndex);
+      const bundledPositionPda = PDAUtil.getBundledPosition(
+        ctx.program.programId,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        bundleIndex
+      );
       const bundledPositionPubkey = bundledPositionPda.publicKey;
-      const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(tickLowerIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
-      const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(tickUpperIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
+      const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(
+        tickLowerIndex,
+        poolInitInfo.tickSpacing,
+        poolInitInfo.whirlpoolPda.publicKey,
+        ctx.program.programId
+      ).publicKey;
+      const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(
+        tickUpperIndex,
+        poolInitInfo.tickSpacing,
+        poolInitInfo.whirlpoolPda.publicKey,
+        ctx.program.programId
+      ).publicKey;
       const whirlpoolPubkey = poolInitInfo.whirlpoolPda.publicKey;
-      const tokenOwnerAccountA = getAssociatedTokenAddressSync(poolInitInfo.tokenMintA, ctx.wallet.publicKey);
-      const tokenOwnerAccountB = getAssociatedTokenAddressSync(poolInitInfo.tokenMintB, ctx.wallet.publicKey);
+      const tokenOwnerAccountA = getAssociatedTokenAddressSync(
+        poolInitInfo.tokenMintA,
+        ctx.wallet.publicKey
+      );
+      const tokenOwnerAccountB = getAssociatedTokenAddressSync(
+        poolInitInfo.tokenMintB,
+        ctx.wallet.publicKey
+      );
 
       const modifyLiquidityParams = {
         liquidityAmount,
@@ -782,7 +904,7 @@ describe("bundled position management tests", () => {
         tokenVaultA: poolInitInfo.tokenVaultAKeypair.publicKey,
         tokenVaultB: poolInitInfo.tokenVaultBKeypair.publicKey,
         whirlpool: whirlpoolPubkey,
-      }
+      };
 
       const depositAmounts = PoolUtil.getTokenAmountsFromLiquidity(
         liquidityAmount,
@@ -795,35 +917,43 @@ describe("bundled position management tests", () => {
       const receiver = Keypair.generate();
       const builder = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
       builder
-        .addInstruction(WhirlpoolIx.openBundledPositionIx(ctx.program, {
-          bundledPositionPda,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          tickLowerIndex,
-          tickUpperIndex,
-          whirlpool: whirlpoolPubkey,
-          funder: ctx.wallet.publicKey
-        }))
-        .addInstruction(WhirlpoolIx.increaseLiquidityIx(ctx.program, {
-          ...modifyLiquidityParams,
-          tokenMaxA: depositAmounts.tokenA,
-          tokenMaxB: depositAmounts.tokenB,
-        }))
-        .addInstruction(WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
-          ...modifyLiquidityParams,
-          tokenMinA: new BN(0),
-          tokenMinB: new BN(0),
-        }))
-        .addInstruction(WhirlpoolIx.closeBundledPositionIx(ctx.program, {
-          bundledPosition: bundledPositionPubkey,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          receiver: receiver.publicKey,
-        }));
+        .addInstruction(
+          ElysiumPoolIx.openBundledPositionIx(ctx.program, {
+            bundledPositionPda,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            tickLowerIndex,
+            tickUpperIndex,
+            whirlpool: whirlpoolPubkey,
+            funder: ctx.wallet.publicKey,
+          })
+        )
+        .addInstruction(
+          ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
+            ...modifyLiquidityParams,
+            tokenMaxA: depositAmounts.tokenA,
+            tokenMaxB: depositAmounts.tokenB,
+          })
+        )
+        .addInstruction(
+          ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
+            ...modifyLiquidityParams,
+            tokenMinA: new BN(0),
+            tokenMinB: new BN(0),
+          })
+        )
+        .addInstruction(
+          ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
+            bundledPosition: bundledPositionPubkey,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            receiver: receiver.publicKey,
+          })
+        );
 
       await builder.buildAndExecute();
       const receiverBalance = await ctx.connection.getBalance(receiver.publicKey, "confirmed");
@@ -833,7 +963,7 @@ describe("bundled position management tests", () => {
     it("successfully close & re-open bundled position with the same bundle index in single Tx", async () => {
       // create test pool
       const ctx = testCtx.whirlpoolCtx;
-      const fixture = await new WhirlpoolTestFixture(ctx).init({
+      const fixture = await new ElysiumPoolTestFixture(ctx).init({
         tickSpacing,
         positions: [],
         rewards: [],
@@ -844,45 +974,55 @@ describe("bundled position management tests", () => {
       const positionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
       const bundleIndex = Math.floor(Math.random() * POSITION_BUNDLE_SIZE);
 
-      const bundledPositionPda = PDAUtil.getBundledPosition(ctx.program.programId, positionBundleInfo.positionBundleMintKeypair.publicKey, bundleIndex);
+      const bundledPositionPda = PDAUtil.getBundledPosition(
+        ctx.program.programId,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        bundleIndex
+      );
       const bundledPositionPubkey = bundledPositionPda.publicKey;
       const whirlpoolPubkey = poolInitInfo.whirlpoolPda.publicKey;
 
       const builder = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
       builder
         // open
-        .addInstruction(WhirlpoolIx.openBundledPositionIx(ctx.program, {
-          bundledPositionPda,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          tickLowerIndex,
-          tickUpperIndex,
-          whirlpool: whirlpoolPubkey,
-          funder: ctx.wallet.publicKey
-        }))
+        .addInstruction(
+          ElysiumPoolIx.openBundledPositionIx(ctx.program, {
+            bundledPositionPda,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            tickLowerIndex,
+            tickUpperIndex,
+            whirlpool: whirlpoolPubkey,
+            funder: ctx.wallet.publicKey,
+          })
+        )
         // close
-        .addInstruction(WhirlpoolIx.closeBundledPositionIx(ctx.program, {
-          bundledPosition: bundledPositionPubkey,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          receiver: whirlpoolPubkey,
-        }))
+        .addInstruction(
+          ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
+            bundledPosition: bundledPositionPubkey,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            receiver: whirlpoolPubkey,
+          })
+        )
         // reopen bundled position with same bundleIndex in single Tx
-        .addInstruction(WhirlpoolIx.openBundledPositionIx(ctx.program, {
-          bundledPositionPda,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          tickLowerIndex: tickLowerIndex + tickSpacing,
-          tickUpperIndex: tickUpperIndex + tickSpacing,
-          whirlpool: whirlpoolPubkey,
-          funder: ctx.wallet.publicKey
-        }));
+        .addInstruction(
+          ElysiumPoolIx.openBundledPositionIx(ctx.program, {
+            bundledPositionPda,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            tickLowerIndex: tickLowerIndex + tickSpacing,
+            tickUpperIndex: tickUpperIndex + tickSpacing,
+            whirlpool: whirlpoolPubkey,
+            funder: ctx.wallet.publicKey,
+          })
+        );
 
       // Account closing reassigns to system program and reallocates
       // https://github.com/coral-xyz/anchor/pull/2169
@@ -897,7 +1037,7 @@ describe("bundled position management tests", () => {
     it("successfully open bundled position & swap & close bundled position in single Tx", async () => {
       // create test pool
       const ctx = testCtx.whirlpoolCtx;
-      const fixture = await new WhirlpoolTestFixture(ctx).init({
+      const fixture = await new ElysiumPoolTestFixture(ctx).init({
         tickSpacing,
         positions: [
           { liquidityAmount, tickLowerIndex, tickUpperIndex }, // non bundled position (to create TickArrays)
@@ -923,13 +1063,33 @@ describe("bundled position management tests", () => {
       const positionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
       const bundleIndex = Math.floor(Math.random() * POSITION_BUNDLE_SIZE);
 
-      const bundledPositionPda = PDAUtil.getBundledPosition(ctx.program.programId, positionBundleInfo.positionBundleMintKeypair.publicKey, bundleIndex);
+      const bundledPositionPda = PDAUtil.getBundledPosition(
+        ctx.program.programId,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        bundleIndex
+      );
       const bundledPositionPubkey = bundledPositionPda.publicKey;
-      const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(tickLowerIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
-      const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(tickUpperIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
+      const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(
+        tickLowerIndex,
+        poolInitInfo.tickSpacing,
+        poolInitInfo.whirlpoolPda.publicKey,
+        ctx.program.programId
+      ).publicKey;
+      const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(
+        tickUpperIndex,
+        poolInitInfo.tickSpacing,
+        poolInitInfo.whirlpoolPda.publicKey,
+        ctx.program.programId
+      ).publicKey;
       const whirlpoolPubkey = poolInitInfo.whirlpoolPda.publicKey;
-      const tokenOwnerAccountA = getAssociatedTokenAddressSync(poolInitInfo.tokenMintA, ctx.wallet.publicKey);
-      const tokenOwnerAccountB = getAssociatedTokenAddressSync(poolInitInfo.tokenMintB, ctx.wallet.publicKey);
+      const tokenOwnerAccountA = getAssociatedTokenAddressSync(
+        poolInitInfo.tokenMintA,
+        ctx.wallet.publicKey
+      );
+      const tokenOwnerAccountB = getAssociatedTokenAddressSync(
+        poolInitInfo.tokenMintB,
+        ctx.wallet.publicKey
+      );
 
       const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, whirlpoolPubkey, 22528);
       const oraclePda = PDAUtil.getOracle(ctx.program.programId, whirlpoolPubkey);
@@ -946,7 +1106,7 @@ describe("bundled position management tests", () => {
         tokenVaultA: poolInitInfo.tokenVaultAKeypair.publicKey,
         tokenVaultB: poolInitInfo.tokenVaultBKeypair.publicKey,
         whirlpool: whirlpoolPubkey,
-      }
+      };
 
       const depositAmounts = PoolUtil.getTokenAmountsFromLiquidity(
         liquidityAmount,
@@ -959,96 +1119,127 @@ describe("bundled position management tests", () => {
       const swapInput = new BN(200_000);
       const poolLiquidity = new BN(liquidityAmount.muln(2).toString());
       const estimatedFee = new BN(swapInput.toString())
-        .muln(3).divn(1000) // feeRate 0.3%
-        .muln(97).divn(100) // minus protocolFee 3%
-        .shln(64).div(poolLiquidity) // to X64 growth
+        .muln(3)
+        .divn(1000) // feeRate 0.3%
+        .muln(97)
+        .divn(100) // minus protocolFee 3%
+        .shln(64)
+        .div(poolLiquidity) // to X64 growth
         .mul(liquidityAmount)
         .shrn(64)
         .toNumber();
 
       const receiver = Keypair.generate();
-      const receiverAtaA = await createTokenAccount(provider, poolInitInfo.tokenMintA, receiver.publicKey);
-      const receiverAtaB = await createTokenAccount(provider, poolInitInfo.tokenMintB, receiver.publicKey);
+      const receiverAtaA = await createTokenAccount(
+        provider,
+        poolInitInfo.tokenMintA,
+        receiver.publicKey
+      );
+      const receiverAtaB = await createTokenAccount(
+        provider,
+        poolInitInfo.tokenMintB,
+        receiver.publicKey
+      );
 
       const builder = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
       builder
-        .addInstruction(WhirlpoolIx.openBundledPositionIx(ctx.program, {
-          bundledPositionPda,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          tickLowerIndex,
-          tickUpperIndex,
-          whirlpool: whirlpoolPubkey,
-          funder: ctx.wallet.publicKey
-        }))
-        .addInstruction(WhirlpoolIx.increaseLiquidityIx(ctx.program, {
-          ...modifyLiquidityParams,
-          tokenMaxA: depositAmounts.tokenA,
-          tokenMaxB: depositAmounts.tokenB,
-        }))
-        .addInstruction(WhirlpoolIx.swapIx(ctx.program, {
-          amount: swapInput,
-          otherAmountThreshold: ZERO_BN,
-          sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
-          amountSpecifiedIsInput: true,
-          aToB: true,
-          whirlpool: whirlpoolPubkey,
-          tokenAuthority: ctx.wallet.publicKey,
-          tokenOwnerAccountA,
-          tokenOwnerAccountB,
-          tokenVaultA: poolInitInfo.tokenVaultAKeypair.publicKey,
-          tokenVaultB: poolInitInfo.tokenVaultBKeypair.publicKey,
-          tickArray0: tickArrayPda.publicKey,
-          tickArray1: tickArrayPda.publicKey,
-          tickArray2: tickArrayPda.publicKey,
-          oracle: oraclePda.publicKey,
-        }))
-        .addInstruction(WhirlpoolIx.swapIx(ctx.program, {
-          amount: swapInput,
-          otherAmountThreshold: ZERO_BN,
-          sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
-          amountSpecifiedIsInput: true,
-          aToB: false,
-          whirlpool: whirlpoolPubkey,
-          tokenAuthority: ctx.wallet.publicKey,
-          tokenOwnerAccountA,
-          tokenOwnerAccountB,
-          tokenVaultA: poolInitInfo.tokenVaultAKeypair.publicKey,
-          tokenVaultB: poolInitInfo.tokenVaultBKeypair.publicKey,
-          tickArray0: tickArrayPda.publicKey,
-          tickArray1: tickArrayPda.publicKey,
-          tickArray2: tickArrayPda.publicKey,
-          oracle: oraclePda.publicKey,
-        }))
-        .addInstruction(WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
-          ...modifyLiquidityParams,
-          tokenMinA: new BN(0),
-          tokenMinB: new BN(0),
-        }))
-        .addInstruction(WhirlpoolIx.collectFeesIx(ctx.program, {
-          position: bundledPositionPubkey,
-          positionAuthority: ctx.wallet.publicKey,
-          positionTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          tokenOwnerAccountA: receiverAtaA,
-          tokenOwnerAccountB: receiverAtaB,
-          tokenVaultA: poolInitInfo.tokenVaultAKeypair.publicKey,
-          tokenVaultB: poolInitInfo.tokenVaultBKeypair.publicKey,
-          whirlpool: whirlpoolPubkey,
-        }))
-        .addInstruction(WhirlpoolIx.closeBundledPositionIx(ctx.program, {
-          bundledPosition: bundledPositionPubkey,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          receiver: receiver.publicKey,
-        }));
+        .addInstruction(
+          ElysiumPoolIx.openBundledPositionIx(ctx.program, {
+            bundledPositionPda,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            tickLowerIndex,
+            tickUpperIndex,
+            whirlpool: whirlpoolPubkey,
+            funder: ctx.wallet.publicKey,
+          })
+        )
+        .addInstruction(
+          ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
+            ...modifyLiquidityParams,
+            tokenMaxA: depositAmounts.tokenA,
+            tokenMaxB: depositAmounts.tokenB,
+          })
+        )
+        .addInstruction(
+          ElysiumPoolIx.swapIx(ctx.program, {
+            amount: swapInput,
+            otherAmountThreshold: ZERO_BN,
+            sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
+            amountSpecifiedIsInput: true,
+            aToB: true,
+            whirlpool: whirlpoolPubkey,
+            tokenAuthority: ctx.wallet.publicKey,
+            tokenOwnerAccountA,
+            tokenOwnerAccountB,
+            tokenVaultA: poolInitInfo.tokenVaultAKeypair.publicKey,
+            tokenVaultB: poolInitInfo.tokenVaultBKeypair.publicKey,
+            tickArray0: tickArrayPda.publicKey,
+            tickArray1: tickArrayPda.publicKey,
+            tickArray2: tickArrayPda.publicKey,
+            oracle: oraclePda.publicKey,
+          })
+        )
+        .addInstruction(
+          ElysiumPoolIx.swapIx(ctx.program, {
+            amount: swapInput,
+            otherAmountThreshold: ZERO_BN,
+            sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
+            amountSpecifiedIsInput: true,
+            aToB: false,
+            whirlpool: whirlpoolPubkey,
+            tokenAuthority: ctx.wallet.publicKey,
+            tokenOwnerAccountA,
+            tokenOwnerAccountB,
+            tokenVaultA: poolInitInfo.tokenVaultAKeypair.publicKey,
+            tokenVaultB: poolInitInfo.tokenVaultBKeypair.publicKey,
+            tickArray0: tickArrayPda.publicKey,
+            tickArray1: tickArrayPda.publicKey,
+            tickArray2: tickArrayPda.publicKey,
+            oracle: oraclePda.publicKey,
+          })
+        )
+        .addInstruction(
+          ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
+            ...modifyLiquidityParams,
+            tokenMinA: new BN(0),
+            tokenMinB: new BN(0),
+          })
+        )
+        .addInstruction(
+          ElysiumPoolIx.collectFeesIx(ctx.program, {
+            position: bundledPositionPubkey,
+            positionAuthority: ctx.wallet.publicKey,
+            positionTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            tokenOwnerAccountA: receiverAtaA,
+            tokenOwnerAccountB: receiverAtaB,
+            tokenVaultA: poolInitInfo.tokenVaultAKeypair.publicKey,
+            tokenVaultB: poolInitInfo.tokenVaultBKeypair.publicKey,
+            whirlpool: whirlpoolPubkey,
+          })
+        )
+        .addInstruction(
+          ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
+            bundledPosition: bundledPositionPubkey,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            receiver: receiver.publicKey,
+          })
+        );
 
       await builder.buildAndExecute();
-      assert.ok((await ctx.fetcher.getTokenInfo(receiverAtaA, IGNORE_CACHE))!.amount === BigInt(estimatedFee.toString()));
-      assert.ok((await ctx.fetcher.getTokenInfo(receiverAtaB, IGNORE_CACHE))!.amount === BigInt(estimatedFee.toString()));
+      assert.ok(
+        (await ctx.fetcher.getTokenInfo(receiverAtaA, IGNORE_CACHE))!.amount ===
+          BigInt(estimatedFee.toString())
+      );
+      assert.ok(
+        (await ctx.fetcher.getTokenInfo(receiverAtaB, IGNORE_CACHE))!.amount ===
+          BigInt(estimatedFee.toString())
+      );
     });
   });
 
@@ -1059,7 +1250,10 @@ describe("bundled position management tests", () => {
       // initialize position bundle
       const positionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
 
-      const preClose = await ctx.connection.getAccountInfo(positionBundleInfo.positionBundlePda.publicKey, "confirmed");
+      const preClose = await ctx.connection.getAccountInfo(
+        positionBundleInfo.positionBundlePda.publicKey,
+        "confirmed"
+      );
       assert.ok(preClose !== null);
       const rentOfPositionBundle = preClose.lamports;
       assert.ok(rentOfPositionBundle > 0);
@@ -1067,13 +1261,15 @@ describe("bundled position management tests", () => {
       const builder = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
       builder
         // close
-        .addInstruction(WhirlpoolIx.deletePositionBundleIx(ctx.program, {
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleMint: positionBundleInfo.positionBundleMintKeypair.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          owner: ctx.wallet.publicKey,
-          receiver: ctx.wallet.publicKey,
-        }))
+        .addInstruction(
+          ElysiumPoolIx.deletePositionBundleIx(ctx.program, {
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleMint: positionBundleInfo.positionBundleMintKeypair.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            owner: ctx.wallet.publicKey,
+            receiver: ctx.wallet.publicKey,
+          })
+        )
         // fund rent
         .addInstruction({
           instructions: [
@@ -1081,7 +1277,7 @@ describe("bundled position management tests", () => {
               fromPubkey: ctx.wallet.publicKey,
               toPubkey: positionBundleInfo.positionBundlePda.publicKey,
               lamports: rentOfPositionBundle,
-            })
+            }),
           ],
           cleanupInstructions: [],
           signers: [],
@@ -1090,7 +1286,10 @@ describe("bundled position management tests", () => {
 
       // Account closing reassigns to system program and reallocates
       // https://github.com/coral-xyz/anchor/pull/2169
-      const postClose = await ctx.connection.getAccountInfo(positionBundleInfo.positionBundlePda.publicKey, "confirmed");
+      const postClose = await ctx.connection.getAccountInfo(
+        positionBundleInfo.positionBundlePda.publicKey,
+        "confirmed"
+      );
       assert.ok(postClose !== null);
       assert.ok(postClose.owner.equals(SystemProgram.programId));
       assert.ok(postClose.data.length === 0);
@@ -1099,7 +1298,7 @@ describe("bundled position management tests", () => {
     it("The owner of closed account should be system program", async () => {
       // create test pool
       const ctx = testCtx.whirlpoolCtx;
-      const fixture = await new WhirlpoolTestFixture(ctx).init({
+      const fixture = await new ElysiumPoolTestFixture(ctx).init({
         tickSpacing,
         positions: [],
         rewards: [],
@@ -1110,14 +1309,18 @@ describe("bundled position management tests", () => {
       const positionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
       const bundleIndex = Math.floor(Math.random() * POSITION_BUNDLE_SIZE);
 
-      const bundledPositionPda = PDAUtil.getBundledPosition(ctx.program.programId, positionBundleInfo.positionBundleMintKeypair.publicKey, bundleIndex);
+      const bundledPositionPda = PDAUtil.getBundledPosition(
+        ctx.program.programId,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        bundleIndex
+      );
       const bundledPositionPubkey = bundledPositionPda.publicKey;
       const whirlpoolPubkey = poolInitInfo.whirlpoolPda.publicKey;
 
       // open
       await toTx(
         ctx,
-        WhirlpoolIx.openBundledPositionIx(ctx.program, {
+        ElysiumPoolIx.openBundledPositionIx(ctx.program, {
           bundledPositionPda,
           bundleIndex,
           positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -1126,7 +1329,7 @@ describe("bundled position management tests", () => {
           tickLowerIndex,
           tickUpperIndex,
           whirlpool: whirlpoolPubkey,
-          funder: ctx.wallet.publicKey
+          funder: ctx.wallet.publicKey,
         })
       ).buildAndExecute();
 
@@ -1138,14 +1341,16 @@ describe("bundled position management tests", () => {
       const builder = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
       builder
         // close
-        .addInstruction(WhirlpoolIx.closeBundledPositionIx(ctx.program, {
-          bundledPosition: bundledPositionPubkey,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          receiver: whirlpoolPubkey,
-        }))
+        .addInstruction(
+          ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
+            bundledPosition: bundledPositionPubkey,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            receiver: whirlpoolPubkey,
+          })
+        )
         // fund rent
         .addInstruction({
           instructions: [
@@ -1153,7 +1358,7 @@ describe("bundled position management tests", () => {
               fromPubkey: ctx.wallet.publicKey,
               toPubkey: bundledPositionPubkey,
               lamports: rentOfBundledPosition,
-            })
+            }),
           ],
           cleanupInstructions: [],
           signers: [],
@@ -1171,7 +1376,7 @@ describe("bundled position management tests", () => {
     it("should be failed: close bundled position and then updateFeesAndRewards in single Tx", async () => {
       // create test pool
       const ctx = testCtx.whirlpoolCtx;
-      const fixture = await new WhirlpoolTestFixture(ctx).init({
+      const fixture = await new ElysiumPoolTestFixture(ctx).init({
         tickSpacing,
         positions: [],
         rewards: [],
@@ -1182,42 +1387,62 @@ describe("bundled position management tests", () => {
       const positionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
       const bundleIndex = Math.floor(Math.random() * POSITION_BUNDLE_SIZE);
 
-      const bundledPositionPda = PDAUtil.getBundledPosition(ctx.program.programId, positionBundleInfo.positionBundleMintKeypair.publicKey, bundleIndex);
+      const bundledPositionPda = PDAUtil.getBundledPosition(
+        ctx.program.programId,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        bundleIndex
+      );
       const bundledPositionPubkey = bundledPositionPda.publicKey;
       const whirlpoolPubkey = poolInitInfo.whirlpoolPda.publicKey;
-      const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(tickLowerIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
-      const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(tickUpperIndex, poolInitInfo.tickSpacing, poolInitInfo.whirlpoolPda.publicKey, ctx.program.programId).publicKey;
+      const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(
+        tickLowerIndex,
+        poolInitInfo.tickSpacing,
+        poolInitInfo.whirlpoolPda.publicKey,
+        ctx.program.programId
+      ).publicKey;
+      const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(
+        tickUpperIndex,
+        poolInitInfo.tickSpacing,
+        poolInitInfo.whirlpoolPda.publicKey,
+        ctx.program.programId
+      ).publicKey;
 
       const builder = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
       builder
         // open
-        .addInstruction(WhirlpoolIx.openBundledPositionIx(ctx.program, {
-          bundledPositionPda,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          tickLowerIndex,
-          tickUpperIndex,
-          whirlpool: whirlpoolPubkey,
-          funder: ctx.wallet.publicKey
-        }))
+        .addInstruction(
+          ElysiumPoolIx.openBundledPositionIx(ctx.program, {
+            bundledPositionPda,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            tickLowerIndex,
+            tickUpperIndex,
+            whirlpool: whirlpoolPubkey,
+            funder: ctx.wallet.publicKey,
+          })
+        )
         // close
-        .addInstruction(WhirlpoolIx.closeBundledPositionIx(ctx.program, {
-          bundledPosition: bundledPositionPubkey,
-          bundleIndex,
-          positionBundle: positionBundleInfo.positionBundlePda.publicKey,
-          positionBundleAuthority: ctx.wallet.publicKey,
-          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-          receiver: whirlpoolPubkey,
-        }))
+        .addInstruction(
+          ElysiumPoolIx.closeBundledPositionIx(ctx.program, {
+            bundledPosition: bundledPositionPubkey,
+            bundleIndex,
+            positionBundle: positionBundleInfo.positionBundlePda.publicKey,
+            positionBundleAuthority: ctx.wallet.publicKey,
+            positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+            receiver: whirlpoolPubkey,
+          })
+        )
         // try to use closed bundled position
-        .addInstruction(WhirlpoolIx.updateFeesAndRewardsIx(ctx.program, {
-          position: bundledPositionPubkey,
-          tickArrayLower,
-          tickArrayUpper,
-          whirlpool: whirlpoolPubkey,
-        }));
+        .addInstruction(
+          ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
+            position: bundledPositionPubkey,
+            tickArrayLower,
+            tickArrayUpper,
+            whirlpool: whirlpoolPubkey,
+          })
+        );
 
       await assert.rejects(
         builder.buildAndExecute(),
@@ -1225,5 +1450,4 @@ describe("bundled position management tests", () => {
       );
     });
   });
-
 });

@@ -2,7 +2,7 @@ import { Program } from "@coral-xyz/anchor";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 import { Instruction } from "@orca-so/common-sdk";
 
@@ -55,7 +55,7 @@ export type IncreaseLiquidityInput = {
 };
 
 /**
- * Add liquidity to a position in the Whirlpool.
+ * Add liquidity to a position in the ElysiumPool.
  *
  * #### Special Errors
  * `LiquidityZero` - Provided liquidity amount is zero.
@@ -68,7 +68,7 @@ export type IncreaseLiquidityInput = {
  * @returns - Instruction to perform the action.
  */
 export function increaseLiquidityIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: IncreaseLiquidityParams
 ): Instruction {
   const {

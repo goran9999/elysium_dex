@@ -3,8 +3,8 @@ import { AddressUtil, PDA } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
 import invariant from "tiny-invariant";
 import {
-  WhirlpoolAccountFetchOptions,
-  WhirlpoolAccountFetcherInterface,
+  ElysiumPoolAccountFetchOptions,
+  ElysiumPoolAccountFetcherInterface,
 } from "../../network/public/fetcher";
 import {
   MAX_TICK_INDEX,
@@ -22,7 +22,7 @@ enum TickSearchDirection {
 
 /**
  * A collection of utility functions when interacting with Ticks.
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  */
 export class TickUtil {
   private constructor() {}
@@ -32,7 +32,7 @@ export class TickUtil {
    *
    * @param tickIndex The tick index for the tick that this offset would access
    * @param arrayStartIndex The starting tick for the array that this tick-index resides in
-   * @param tickSpacing The tickSpacing for the Whirlpool that this tickArray belongs to
+   * @param tickSpacing The tickSpacing for the ElysiumPool that this tickArray belongs to
    * @returns The offset index that can access the desired tick at the given tick-array
    */
   public static getOffsetIndex(tickIndex: number, arrayStartIndex: number, tickSpacing: number) {
@@ -173,8 +173,8 @@ export class TickUtil {
 
   /**
    * Get the minimum and maximum tick index that can be initialized.
-   * 
-   * @param tickSpacing The tickSpacing for the Whirlpool
+   *
+   * @param tickSpacing The tickSpacing for the ElysiumPool
    * @returns An array of numbers where the first element is the minimum tick index and the second element is the maximum tick index.
    */
   public static getFullRangeTickIndex(tickSpacing: number): [number, number] {
@@ -185,13 +185,17 @@ export class TickUtil {
   }
 
   /**
-   * Check if the tick range is the full range of the Whirlpool.
-   * @param tickSpacing The tickSpacing for the Whirlpool
+   * Check if the tick range is the full range of the ElysiumPool.
+   * @param tickSpacing The tickSpacing for the ElysiumPool
    * @param tickLowerIndex The lower tick index of the range
    * @param tickUpperIndex The upper tick index of the range
-   * @returns true if the range is the full range of the Whirlpool, false otherwise.
+   * @returns true if the range is the full range of the ElysiumPool, false otherwise.
    */
-  public static isFullRange(tickSpacing: number, tickLowerIndex: number, tickUpperIndex: number): boolean {
+  public static isFullRange(
+    tickSpacing: number,
+    tickLowerIndex: number,
+    tickUpperIndex: number
+  ): boolean {
     const [min, max] = TickUtil.getFullRangeTickIndex(tickSpacing);
     return tickLowerIndex === min && tickUpperIndex === max;
   }
@@ -199,7 +203,7 @@ export class TickUtil {
 
 /**
  * A collection of utility functions when interacting with a TickArray.
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  */
 export class TickArrayUtil {
   /**
@@ -225,7 +229,7 @@ export class TickArrayUtil {
    * @param tickSpacing - Tick spacing for the whirlpool
    * @param numOfTickArrays - The number of TickArray PDAs to generate
    * @param programId - Program Id of the whirlpool for these tick-arrays
-   * @param whirlpoolAddress - Address for the Whirlpool for these tick-arrays
+   * @param whirlpoolAddress - Address for the ElysiumPool for these tick-arrays
    * @returns TickArray PDAs for the sequence`
    */
   public static getTickArrayPDAs(
@@ -251,14 +255,14 @@ export class TickArrayUtil {
    * Useful for creating error messages.
    *
    * @param tickArrayAddrs - A list of tick-array addresses to verify.
-   * @param cache - {@link WhirlpoolAccountFetcherInterface}
-   * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+   * @param cache - {@link ElysiumPoolAccountFetcherInterface}
+   * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
    * @returns A string of all uninitialized tick array addresses, delimited by ",". Falsy value if all arrays are initialized.
    */
   public static async getUninitializedArraysString(
     tickArrayAddrs: Address[],
-    fetcher: WhirlpoolAccountFetcherInterface,
-    opts?: WhirlpoolAccountFetchOptions
+    fetcher: ElysiumPoolAccountFetcherInterface,
+    opts?: ElysiumPoolAccountFetchOptions
   ) {
     const taAddrs = AddressUtil.toPubKeys(tickArrayAddrs);
     const tickArrayData = await fetcher.getTickArrays(taAddrs, opts);
@@ -283,8 +287,8 @@ export class TickArrayUtil {
     programId: PublicKey,
     whirlpoolAddress: PublicKey,
     tickSpacing: number,
-    fetcher: WhirlpoolAccountFetcherInterface,
-    opts: WhirlpoolAccountFetchOptions
+    fetcher: ElysiumPoolAccountFetcherInterface,
+    opts: ElysiumPoolAccountFetchOptions
   ) {
     const startTicks = ticks.map((tick) => TickUtil.getStartTickIndex(tick, tickSpacing));
     const removeDupeTicks = [...new Set(startTicks)];
@@ -306,7 +310,7 @@ export class TickArrayUtil {
 
   /**
    * Evaluate a list of tick-array data and return the array of indices which the tick-arrays are not initialized.
-   * @param tickArrays - a list of TickArrayData or null objects from WhirlpoolAccountCacheInterface.getTickArrays
+   * @param tickArrays - a list of TickArrayData or null objects from ElysiumPoolAccountCacheInterface.getTickArrays
    * @returns an array of array-index for the input tickArrays that requires initialization.
    */
   public static getUninitializedArrays(tickArrays: readonly (TickArrayData | null)[]): number[] {

@@ -6,24 +6,24 @@ import * as assert from "assert";
 import Decimal from "decimal.js";
 import {
   PDAUtil,
-  Whirlpool,
-  WhirlpoolClient,
-  WhirlpoolContext,
-  WhirlpoolIx,
-  buildWhirlpoolClient,
+  ElysiumPool,
+  ElysiumPoolClient,
+  ElysiumPoolContext,
+  ElysiumPoolIx,
+  buildElysiumPoolClient,
   collectFeesQuote,
-  toTx
+  toTx,
 } from "../../../src";
 import { IGNORE_CACHE } from "../../../src/network/public/fetcher";
 import { TickSpacing, ZERO_BN } from "../../utils";
 import { defaultConfirmOptions } from "../../utils/const";
-import { WhirlpoolTestFixture } from "../../utils/fixture";
+import { ElysiumPoolTestFixture } from "../../utils/fixture";
 
 interface SharedTestContext {
   provider: anchor.AnchorProvider;
-  program: Whirlpool;
-  whirlpoolCtx: WhirlpoolContext;
-  whirlpoolClient: WhirlpoolClient;
+  program: ElysiumPool;
+  whirlpoolCtx: ElysiumPoolContext;
+  whirlpoolClient: ElysiumPoolClient;
 }
 
 describe("PositionImpl#collectFees()", () => {
@@ -37,9 +37,9 @@ describe("PositionImpl#collectFees()", () => {
     const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
     anchor.setProvider(provider);
-    const program = anchor.workspace.Whirlpool;
-    const whirlpoolCtx = WhirlpoolContext.fromWorkspace(provider, program);
-    const whirlpoolClient = buildWhirlpoolClient(whirlpoolCtx);
+    const program = anchor.workspace.ElysiumPool;
+    const whirlpoolCtx = ElysiumPoolContext.fromWorkspace(provider, program);
+    const whirlpoolClient = buildElysiumPoolClient(whirlpoolCtx);
 
     testCtx = {
       provider,
@@ -49,7 +49,7 @@ describe("PositionImpl#collectFees()", () => {
     };
   });
 
-  async function accrueFees(fixture: WhirlpoolTestFixture) {
+  async function accrueFees(fixture: ElysiumPoolTestFixture) {
     const ctx = testCtx.whirlpoolCtx;
     const {
       poolInitInfo,
@@ -69,7 +69,7 @@ describe("PositionImpl#collectFees()", () => {
     // Accrue fees in token A
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
@@ -91,7 +91,7 @@ describe("PositionImpl#collectFees()", () => {
     // Accrue fees in token B
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
@@ -127,7 +127,7 @@ describe("PositionImpl#collectFees()", () => {
 
   context("when the whirlpool is SPL-only", () => {
     it("should collect fees", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -180,19 +180,31 @@ describe("PositionImpl#collectFees()", () => {
 
       assert.notEqual(positionDataAfter, null);
 
-      const accountAPubkey = getAssociatedTokenAddressSync(poolInitInfo.tokenMintA, otherWallet.publicKey);
-      const accountA = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(accountAPubkey, IGNORE_CACHE);
+      const accountAPubkey = getAssociatedTokenAddressSync(
+        poolInitInfo.tokenMintA,
+        otherWallet.publicKey
+      );
+      const accountA = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(
+        accountAPubkey,
+        IGNORE_CACHE
+      );
       assert.ok(accountA && new BN(accountA.amount.toString()).eq(quote.feeOwedA));
 
-      const accountBPubkey = getAssociatedTokenAddressSync(poolInitInfo.tokenMintB, otherWallet.publicKey);
-      const accountB = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(accountBPubkey, IGNORE_CACHE);
+      const accountBPubkey = getAssociatedTokenAddressSync(
+        poolInitInfo.tokenMintB,
+        otherWallet.publicKey
+      );
+      const accountB = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(
+        accountBPubkey,
+        IGNORE_CACHE
+      );
       assert.ok(accountB && new BN(accountB.amount.toString()).eq(quote.feeOwedB));
     });
   });
 
   context("when the whirlpool is SOL-SPL", () => {
     it("should collect fees", async () => {
-      const fixture = await new WhirlpoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -254,8 +266,14 @@ describe("PositionImpl#collectFees()", () => {
         quote.feeOwedA.toNumber() + minAccountExempt
       );
 
-      const accountBPubkey = getAssociatedTokenAddressSync(poolInitInfo.tokenMintB, otherWallet.publicKey);
-      const accountB = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(accountBPubkey, IGNORE_CACHE);
+      const accountBPubkey = getAssociatedTokenAddressSync(
+        poolInitInfo.tokenMintB,
+        otherWallet.publicKey
+      );
+      const accountB = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(
+        accountBPubkey,
+        IGNORE_CACHE
+      );
       assert.ok(accountB && new BN(accountB.amount.toString()).eq(quote.feeOwedB));
     });
   });

@@ -1,14 +1,14 @@
 import { Address } from "@coral-xyz/anchor";
 import { AddressUtil, Percentage, TransactionBuilder } from "@orca-so/common-sdk";
 import { Account } from "@solana/spl-token";
-import { WhirlpoolContext } from "..";
-import { RouteQueryErrorCode, SwapErrorCode, WhirlpoolsError } from "../errors/errors";
+import { ElysiumPoolContext } from "..";
+import { RouteQueryErrorCode, SwapErrorCode, ElysiumPoolsError } from "../errors/errors";
 import { getSwapFromRoute } from "../instructions/composites/swap-with-route";
 import {
   IGNORE_CACHE,
   PREFER_CACHE,
-  WhirlpoolAccountFetchOptions,
-  WhirlpoolAccountFetcherInterface,
+  ElysiumPoolAccountFetchOptions,
+  ElysiumPoolAccountFetcherInterface,
 } from "../network/public/fetcher";
 import { Path, PoolGraph, SwapUtils } from "../utils/public";
 import { getBestRoutesFromQuoteMap } from "./convert-quote-map";
@@ -19,24 +19,24 @@ import {
   RoutingOptions,
   Trade,
   TradeRoute,
-  WhirlpoolRouter,
+  ElysiumPoolRouter,
 } from "./public";
 import { getQuoteMap } from "./quote-map";
 
-export class WhirlpoolRouterImpl implements WhirlpoolRouter {
-  constructor(readonly ctx: WhirlpoolContext, readonly poolGraph: PoolGraph) {}
+export class ElysiumPoolRouterImpl implements ElysiumPoolRouter {
+  constructor(readonly ctx: ElysiumPoolContext, readonly poolGraph: PoolGraph) {}
 
   async findAllRoutes(
     trade: Trade,
     opts?: Partial<RoutingOptions>,
-    fetchOpts?: WhirlpoolAccountFetchOptions
+    fetchOpts?: ElysiumPoolAccountFetchOptions
   ): Promise<TradeRoute[]> {
     const { tokenIn, tokenOut, tradeAmount, amountSpecifiedIsInput } = trade;
     const paths = this.poolGraph.getPath(tokenIn, tokenOut);
 
     if (paths.length === 0) {
       return Promise.reject(
-        new WhirlpoolsError(
+        new ElysiumPoolsError(
           `Could not find route for ${tokenIn} -> ${tokenOut}`,
           RouteQueryErrorCode.RouteDoesNotExist
         )
@@ -45,7 +45,7 @@ export class WhirlpoolRouterImpl implements WhirlpoolRouter {
 
     if (tradeAmount.isZero()) {
       return Promise.reject(
-        new WhirlpoolsError(
+        new ElysiumPoolsError(
           `findBestRoutes error - input amount is zero.`,
           RouteQueryErrorCode.ZeroInputAmount
         )
@@ -78,7 +78,7 @@ export class WhirlpoolRouterImpl implements WhirlpoolRouter {
         // TODO: TRADE_AMOUNT_TOO_HIGH actually corresponds to TickArrayCrossingAboveMax. Fix swap quote.
         if (failures.has(SwapErrorCode.TickArraySequenceInvalid)) {
           return Promise.reject(
-            new WhirlpoolsError(
+            new ElysiumPoolsError(
               `All swap quote generation failed on amount too high.`,
               RouteQueryErrorCode.TradeAmountTooHigh
             )
@@ -89,7 +89,7 @@ export class WhirlpoolRouterImpl implements WhirlpoolRouter {
       return bestRoutes;
     } catch (e: any) {
       return Promise.reject(
-        new WhirlpoolsError(
+        new ElysiumPoolsError(
           `Stack error received on quote generation.`,
           RouteQueryErrorCode.General,
           e.stack
@@ -102,7 +102,7 @@ export class WhirlpoolRouterImpl implements WhirlpoolRouter {
     trade: Trade,
     routingOpts?: Partial<RoutingOptions>,
     selectionOpts?: Partial<RouteSelectOptions>,
-    fetchOpts?: WhirlpoolAccountFetchOptions
+    fetchOpts?: ElysiumPoolAccountFetchOptions
   ): Promise<ExecutableRoute | null> {
     const allRoutes = await this.findAllRoutes(trade, routingOpts, fetchOpts);
     const selectOpts = { ...RouterUtils.getDefaultSelectOptions(), ...selectionOpts };
@@ -132,8 +132,8 @@ export class WhirlpoolRouterImpl implements WhirlpoolRouter {
 async function prefetchRoutes(
   paths: Path[],
   programId: Address,
-  fetcher: WhirlpoolAccountFetcherInterface,
-  opts: WhirlpoolAccountFetchOptions = PREFER_CACHE
+  fetcher: ElysiumPoolAccountFetcherInterface,
+  opts: ElysiumPoolAccountFetchOptions = PREFER_CACHE
 ): Promise<void> {
   const poolSet = new Set<string>();
   for (let i = 0; i < paths.length; i++) {

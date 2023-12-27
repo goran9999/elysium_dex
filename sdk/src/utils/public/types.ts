@@ -1,6 +1,6 @@
 /**
  * An enum for the direction of a swap.
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  */
 export enum SwapDirection {
   AtoB = "aToB",
@@ -8,8 +8,8 @@ export enum SwapDirection {
 }
 
 /**
- * An enum for the token type in a Whirlpool.
- * @category Whirlpool Utils
+ * An enum for the token type in a ElysiumPool.
+ * @category ElysiumPool Utils
  */
 export enum TokenType {
   TokenA = 1,

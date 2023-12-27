@@ -6,12 +6,12 @@ import {
   PriceMath,
   SwapUtils,
   TICK_ARRAY_SIZE,
-  WhirlpoolContext,
-  buildWhirlpoolClient,
+  ElysiumPoolContext,
+  buildElysiumPoolClient,
   swapQuoteByInputToken,
-  swapQuoteWithParams
+  swapQuoteWithParams,
 } from "../../../../src";
-import { SwapErrorCode, WhirlpoolsError } from "../../../../src/errors/errors";
+import { SwapErrorCode, ElysiumPoolsError } from "../../../../src/errors/errors";
 import { IGNORE_CACHE } from "../../../../src/network/public/fetcher";
 import { adjustForSlippage } from "../../../../src/utils/position-util";
 import { TickSpacing } from "../../../utils";
@@ -19,17 +19,17 @@ import { defaultConfirmOptions } from "../../../utils/const";
 import {
   arrayTickIndexToTickIndex,
   buildPosition,
-  setupSwapTest
+  setupSwapTest,
 } from "../../../utils/swap-test-utils";
 import { getTickArrays } from "../../../utils/testDataTypes";
 
 describe("swap arrays test", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
-  const client = buildWhirlpoolClient(ctx);
+  const client = buildElysiumPoolClient(ctx);
   const tickSpacing = TickSpacing.SixtyFour;
   const slippageTolerance = Percentage.fromFraction(0, 100);
 
@@ -358,7 +358,7 @@ describe("swap arrays test", () => {
           },
           slippageTolerance
         ),
-      (err) => (err as WhirlpoolsError).errorCode === SwapErrorCode.TickArraySequenceInvalid
+      (err) => (err as ElysiumPoolsError).errorCode === SwapErrorCode.TickArraySequenceInvalid
     );
   });
 
@@ -409,7 +409,7 @@ describe("swap arrays test", () => {
           },
           slippageTolerance
         ),
-      (err) => (err as WhirlpoolsError).errorCode === SwapErrorCode.TickArraySequenceInvalid
+      (err) => (err as ElysiumPoolsError).errorCode === SwapErrorCode.TickArraySequenceInvalid
     );
   });
 
@@ -459,7 +459,7 @@ describe("swap arrays test", () => {
           },
           slippageTolerance
         ),
-      (err) => (err as WhirlpoolsError).errorCode === SwapErrorCode.TickArraySequenceInvalid
+      (err) => (err as ElysiumPoolsError).errorCode === SwapErrorCode.TickArraySequenceInvalid
     );
   });
 
@@ -510,7 +510,7 @@ describe("swap arrays test", () => {
           },
           slippageTolerance
         ),
-      (err) => (err as WhirlpoolsError).errorCode === SwapErrorCode.TickArraySequenceInvalid
+      (err) => (err as ElysiumPoolsError).errorCode === SwapErrorCode.TickArraySequenceInvalid
     );
   });
 
@@ -558,7 +558,7 @@ describe("swap arrays test", () => {
           slippageTolerance
         ),
       (err) => {
-        const whirlErr = err as WhirlpoolsError;
+        const whirlErr = err as ElysiumPoolsError;
         const errorCodeMatch = whirlErr.errorCode === SwapErrorCode.TickArraySequenceInvalid;
         const messageMatch = whirlErr.message.indexOf("TickArray at index 1 is unexpected") >= 0;
         return errorCodeMatch && messageMatch;
@@ -610,7 +610,7 @@ describe("swap arrays test", () => {
           slippageTolerance
         ),
       (err) => {
-        const whirlErr = err as WhirlpoolsError;
+        const whirlErr = err as ElysiumPoolsError;
         const errorCodeMatch = whirlErr.errorCode === SwapErrorCode.TickArraySequenceInvalid;
         const messageMatch = whirlErr.message.indexOf("TickArray at index 1 is unexpected") >= 0;
         return errorCodeMatch && messageMatch;
@@ -740,7 +740,7 @@ describe("swap arrays test", () => {
   /**
    * |xxxxxxxxxxxxxxxxxxxx|xxxxxxxxxxxxxxxxx|-c2---c1-----------|
    */
-  it("Whirlpool.swap with uninitialized TickArrays, a->b", async () => {
+  it("ElysiumPool.swap with uninitialized TickArrays, a->b", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 1, offsetIndex: 44 }, tickSpacing);
     const whirlpool = await setupSwapTest({
       ctx,
@@ -783,7 +783,11 @@ describe("swap arrays test", () => {
       }),
       (err: Error) => {
         const uninitializedArrays = [tickArrays[1].toBase58(), tickArrays[2].toBase58()].join(", ");
-        return err.message.indexOf(`TickArray addresses - [${uninitializedArrays}] need to be initialized.`) >= 0;
+        return (
+          err.message.indexOf(
+            `TickArray addresses - [${uninitializedArrays}] need to be initialized.`
+          ) >= 0
+        );
       }
     );
   });
@@ -791,7 +795,7 @@ describe("swap arrays test", () => {
   /**
    * |-------------c1--c2-|xxxxxxxxxxxxxxxxx|xxxxxxxxxxxxxxxxxxx|
    */
-  it("Whirlpool.swap with uninitialized TickArrays, b->a", async () => {
+  it("ElysiumPool.swap with uninitialized TickArrays, b->a", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -1, offsetIndex: 44 }, tickSpacing);
     const whirlpool = await setupSwapTest({
       ctx,
@@ -834,7 +838,11 @@ describe("swap arrays test", () => {
       }),
       (err: Error) => {
         const uninitializedArrays = [tickArrays[1].toBase58(), tickArrays[2].toBase58()].join(", ");
-        return err.message.indexOf(`TickArray addresses - [${uninitializedArrays}] need to be initialized.`) >= 0;
+        return (
+          err.message.indexOf(
+            `TickArray addresses - [${uninitializedArrays}] need to be initialized.`
+          ) >= 0
+        );
       }
     );
   });

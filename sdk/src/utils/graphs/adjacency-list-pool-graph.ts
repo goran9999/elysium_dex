@@ -13,7 +13,7 @@ import { PoolGraphUtils } from "./public/pool-graph-utils";
 /**
  * A pool graph implementation using an adjacency list.
  *
- * Whirlpools (Pools (edges) & Tokens (nodes)) are sparse graphs concentrated on popular pairs such as SOL, USDC etc.
+ * ElysiumPools (Pools (edges) & Tokens (nodes)) are sparse graphs concentrated on popular pairs such as SOL, USDC etc.
  * Therefore this implementation is more efficient in memory consumption & building than a matrix.
  *
  * TODO: This implementation does not support 2-edge paths between identical tokens.
@@ -269,7 +269,7 @@ function combinations2<T>(array: Readonly<T[]>): [T, T][] {
   const result: [T, T][] = [];
 
   for (let i = 0; i < array.length - 1; i++) {
-    for (let j = i+1; j < array.length; j++) {
+    for (let j = i + 1; j < array.length; j++) {
       result.push([array[i], array[j]]);
     }
   }

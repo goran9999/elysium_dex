@@ -4,7 +4,7 @@ use anchor_spl::token::{self, Token, TokenAccount};
 use crate::{
     errors::ErrorCode,
     manager::swap_manager::*,
-    state::{TickArray, Whirlpool},
+    state::{ElysiumPool, TickArray},
     util::{to_timestamp_u64, update_and_swap_whirlpool, SwapTickSequence},
 };
 
@@ -16,7 +16,7 @@ pub struct Swap<'info> {
     pub token_authority: Signer<'info>,
 
     #[account(mut)]
-    pub whirlpool: Box<Account<'info, Whirlpool>>,
+    pub whirlpool: Box<Account<'info, ElysiumPool>>,
 
     #[account(mut, constraint = token_owner_account_a.mint == whirlpool.token_mint_a)]
     pub token_owner_account_a: Box<Account<'info, TokenAccount>>,

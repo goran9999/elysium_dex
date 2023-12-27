@@ -5,9 +5,9 @@ use crate::state::*;
 // Calculates the next global reward growth variables based on the given timestamp.
 // The provided timestamp must be greater than or equal to the last updated timestamp.
 pub fn next_whirlpool_reward_infos(
-    whirlpool: &Whirlpool,
+    whirlpool: &ElysiumPool,
     next_timestamp: u64,
-) -> Result<[WhirlpoolRewardInfo; NUM_REWARDS], ErrorCode> {
+) -> Result<[ElysiumPoolRewardInfo; NUM_REWARDS], ErrorCode> {
     let curr_timestamp = whirlpool.reward_last_updated_timestamp;
     if next_timestamp < curr_timestamp {
         return Err(ErrorCode::InvalidTimestamp.into());
@@ -48,7 +48,7 @@ pub fn next_whirlpool_reward_infos(
 // Calculates the next global liquidity for a whirlpool depending on its position relative
 // to the lower and upper tick indexes and the liquidity_delta.
 pub fn next_whirlpool_liquidity(
-    whirlpool: &Whirlpool,
+    whirlpool: &ElysiumPool,
     tick_upper_index: i32,
     tick_lower_index: i32,
     liquidity_delta: i128,
@@ -69,30 +69,30 @@ mod whirlpool_manager_tests {
 
     use crate::manager::whirlpool_manager::next_whirlpool_reward_infos;
     use crate::math::Q64_RESOLUTION;
-    use crate::state::whirlpool::WhirlpoolRewardInfo;
+    use crate::state::whirlpool::ElysiumPoolRewardInfo;
     use crate::state::whirlpool::NUM_REWARDS;
-    use crate::state::whirlpool_builder::WhirlpoolBuilder;
-    use crate::state::Whirlpool;
+    use crate::state::whirlpool_builder::ElysiumPoolBuilder;
+    use crate::state::ElysiumPool;
 
     // Initializes a whirlpool for testing with all the rewards initialized
-    fn init_test_whirlpool(liquidity: u128, reward_last_updated_timestamp: u64) -> Whirlpool {
-        WhirlpoolBuilder::new()
+    fn init_test_whirlpool(liquidity: u128, reward_last_updated_timestamp: u64) -> ElysiumPool {
+        ElysiumPoolBuilder::new()
             .liquidity(liquidity)
             .reward_last_updated_timestamp(reward_last_updated_timestamp) // Jan 1 2021 EST
             .reward_infos([
-                WhirlpoolRewardInfo {
+                ElysiumPoolRewardInfo {
                     mint: Pubkey::new_unique(),
                     emissions_per_second_x64: 10 << Q64_RESOLUTION,
                     growth_global_x64: 100 << Q64_RESOLUTION,
                     ..Default::default()
                 },
-                WhirlpoolRewardInfo {
+                ElysiumPoolRewardInfo {
                     mint: Pubkey::new_unique(),
                     emissions_per_second_x64: 0b11 << (Q64_RESOLUTION - 1), // 1.5
                     growth_global_x64: 200 << Q64_RESOLUTION,
                     ..Default::default()
                 },
-                WhirlpoolRewardInfo {
+                ElysiumPoolRewardInfo {
                     mint: Pubkey::new_unique(),
                     emissions_per_second_x64: 1 << (Q64_RESOLUTION - 1), // 0.5
                     growth_global_x64: 300 << Q64_RESOLUTION,
@@ -108,7 +108,7 @@ mod whirlpool_manager_tests {
 
         let result = next_whirlpool_reward_infos(&whirlpool, 1577855800);
         assert_eq!(
-            WhirlpoolRewardInfo::to_reward_growths(&result.unwrap()),
+            ElysiumPoolRewardInfo::to_reward_growths(&result.unwrap()),
             [
                 100 << Q64_RESOLUTION,
                 200 << Q64_RESOLUTION,
@@ -123,7 +123,7 @@ mod whirlpool_manager_tests {
 
         let result = next_whirlpool_reward_infos(&whirlpool, 1577854800);
         assert_eq!(
-            WhirlpoolRewardInfo::to_reward_growths(&result.unwrap()),
+            ElysiumPoolRewardInfo::to_reward_growths(&result.unwrap()),
             [
                 100 << Q64_RESOLUTION,
                 200 << Q64_RESOLUTION,
@@ -135,7 +135,7 @@ mod whirlpool_manager_tests {
     #[test]
     #[should_panic(expected = "InvalidTimestamp")]
     fn test_next_whirlpool_reward_infos_invalid_timestamp() {
-        let whirlpool = &WhirlpoolBuilder::new()
+        let whirlpool = &ElysiumPoolBuilder::new()
             .liquidity(100)
             .reward_last_updated_timestamp(1577854800) // Jan 1 2020 EST
             .build();
@@ -146,24 +146,24 @@ mod whirlpool_manager_tests {
 
     #[test]
     fn test_next_whirlpool_reward_infos_no_initialized_rewards() {
-        let whirlpool = &WhirlpoolBuilder::new()
+        let whirlpool = &ElysiumPoolBuilder::new()
             .liquidity(100)
             .reward_last_updated_timestamp(1577854800) // Jan 1 2021 EST
             .build();
 
         let new_timestamp = 1577854800 + 300;
         let result = next_whirlpool_reward_infos(whirlpool, new_timestamp).unwrap();
-        assert_eq!(WhirlpoolRewardInfo::to_reward_growths(&result), [0, 0, 0]);
+        assert_eq!(ElysiumPoolRewardInfo::to_reward_growths(&result), [0, 0, 0]);
     }
 
     #[test]
     fn test_next_whirlpool_reward_infos_some_initialized_rewards() {
-        let whirlpool = &WhirlpoolBuilder::new()
+        let whirlpool = &ElysiumPoolBuilder::new()
             .liquidity(100)
             .reward_last_updated_timestamp(1577854800) // Jan 1 2021 EST
             .reward_info(
                 0,
-                WhirlpoolRewardInfo {
+                ElysiumPoolRewardInfo {
                     mint: Pubkey::new_unique(),
                     emissions_per_second_x64: 1 << Q64_RESOLUTION,
                     ..Default::default()
@@ -181,12 +181,12 @@ mod whirlpool_manager_tests {
 
     #[test]
     fn test_next_whirlpool_reward_infos_delta_zero_on_overflow() {
-        let whirlpool = &WhirlpoolBuilder::new()
+        let whirlpool = &ElysiumPoolBuilder::new()
             .liquidity(100)
             .reward_last_updated_timestamp(0)
             .reward_info(
                 0,
-                WhirlpoolRewardInfo {
+                ElysiumPoolRewardInfo {
                     mint: Pubkey::new_unique(),
                     emissions_per_second_x64: u128::MAX,
                     growth_global_x64: 100,

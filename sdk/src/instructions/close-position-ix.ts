@@ -2,10 +2,10 @@ import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
- * Parameters to close a position in a Whirlpool.
+ * Parameters to close a position in a ElysiumPool.
  *
  * @category Instruction Types
  * @param receiver - PublicKey for the wallet that will receive the rented lamports.
@@ -23,7 +23,7 @@ export type ClosePositionParams = {
 };
 
 /**
- * Close a position in a Whirlpool. Burns the position token in the owner's wallet.
+ * Close a position in a ElysiumPool. Burns the position token in the owner's wallet.
  *
  * @category Instructions
  * @param context - Context object containing services required to generate the instruction
@@ -31,7 +31,7 @@ export type ClosePositionParams = {
  * @returns - Instruction to perform the action.
  */
 export function closePositionIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: ClosePositionParams
 ): Instruction {
   const {

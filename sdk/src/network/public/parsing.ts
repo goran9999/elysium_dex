@@ -1,36 +1,36 @@
 import { BorshAccountsCoder, Idl } from "@coral-xyz/anchor";
 import { ParsableEntity, staticImplements } from "@orca-so/common-sdk";
 import { AccountInfo, PublicKey } from "@solana/web3.js";
-import * as WhirlpoolIDL from "../../artifacts/whirlpool.json";
+import * as ElysiumPoolIDL from "../../artifacts/whirlpool.json";
 import {
   AccountName,
   FeeTierData,
   PositionBundleData,
   PositionData,
   TickArrayData,
-  WhirlpoolData,
-  WhirlpoolsConfigData,
+  ElysiumPoolData,
+  ElysiumPoolsConfigData,
 } from "../../types/public";
 
 /**
  * @category Network
  */
-@staticImplements<ParsableEntity<WhirlpoolsConfigData>>()
-export class ParsableWhirlpoolsConfig {
+@staticImplements<ParsableEntity<ElysiumPoolsConfigData>>()
+export class ParsableElysiumPoolsConfig {
   private constructor() {}
 
   public static parse(
     address: PublicKey,
     accountData: AccountInfo<Buffer> | undefined | null
-  ): WhirlpoolsConfigData | null {
+  ): ElysiumPoolsConfigData | null {
     if (!accountData?.data) {
       return null;
     }
 
     try {
-      return parseAnchorAccount(AccountName.WhirlpoolsConfig, accountData);
+      return parseAnchorAccount(AccountName.ElysiumPoolsConfig, accountData);
     } catch (e) {
-      console.error(`error while parsing WhirlpoolsConfig: ${e}`);
+      console.error(`error while parsing ElysiumPoolsConfig: ${e}`);
       return null;
     }
   }
@@ -39,22 +39,22 @@ export class ParsableWhirlpoolsConfig {
 /**
  * @category Network
  */
-@staticImplements<ParsableEntity<WhirlpoolData>>()
-export class ParsableWhirlpool {
+@staticImplements<ParsableEntity<ElysiumPoolData>>()
+export class ParsableElysiumPool {
   private constructor() {}
 
   public static parse(
     address: PublicKey,
     accountData: AccountInfo<Buffer> | undefined | null
-  ): WhirlpoolData | null {
+  ): ElysiumPoolData | null {
     if (!accountData?.data) {
       return null;
     }
 
     try {
-      return parseAnchorAccount(AccountName.Whirlpool, accountData);
+      return parseAnchorAccount(AccountName.ElysiumPool, accountData);
     } catch (e) {
-      console.error(`error while parsing Whirlpool: ${e}`);
+      console.error(`error while parsing ElysiumPool: ${e}`);
       return null;
     }
   }
@@ -156,7 +156,7 @@ export class ParsablePositionBundle {
   }
 }
 
-const WhirlpoolCoder = new BorshAccountsCoder(WhirlpoolIDL as Idl);
+const ElysiumPoolCoder = new BorshAccountsCoder(ElysiumPoolIDL as Idl);
 
 function parseAnchorAccount(accountName: AccountName, accountData: AccountInfo<Buffer>) {
   const data = accountData.data;
@@ -167,7 +167,7 @@ function parseAnchorAccount(accountName: AccountName, accountData: AccountInfo<B
   }
 
   try {
-    return WhirlpoolCoder.decode(accountName, data);
+    return ElysiumPoolCoder.decode(accountName, data);
   } catch (_e) {
     console.error("unknown account name during parsing");
     return null;

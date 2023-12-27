@@ -3,7 +3,7 @@ import { PositionBundleData, POSITION_BUNDLE_SIZE } from "../../types/public";
 
 /**
  * A collection of utility functions when interacting with a PositionBundle.
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  */
 export class PositionBundleUtil {
   private constructor() {}

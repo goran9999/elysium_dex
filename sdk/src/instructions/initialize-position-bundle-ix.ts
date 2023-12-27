@@ -4,7 +4,7 @@ import { Instruction, PDA } from "@orca-so/common-sdk";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
 import { METADATA_PROGRAM_ADDRESS, WHIRLPOOL_NFT_UPDATE_AUTH } from "..";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
  * Parameters to initialize a PositionBundle account.
@@ -33,7 +33,7 @@ export type InitializePositionBundleParams = {
  * @returns - Instruction to perform the action.
  */
 export function initializePositionBundleIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: InitializePositionBundleParams
 ): Instruction {
   const {
@@ -75,7 +75,7 @@ export function initializePositionBundleIx(
  * @returns - Instruction to perform the action.
  */
 export function initializePositionBundleWithMetadataIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: InitializePositionBundleParams & { positionBundleMetadataPda: PDA }
 ): Instruction {
   const {

@@ -2,7 +2,7 @@ import { Program } from "@coral-xyz/anchor";
 import { Instruction, PDA } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
 import { METADATA_PROGRAM_ADDRESS, WHIRLPOOL_NFT_UPDATE_AUTH } from "..";
-import { Whirlpool } from ".././artifacts/whirlpool";
+import { ElysiumPool } from ".././artifacts/whirlpool";
 import {
   OpenPositionBumpsData,
   OpenPositionWithMetadataBumpsData,
@@ -10,7 +10,7 @@ import {
 import { openPositionAccounts } from "../utils/instructions-util";
 
 /**
- * Parameters to open a position in a Whirlpool.
+ * Parameters to open a position in a ElysiumPool.
  *
  * @category Instruction Types
  * @param whirlpool - PublicKey for the whirlpool that the position will be opened for.
@@ -34,7 +34,7 @@ export type OpenPositionParams = {
 };
 
 /**
- * Open a position in a Whirlpool. A unique token will be minted to represent the position in the users wallet.
+ * Open a position in a ElysiumPool. A unique token will be minted to represent the position in the users wallet.
  * The position will start off with 0 liquidity.
  *
  * #### Special Errors
@@ -46,7 +46,7 @@ export type OpenPositionParams = {
  * @returns - Instruction to perform the action.
  */
 export function openPositionIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: OpenPositionParams
 ): Instruction {
   const { positionPda, tickLowerIndex, tickUpperIndex } = params;
@@ -68,7 +68,7 @@ export function openPositionIx(
 }
 
 /**
- * Open a position in a Whirlpool. A unique token will be minted to represent the position
+ * Open a position in a ElysiumPool. A unique token will be minted to represent the position
  * in the users wallet. Additional Metaplex metadata is appended to identify the token.
  * The position will start off with 0 liquidity.
  *
@@ -81,7 +81,7 @@ export function openPositionIx(
  * @returns - Instruction to perform the action.
  */
 export function openPositionWithMetadataIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: OpenPositionParams & { metadataPda: PDA }
 ): Instruction {
   const { positionPda, metadataPda, tickLowerIndex, tickUpperIndex } = params;

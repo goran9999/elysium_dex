@@ -42,7 +42,7 @@ pub struct OpenPositionWithMetadata<'info> {
     )]
     pub position_token_account: Box<Account<'info, TokenAccount>>,
 
-    pub whirlpool: Box<Account<'info, Whirlpool>>,
+    pub whirlpool: Box<Account<'info, ElysiumPool>>,
 
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
@@ -60,7 +60,7 @@ pub struct OpenPositionWithMetadata<'info> {
 }
 
 /*
-  Opens a new Whirlpool Position with Metadata account.
+  Opens a new ElysiumPool Position with Metadata account.
 */
 pub fn handler(
     ctx: Context<OpenPositionWithMetadata>,

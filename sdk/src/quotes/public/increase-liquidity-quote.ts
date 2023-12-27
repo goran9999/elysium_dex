@@ -15,16 +15,16 @@ import {
   getTokenBFromLiquidity,
 } from "../../utils/position-util";
 import { PriceMath, TickUtil } from "../../utils/public";
-import { Whirlpool } from "../../whirlpool-client";
+import { ElysiumPool } from "../../whirlpool-client";
 
 /**
  * @category Quotes
  * @param inputTokenAmount - The amount of input tokens to deposit.
  * @param inputTokenMint - The mint of the input token the user would like to deposit.
- * @param tokenMintA - The mint of tokenA in the Whirlpool the user is depositing into.
- * @param tokenMintB -The mint of tokenB in the Whirlpool the user is depositing into.
- * @param tickCurrentIndex - The Whirlpool's current tickIndex
- * @param sqrtPrice - The Whirlpool's current sqrtPrice
+ * @param tokenMintA - The mint of tokenA in the ElysiumPool the user is depositing into.
+ * @param tokenMintB -The mint of tokenB in the ElysiumPool the user is depositing into.
+ * @param tickCurrentIndex - The ElysiumPool's current tickIndex
+ * @param sqrtPrice - The ElysiumPool's current sqrtPrice
  * @param tickLowerIndex - The lower index of the position that we are withdrawing from.
  * @param tickUpperIndex - The upper index of the position that we are withdrawing from.
  * @param slippageTolerance - The maximum slippage allowed when calculating the minimum tokens received.
@@ -56,7 +56,7 @@ export type IncreaseLiquidityQuote = IncreaseLiquidityInput & { tokenEstA: BN; t
  * @param tickLower - The lower index of the position that we are withdrawing from.
  * @param tickUpper - The upper index of the position that we are withdrawing from.
  * @param slippageTolerance - The maximum slippage allowed when calculating the minimum tokens received.
- * @param whirlpool - A Whirlpool helper class to help interact with the Whirlpool account.
+ * @param whirlpool - A ElysiumPool helper class to help interact with the ElysiumPool account.
  * @returns An IncreaseLiquidityInput object detailing the required token amounts & liquidity values to use when calling increase-liquidity-ix.
  */
 export function increaseLiquidityQuoteByInputToken(
@@ -65,7 +65,7 @@ export function increaseLiquidityQuoteByInputToken(
   tickLower: number,
   tickUpper: number,
   slippageTolerance: Percentage,
-  whirlpool: Whirlpool
+  whirlpool: ElysiumPool
 ) {
   const data = whirlpool.getData();
   const tokenAInfo = whirlpool.getTokenAInfo();

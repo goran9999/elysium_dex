@@ -10,7 +10,7 @@ import {
 import { NATIVE_MINT, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import invariant from "tiny-invariant";
-import { WhirlpoolContext } from "../context";
+import { ElysiumPoolContext } from "../context";
 import {
   DecreaseLiquidityInput,
   IncreaseLiquidityInput,
@@ -23,28 +23,28 @@ import {
 import {
   IGNORE_CACHE,
   PREFER_CACHE,
-  WhirlpoolAccountFetchOptions,
+  ElysiumPoolAccountFetchOptions,
 } from "../network/public/fetcher";
-import { PositionData, TickArrayData, TickData, WhirlpoolData } from "../types/public";
+import { PositionData, TickArrayData, TickData, ElysiumPoolData } from "../types/public";
 import { getTickArrayDataForPosition } from "../utils/builder/position-builder-util";
 import { PDAUtil, PoolUtil, TickArrayUtil, TickUtil } from "../utils/public";
 import {
   TokenMintTypes,
-  getTokenMintsFromWhirlpools,
+  getTokenMintsFromElysiumPools,
   resolveAtaForMints,
 } from "../utils/whirlpool-ata-utils";
 import { Position } from "../whirlpool-client";
 
 export class PositionImpl implements Position {
   private data: PositionData;
-  private whirlpoolData: WhirlpoolData;
+  private whirlpoolData: ElysiumPoolData;
   private lowerTickArrayData: TickArrayData;
   private upperTickArrayData: TickArrayData;
   constructor(
-    readonly ctx: WhirlpoolContext,
+    readonly ctx: ElysiumPoolContext,
     readonly address: PublicKey,
     data: PositionData,
-    whirlpoolData: WhirlpoolData,
+    whirlpoolData: ElysiumPoolData,
     lowerTickArrayData: TickArrayData,
     upperTickArrayData: TickArrayData
   ) {
@@ -62,7 +62,7 @@ export class PositionImpl implements Position {
     return this.data;
   }
 
-  getWhirlpoolData(): WhirlpoolData {
+  getElysiumPoolData(): ElysiumPoolData {
     return this.whirlpoolData;
   }
 
@@ -272,7 +272,7 @@ export class PositionImpl implements Position {
     destinationWallet?: Address,
     positionWallet?: Address,
     ataPayer?: Address,
-    opts: WhirlpoolAccountFetchOptions = PREFER_CACHE
+    opts: ElysiumPoolAccountFetchOptions = PREFER_CACHE
   ): Promise<TransactionBuilder> {
     const [destinationWalletKey, positionWalletKey, ataPayerKey] = AddressUtil.toPubKeys([
       destinationWallet ?? this.ctx.wallet.publicKey,
@@ -298,7 +298,7 @@ export class PositionImpl implements Position {
     let ataMap = { ...ownerTokenAccountMap };
 
     if (!ownerTokenAccountMap) {
-      const affliatedMints = getTokenMintsFromWhirlpools([whirlpool], TokenMintTypes.POOL_ONLY);
+      const affliatedMints = getTokenMintsFromElysiumPools([whirlpool], TokenMintTypes.POOL_ONLY);
       const { ataTokenAddresses: affliatedTokenAtaMap, resolveAtaIxs } = await resolveAtaForMints(
         this.ctx,
         {
@@ -373,7 +373,7 @@ export class PositionImpl implements Position {
     destinationWallet?: Address,
     positionWallet?: Address,
     ataPayer?: Address,
-    opts: WhirlpoolAccountFetchOptions = IGNORE_CACHE
+    opts: ElysiumPoolAccountFetchOptions = IGNORE_CACHE
   ): Promise<TransactionBuilder> {
     const [destinationWalletKey, positionWalletKey, ataPayerKey] = AddressUtil.toPubKeys([
       destinationWallet ?? this.ctx.wallet.publicKey,
@@ -402,7 +402,7 @@ export class PositionImpl implements Position {
 
     let ataMap = { ...ownerTokenAccountMap };
     if (!ownerTokenAccountMap) {
-      const rewardMints = getTokenMintsFromWhirlpools([whirlpool], TokenMintTypes.REWARD_ONLY);
+      const rewardMints = getTokenMintsFromElysiumPools([whirlpool], TokenMintTypes.REWARD_ONLY);
       const { ataTokenAddresses: affliatedTokenAtaMap, resolveAtaIxs } = await resolveAtaForMints(
         this.ctx,
         {

@@ -35,7 +35,7 @@ pub struct OpenPosition<'info> {
     )]
     pub position_token_account: Box<Account<'info, TokenAccount>>,
 
-    pub whirlpool: Box<Account<'info, Whirlpool>>,
+    pub whirlpool: Box<Account<'info, ElysiumPool>>,
 
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
@@ -45,7 +45,7 @@ pub struct OpenPosition<'info> {
 }
 
 /*
-  Opens a new Whirlpool Position.
+  Opens a new ElysiumPool Position.
 */
 pub fn handler(
     ctx: Context<OpenPosition>,

@@ -2,12 +2,12 @@ import * as anchor from "@coral-xyz/anchor";
 import * as assert from "assert";
 import Decimal from "decimal.js";
 import {
-  buildWhirlpoolClient,
+  buildElysiumPoolClient,
   InitPoolParams,
   PDAUtil,
   PriceMath,
   TickUtil,
-  WhirlpoolContext
+  ElysiumPoolContext,
 } from "../../../src";
 import { IGNORE_CACHE } from "../../../src/network/public/fetcher";
 import { ONE_SOL, systemTransferTx, TickSpacing } from "../../utils";
@@ -17,9 +17,9 @@ import { buildTestPoolParams } from "../../utils/init-utils";
 describe("whirlpool-client-impl", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
-  const client = buildWhirlpoolClient(ctx);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
+  const client = buildElysiumPoolClient(ctx);
 
   let funderKeypair: anchor.web3.Keypair;
   let poolInitInfo: InitPoolParams;
@@ -52,7 +52,7 @@ describe("whirlpool-client-impl", () => {
       funderKeypair.publicKey
     );
 
-    const expectedPda = PDAUtil.getWhirlpool(
+    const expectedPda = PDAUtil.getElysiumPool(
       ctx.program.programId,
       poolInitInfo.whirlpoolsConfig,
       poolInitInfo.tokenMintA,
@@ -106,7 +106,7 @@ describe("whirlpool-client-impl", () => {
 
     assert.ok(
       tickArrayAccountAfter.startTickIndex ===
-      TickUtil.getStartTickIndex(initalTick, poolInitInfo.tickSpacing)
+        TickUtil.getStartTickIndex(initalTick, poolInitInfo.tickSpacing)
     );
     assert.ok(tickArrayAccountAfter.ticks.length > 0);
     assert.ok(tickArrayAccountAfter.whirlpool.equals(expectedPda.publicKey));

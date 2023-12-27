@@ -1,17 +1,17 @@
 import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
- * Parameters to update the reward authority at a particular rewardIndex on a Whirlpool.
+ * Parameters to update the reward authority at a particular rewardIndex on a ElysiumPool.
  *
  * @category Instruction Types
- * @param whirlpool - PublicKey for the whirlpool to update. This whirlpool has to be part of the provided WhirlpoolsConfig space.
- * @param whirlpoolsConfig - The public key for the WhirlpoolsConfig this pool is initialized in
+ * @param whirlpool - PublicKey for the whirlpool to update. This whirlpool has to be part of the provided ElysiumPoolsConfig space.
+ * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
  * @param rewardIndex - The reward index that we'd like to update. (0 <= index <= NUM_REWARDS).
- * @param rewardEmissionsSuperAuthority - The current rewardEmissionsSuperAuthority in the WhirlpoolsConfig
- * @param newRewardAuthority - The new rewardAuthority in the Whirlpool at the rewardIndex
+ * @param rewardEmissionsSuperAuthority - The current rewardEmissionsSuperAuthority in the ElysiumPoolsConfig
+ * @param newRewardAuthority - The new rewardAuthority in the ElysiumPool at the rewardIndex
  */
 export type SetRewardAuthorityBySuperAuthorityParams = {
   whirlpool: PublicKey;
@@ -35,7 +35,7 @@ export type SetRewardAuthorityBySuperAuthorityParams = {
  * @returns - Instruction to perform the action.
  */
 export function setRewardAuthorityBySuperAuthorityIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: SetRewardAuthorityBySuperAuthorityParams
 ): Instruction {
   const {

@@ -1,7 +1,7 @@
 {
   "name": "@orca-so/whirlpools-sdk",
   "version": "0.11.8",
-  "description": "Typescript SDK to interact with Orca's Whirlpool program.",
+  "description": "Typescript SDK to interact with Orca's ElysiumPool program.",
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

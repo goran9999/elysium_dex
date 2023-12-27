@@ -8,7 +8,7 @@ use crate::{
 
 #[derive(Accounts)]
 pub struct CollectFees<'info> {
-    pub whirlpool: Box<Account<'info, Whirlpool>>,
+    pub whirlpool: Box<Account<'info, ElysiumPool>>,
 
     pub position_authority: Signer<'info>,
 

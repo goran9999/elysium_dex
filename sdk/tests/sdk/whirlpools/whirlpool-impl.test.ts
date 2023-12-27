@@ -6,16 +6,17 @@ import { BN } from "bn.js";
 import Decimal from "decimal.js";
 import {
   PDAUtil,
-  PriceMath, TickUtil,
-  WhirlpoolIx,
-  buildWhirlpoolClient,
+  PriceMath,
+  TickUtil,
+  ElysiumPoolIx,
+  buildElysiumPoolClient,
   collectFeesQuote,
   collectRewardsQuote,
   decreaseLiquidityQuoteByLiquidity,
   increaseLiquidityQuoteByInputToken,
-  toTx
+  toTx,
 } from "../../../src";
-import { WhirlpoolContext } from "../../../src/context";
+import { ElysiumPoolContext } from "../../../src/context";
 import { IGNORE_CACHE } from "../../../src/network/public/fetcher";
 import {
   ONE_SOL,
@@ -25,20 +26,20 @@ import {
   getTokenBalance,
   sleep,
   systemTransferTx,
-  transferToken
+  transferToken,
 } from "../../utils";
 import { defaultConfirmOptions } from "../../utils/const";
-import { WhirlpoolTestFixture } from "../../utils/fixture";
+import { ElysiumPoolTestFixture } from "../../utils/fixture";
 import { initTestPool } from "../../utils/init-utils";
 import { mintTokensToTestAccount } from "../../utils/test-builders";
 
 describe("whirlpool-impl", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
-  const client = buildWhirlpoolClient(ctx);
+  const client = buildElysiumPoolClient(ctx);
 
   it("open and add liquidity to a position, then close", async () => {
     const funderKeypair = anchor.web3.Keypair.generate();
@@ -243,7 +244,10 @@ describe("whirlpool-impl", () => {
 
     // Transfer the position token to another wallet
     const otherWallet = anchor.web3.Keypair.generate();
-    const walletPositionTokenAccount = getAssociatedTokenAddressSync(positionMint, ctx.wallet.publicKey);
+    const walletPositionTokenAccount = getAssociatedTokenAddressSync(
+      positionMint,
+      ctx.wallet.publicKey
+    );
     const newOwnerPositionTokenAccount = await createAssociatedTokenAccount(
       ctx.provider,
       positionMint,
@@ -288,8 +292,14 @@ describe("whirlpool-impl", () => {
     const postClosePosition = await fetcher.getPosition(positionAddress, IGNORE_CACHE);
     assert.ok(postClosePosition === null);
 
-    const dWalletTokenAAccount = getAssociatedTokenAddressSync(poolData.tokenMintA, destinationWallet.publicKey,);
-    const dWalletTokenBAccount = getAssociatedTokenAddressSync(poolData.tokenMintB, destinationWallet.publicKey);
+    const dWalletTokenAAccount = getAssociatedTokenAddressSync(
+      poolData.tokenMintA,
+      destinationWallet.publicKey
+    );
+    const dWalletTokenBAccount = getAssociatedTokenAddressSync(
+      poolData.tokenMintB,
+      destinationWallet.publicKey
+    );
 
     assert.equal(
       await getTokenBalance(ctx.provider, dWalletTokenAAccount),
@@ -307,7 +317,7 @@ describe("whirlpool-impl", () => {
     const tickUpperIndex = 33536;
     const vaultStartBalance = 1_000_000_000;
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [
         { tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(10_000_000) }, // In range position
@@ -341,7 +351,7 @@ describe("whirlpool-impl", () => {
     // Accrue fees in token A
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
@@ -363,7 +373,7 @@ describe("whirlpool-impl", () => {
     // Accrue fees in token B
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
@@ -392,7 +402,7 @@ describe("whirlpool-impl", () => {
     const otherWallet = anchor.web3.Keypair.generate();
     const walletPositionTokenAccount = getAssociatedTokenAddressSync(
       positionWithFees.mintKeypair.publicKey,
-      ctx.wallet.publicKey,
+      ctx.wallet.publicKey
     );
 
     const newOwnerPositionTokenAccount = await createAssociatedTokenAccount(
@@ -423,11 +433,26 @@ describe("whirlpool-impl", () => {
       pool
     );
 
-    const dWalletTokenAAccount = getAssociatedTokenAddressSync(poolData.tokenMintA, otherWallet.publicKey,);
-    const dWalletTokenBAccount = getAssociatedTokenAddressSync(poolData.tokenMintB, otherWallet.publicKey,);
-    const rewardAccount0 = getAssociatedTokenAddressSync(poolData.rewardInfos[0].mint, otherWallet.publicKey,);
-    const rewardAccount1 = getAssociatedTokenAddressSync(poolData.rewardInfos[1].mint, otherWallet.publicKey,);
-    const rewardAccount2 = getAssociatedTokenAddressSync(poolData.rewardInfos[2].mint, otherWallet.publicKey,);
+    const dWalletTokenAAccount = getAssociatedTokenAddressSync(
+      poolData.tokenMintA,
+      otherWallet.publicKey
+    );
+    const dWalletTokenBAccount = getAssociatedTokenAddressSync(
+      poolData.tokenMintB,
+      otherWallet.publicKey
+    );
+    const rewardAccount0 = getAssociatedTokenAddressSync(
+      poolData.rewardInfos[0].mint,
+      otherWallet.publicKey
+    );
+    const rewardAccount1 = getAssociatedTokenAddressSync(
+      poolData.rewardInfos[1].mint,
+      otherWallet.publicKey
+    );
+    const rewardAccount2 = getAssociatedTokenAddressSync(
+      poolData.rewardInfos[2].mint,
+      otherWallet.publicKey
+    );
 
     const feesQuote = collectFeesQuote({
       whirlpool: poolData,
@@ -454,7 +479,7 @@ describe("whirlpool-impl", () => {
     // the block time at transaction execution is used.
     // TODO: maxSupportedTransactionVersion needs to come from ctx
     const tx = await ctx.provider.connection.getTransaction(signature, {
-      maxSupportedTransactionVersion: 0
+      maxSupportedTransactionVersion: 0,
     });
     const closeTimestampInSeconds = new anchor.BN(tx!.blockTime!.toString());
     const rewardsQuote = collectRewardsQuote({
@@ -486,7 +511,7 @@ describe("whirlpool-impl", () => {
     const tickUpperIndex = 33536;
     const vaultStartBalance = 1_000_000_000;
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [
         { tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(10_000_000_000) }, // In range position
@@ -521,7 +546,7 @@ describe("whirlpool-impl", () => {
     // Accrue fees in token A
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000_00),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
@@ -543,7 +568,7 @@ describe("whirlpool-impl", () => {
     // Accrue fees in token B
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(200_000_00),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
@@ -572,7 +597,7 @@ describe("whirlpool-impl", () => {
     const otherWallet = anchor.web3.Keypair.generate();
     const walletPositionTokenAccount = getAssociatedTokenAddressSync(
       positionWithFees.mintKeypair.publicKey,
-      ctx.wallet.publicKey,
+      ctx.wallet.publicKey
     );
 
     const newOwnerPositionTokenAccount = await createAssociatedTokenAccount(
@@ -603,10 +628,22 @@ describe("whirlpool-impl", () => {
       tickUpper: position.getUpperTickData(),
     });
 
-    const dWalletTokenBAccount = getAssociatedTokenAddressSync(poolData.tokenMintB, otherWallet.publicKey,);
-    const rewardAccount0 = getAssociatedTokenAddressSync(poolData.rewardInfos[0].mint, otherWallet.publicKey,);
-    const rewardAccount1 = getAssociatedTokenAddressSync(poolData.rewardInfos[1].mint, otherWallet.publicKey,);
-    const rewardAccount2 = getAssociatedTokenAddressSync(poolData.rewardInfos[2].mint, otherWallet.publicKey,);
+    const dWalletTokenBAccount = getAssociatedTokenAddressSync(
+      poolData.tokenMintB,
+      otherWallet.publicKey
+    );
+    const rewardAccount0 = getAssociatedTokenAddressSync(
+      poolData.rewardInfos[0].mint,
+      otherWallet.publicKey
+    );
+    const rewardAccount1 = getAssociatedTokenAddressSync(
+      poolData.rewardInfos[1].mint,
+      otherWallet.publicKey
+    );
+    const rewardAccount2 = getAssociatedTokenAddressSync(
+      poolData.rewardInfos[2].mint,
+      otherWallet.publicKey
+    );
 
     const txs = await pool.closePosition(
       positionWithFees.publicKey,

@@ -7,7 +7,7 @@ use crate::{
 #[derive(Accounts)]
 pub struct UpdateFeesAndRewards<'info> {
     #[account(mut)]
-    pub whirlpool: Account<'info, Whirlpool>,
+    pub whirlpool: Account<'info, ElysiumPool>,
 
     #[account(mut, has_one = whirlpool)]
     pub position: Account<'info, Position>,

@@ -4,10 +4,10 @@ use crate::manager::whirlpool_manager::*;
 use crate::math::{add_liquidity_delta, Q64_RESOLUTION};
 use crate::state::position_builder::PositionBuilder;
 use crate::state::{
-    tick::*, tick_builder::TickBuilder, whirlpool_builder::WhirlpoolBuilder, Whirlpool,
+    tick::*, tick_builder::TickBuilder, whirlpool_builder::ElysiumPoolBuilder, ElysiumPool,
 };
 use crate::state::{
-    Position, PositionRewardInfo, PositionUpdate, WhirlpoolRewardInfo, NUM_REWARDS,
+    ElysiumPoolRewardInfo, Position, PositionRewardInfo, PositionUpdate, NUM_REWARDS,
 };
 use anchor_lang::prelude::*;
 
@@ -32,7 +32,7 @@ pub enum Direction {
 
 // State for testing modifying liquidity in a single whirlpool position
 pub struct LiquidityTestFixture {
-    pub whirlpool: Whirlpool,
+    pub whirlpool: ElysiumPool,
     pub position: Position,
     pub tick_lower: Tick,
     pub tick_upper: Tick,
@@ -46,7 +46,7 @@ pub struct LiquidityTestFixtureInfo {
     pub tick_upper_liquidity_gross: u128,
     pub fee_growth_global_a: u128,
     pub fee_growth_global_b: u128,
-    pub reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+    pub reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
 }
 
 impl LiquidityTestFixture {
@@ -64,7 +64,7 @@ impl LiquidityTestFixture {
             CurrIndex::Above => ABOVE_UPPER_TICK_INDEX,
         };
 
-        let whirlpool = WhirlpoolBuilder::new()
+        let whirlpool = ElysiumPoolBuilder::new()
             .tick_current_index(curr_index)
             .liquidity(info.whirlpool_liquidity)
             .reward_infos(info.reward_infos)
@@ -170,21 +170,21 @@ impl LiquidityTestFixture {
 pub fn create_whirlpool_reward_infos(
     emissions_per_second_x64: u128,
     growth_global_x64: u128,
-) -> [WhirlpoolRewardInfo; NUM_REWARDS] {
+) -> [ElysiumPoolRewardInfo; NUM_REWARDS] {
     [
-        WhirlpoolRewardInfo {
+        ElysiumPoolRewardInfo {
             mint: Pubkey::new_unique(),
             emissions_per_second_x64,
             growth_global_x64,
             ..Default::default()
         },
-        WhirlpoolRewardInfo {
+        ElysiumPoolRewardInfo {
             mint: Pubkey::new_unique(),
             emissions_per_second_x64,
             growth_global_x64,
             ..Default::default()
         },
-        WhirlpoolRewardInfo {
+        ElysiumPoolRewardInfo {
             mint: Pubkey::new_unique(),
             emissions_per_second_x64,
             growth_global_x64,
@@ -222,11 +222,11 @@ pub fn to_x64(n: u128) -> u128 {
 }
 
 pub fn assert_whirlpool_reward_growths(
-    reward_infos: &[WhirlpoolRewardInfo; NUM_REWARDS],
+    reward_infos: &[ElysiumPoolRewardInfo; NUM_REWARDS],
     expected_growth: u128,
 ) {
     assert_eq!(
-        WhirlpoolRewardInfo::to_reward_growths(reward_infos),
+        ElysiumPoolRewardInfo::to_reward_growths(reward_infos),
         create_reward_growths(expected_growth)
     )
 }
@@ -245,7 +245,7 @@ pub fn assert_modify_liquidity(
 ) {
     assert_eq!(update.whirlpool_liquidity, expect.whirlpool_liquidity);
     assert_eq!(
-        WhirlpoolRewardInfo::to_reward_growths(&update.reward_infos),
+        ElysiumPoolRewardInfo::to_reward_growths(&update.reward_infos),
         expect.whirlpool_reward_growths
     );
     assert_eq!(update.tick_lower_update, expect.tick_lower_update);

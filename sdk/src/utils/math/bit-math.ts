@@ -1,12 +1,12 @@
 import { BN } from "@coral-xyz/anchor";
 import { MathUtil, ONE, TWO, U64_MAX, ZERO } from "@orca-so/common-sdk";
-import { MathErrorCode, WhirlpoolsError } from "../../errors/errors";
+import { MathErrorCode, ElysiumPoolsError } from "../../errors/errors";
 
 export class BitMath {
   static mul(n0: BN, n1: BN, limit: number): BN {
     const result = n0.mul(n1);
     if (this.isOverLimit(result, limit)) {
-      throw new WhirlpoolsError(
+      throw new ElysiumPoolsError(
         `Mul result higher than u${limit}`,
         MathErrorCode.MultiplicationOverflow
       );
@@ -24,7 +24,7 @@ export class BitMath {
 
   static mulDivRoundUpIf(n0: BN, n1: BN, d: BN, roundUp: boolean, limit: number): BN {
     if (d.eq(ZERO)) {
-      throw new WhirlpoolsError("mulDiv denominator is zero", MathErrorCode.DivideByZero);
+      throw new ElysiumPoolsError("mulDiv denominator is zero", MathErrorCode.DivideByZero);
     }
 
     const p = this.mul(n0, n1, limit);
@@ -44,7 +44,7 @@ export class BitMath {
 
     const p = this.mul(n0, n1, limit);
     if (this.isOverLimit(p, limit)) {
-      throw new WhirlpoolsError(
+      throw new ElysiumPoolsError(
         `MulShiftRight overflowed u${limit}.`,
         MathErrorCode.MultiplicationShiftRightOverflow
       );
@@ -52,7 +52,7 @@ export class BitMath {
     const result = MathUtil.fromX64_BN(p);
     const shouldRound = roundUp && result.and(U64_MAX).gt(ZERO);
     if (shouldRound && result.eq(U64_MAX)) {
-      throw new WhirlpoolsError(
+      throw new ElysiumPoolsError(
         `MulShiftRight overflowed u${limit}.`,
         MathErrorCode.MultiplicationOverflow
       );
@@ -72,7 +72,7 @@ export class BitMath {
 
   static divRoundUpIf(n: BN, d: BN, roundUp: boolean) {
     if (d.eq(ZERO)) {
-      throw new WhirlpoolsError("divRoundUpIf - divide by zero", MathErrorCode.DivideByZero);
+      throw new ElysiumPoolsError("divRoundUpIf - divide by zero", MathErrorCode.DivideByZero);
     }
 
     let q = n.div(d);

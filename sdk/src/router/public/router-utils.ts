@@ -11,7 +11,7 @@ import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import Decimal from "decimal.js";
 import { ExecutableRoute, RoutingOptions, Trade, TradeRoute } from ".";
-import { WhirlpoolContext } from "../../context";
+import { ElysiumPoolContext } from "../../context";
 import { getSwapFromRoute } from "../../instructions/composites/swap-with-route";
 import { PREFER_CACHE } from "../../network/public/fetcher";
 import { U64 } from "../../utils/math/constants";
@@ -45,7 +45,7 @@ export type RouteSelectOptions = {
 };
 
 /**
- * A selection of utility functions for the {@link WhirlpoolRouter}.
+ * A selection of utility functions for the {@link ElysiumPoolRouter}.
  * @category Router
  */
 export class RouterUtils {
@@ -54,14 +54,14 @@ export class RouterUtils {
    * The wallet support type, available ATA accounts, existance of lookup tables all effect the transaction size
    * and eligibility of a route.
    *
-   * @param ctx The {@link WhirlpoolContext} that represents the current execution environment
+   * @param ctx The {@link ElysiumPoolContext} that represents the current execution environment
    * @param orderedRoutes A list of routes to select from, ordered by the best routes (trade amount wise) first.
    * @param opts {@link RouteSelectOptions} to configure the selection of the best route.
    * @returns
    * The best {@link ExecutableRoute} that can be used to execute a swap. If no executable route is found, null is returned.
    */
   static async selectFirstExecutableRoute(
-    ctx: WhirlpoolContext,
+    ctx: ElysiumPoolContext,
     orderedRoutes: TradeRoute[],
     opts: RouteSelectOptions
   ): Promise<ExecutableRoute | null> {

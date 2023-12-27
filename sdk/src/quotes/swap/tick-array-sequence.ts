@@ -1,4 +1,4 @@
-import { SwapErrorCode, WhirlpoolsError } from "../../errors/errors";
+import { SwapErrorCode, ElysiumPoolsError } from "../../errors/errors";
 import {
   MAX_TICK_INDEX,
   MIN_TICK_INDEX,
@@ -99,14 +99,14 @@ export class TickArraySequence {
     this.touchedArrays[localArrayIndex] = true;
 
     if (!tickArray) {
-      throw new WhirlpoolsError(
+      throw new ElysiumPoolsError(
         `TickArray at index ${localArrayIndex} is not initialized.`,
         SwapErrorCode.TickArrayIndexNotInitialized
       );
     }
 
     if (!this.checkIfIndexIsInTickArrayRange(tickArray.startTickIndex, index)) {
-      throw new WhirlpoolsError(
+      throw new ElysiumPoolsError(
         `TickArray at index ${localArrayIndex} is unexpected for this sequence.`,
         SwapErrorCode.TickArraySequenceInvalid
       );
@@ -126,7 +126,7 @@ export class TickArraySequence {
 
     // Throw error if the search attempted to search for an index out of bounds
     if (!this.isArrayIndexInBounds(currTaIndex, this.aToB)) {
-      throw new WhirlpoolsError(
+      throw new ElysiumPoolsError(
         `Swap input value traversed too many arrays. Out of bounds at attempt to traverse tick index - ${currTaIndex.toTickIndex()}.`,
         SwapErrorCode.TickArraySequenceInvalid
       );

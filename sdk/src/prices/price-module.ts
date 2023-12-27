@@ -13,8 +13,8 @@ import {
 import {
   IGNORE_CACHE,
   PREFER_CACHE,
-  WhirlpoolAccountFetchOptions,
-  WhirlpoolAccountFetcherInterface,
+  ElysiumPoolAccountFetchOptions,
+  ElysiumPoolAccountFetcherInterface,
 } from "../network/public/fetcher";
 import { PDAUtil, PoolUtil, SwapUtils } from "../utils/public";
 import { convertListToMap, filterNullObjects } from "../utils/txn-utils";
@@ -31,16 +31,16 @@ export class PriceModule {
    * Fetches and calculates the prices for a set of tokens.
    * This method will derive the pools that need to be queried from the mints and is not performant.
    *
-   * @param fetcher {@link WhirlpoolAccountFetcherInterface}
+   * @param fetcher {@link ElysiumPoolAccountFetcherInterface}
    * @param mints The mints to fetch prices for.
    * @param config The configuration for the price calculation.
    * @param thresholdConfig - The threshold configuration for the price calculation.
-   * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+   * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
    * @param availableData - Data that is already available to avoid redundant fetches.
    * @returns A map of token addresses to prices.
    */
   static async fetchTokenPricesByMints(
-    fetcher: WhirlpoolAccountFetcherInterface,
+    fetcher: ElysiumPoolAccountFetcherInterface,
     mints: Address[],
     config = defaultGetPricesConfig,
     thresholdConfig = defaultGetPricesThresholdConfig,
@@ -72,19 +72,19 @@ export class PriceModule {
   /**
    * Fetches and calculates the token prices from a set of pools.
    *
-   * @param fetcher {@link WhirlpoolAccountFetcherInterface}
+   * @param fetcher {@link ElysiumPoolAccountFetcherInterface}
    * @param pools The pools to fetch prices for.
    * @param config The configuration for the price calculation.
    * @param thresholdConfig The threshold configuration for the price calculation.
-   * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+   * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
    * @returns A map of token addresses to prices
    */
   static async fetchTokenPricesByPools(
-    fetcher: WhirlpoolAccountFetcherInterface,
+    fetcher: ElysiumPoolAccountFetcherInterface,
     pools: Address[],
     config = defaultGetPricesConfig,
     thresholdConfig = defaultGetPricesThresholdConfig,
-    opts: WhirlpoolAccountFetchOptions = IGNORE_CACHE
+    opts: ElysiumPoolAccountFetchOptions = IGNORE_CACHE
   ): Promise<PriceMap> {
     const poolDatas = Array.from((await fetcher.getPools(pools, opts)).values());
     const [filteredPoolDatas, filteredPoolAddresses] = filterNullObjects(poolDatas, pools);
@@ -231,14 +231,14 @@ export class PriceModuleUtils {
    * Fetch pool data for the given mints by deriving the PDA from all combinations of mints & tick-arrays.
    * Note that this method can be slow.
    *
-   * @param fetcher {@link WhirlpoolAccountFetcherInterface}
+   * @param fetcher {@link ElysiumPoolAccountFetcherInterface}
    * @param mints The mints to fetch pool data for.
    * @param config The configuration for the price calculation.
-   * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+   * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
    * @returns A {@link PoolMap} of pool addresses to pool data.
    */
   static async fetchPoolDataFromMints(
-    fetcher: WhirlpoolAccountFetcherInterface,
+    fetcher: ElysiumPoolAccountFetcherInterface,
     mints: Address[],
     config = defaultGetPricesConfig,
     opts = IGNORE_CACHE
@@ -250,7 +250,7 @@ export class PriceModuleUtils {
           .map((tickSpacing): string[] => {
             return quoteTokens.map((quoteToken): string => {
               const [mintA, mintB] = PoolUtil.orderMints(mint, quoteToken);
-              return PDAUtil.getWhirlpool(
+              return PDAUtil.getElysiumPool(
                 programId,
                 whirlpoolsConfig,
                 AddressUtil.toPubKey(mintA),
@@ -272,17 +272,17 @@ export class PriceModuleUtils {
   /**
    * Fetch tick-array data for the given pools
    *
-   * @param fetcher {@link WhirlpoolAccountFetcherInterface}
+   * @param fetcher {@link ElysiumPoolAccountFetcherInterface}
    * @param pools The pools to fetch tick-array data for.
    * @param config The configuration for the price calculation.
-   * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+   * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
    * @returns A {@link TickArrayMap} of tick-array addresses to tick-array data.
    */
   static async fetchTickArraysForPools(
-    fetcher: WhirlpoolAccountFetcherInterface,
+    fetcher: ElysiumPoolAccountFetcherInterface,
     pools: PoolMap,
     config = defaultGetPricesConfig,
-    opts: WhirlpoolAccountFetchOptions = IGNORE_CACHE
+    opts: ElysiumPoolAccountFetchOptions = IGNORE_CACHE
   ): Promise<TickArrayMap> {
     const { programId } = config;
 
@@ -328,13 +328,13 @@ export class PriceModuleUtils {
 
   /**
    * Fetch the decimals to token mapping for the given mints.
-   * @param fetcher {@link WhirlpoolAccountFetcherInterface}
+   * @param fetcher {@link ElysiumPoolAccountFetcherInterface}
    * @param mints The mints to fetch decimals for.
-   * @param opts an {@link WhirlpoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
+   * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
    * @returns A {@link DecimalsMap} of mint addresses to decimals.
    */
   static async fetchDecimalsForMints(
-    fetcher: WhirlpoolAccountFetcherInterface,
+    fetcher: ElysiumPoolAccountFetcherInterface,
     mints: Address[],
     opts = IGNORE_CACHE
   ): Promise<DecimalsMap> {

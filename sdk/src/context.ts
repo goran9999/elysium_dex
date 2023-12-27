@@ -7,16 +7,16 @@ import {
   WrappedSolAccountCreateMethod,
 } from "@orca-so/common-sdk";
 import { Commitment, Connection, PublicKey, SendOptions } from "@solana/web3.js";
-import { Whirlpool } from "./artifacts/whirlpool";
-import WhirlpoolIDL from "./artifacts/whirlpool.json";
-import { WhirlpoolAccountFetcherInterface, buildDefaultAccountFetcher } from "./network/public/";
+import { ElysiumPool } from "./artifacts/whirlpool";
+import ElysiumPoolIDL from "./artifacts/whirlpool.json";
+import { ElysiumPoolAccountFetcherInterface, buildDefaultAccountFetcher } from "./network/public/";
 import { contextOptionsToBuilderOptions } from "./utils/txn-utils";
 
 /**
  * Default settings used when interacting with transactions.
  * @category Core
  */
-export type WhirlpoolContextOpts = {
+export type ElysiumPoolContextOpts = {
   userDefaultBuildOptions?: Partial<BuildOptions>;
   userDefaultSendOptions?: Partial<SendOptions>;
   userDefaultConfirmCommitment?: Commitment;
@@ -41,14 +41,14 @@ const DEFAULT_ACCOUNT_RESOLVER_OPTS: AccountResolverOptions = {
  * Context for storing environment classes and objects for usage throughout the SDK
  * @category Core
  */
-export class WhirlpoolContext {
+export class ElysiumPoolContext {
   readonly connection: Connection;
   readonly wallet: Wallet;
-  readonly program: Program<Whirlpool>;
+  readonly program: Program<ElysiumPool>;
   readonly provider: AnchorProvider;
-  readonly fetcher: WhirlpoolAccountFetcherInterface;
+  readonly fetcher: ElysiumPoolAccountFetcherInterface;
   readonly lookupTableFetcher: LookupTableFetcher | undefined;
-  readonly opts: WhirlpoolContextOpts;
+  readonly opts: ElysiumPoolContextOpts;
   readonly txBuilderOpts: TransactionBuilderOptions | undefined;
   readonly accountResolverOpts: AccountResolverOptions;
 
@@ -56,16 +56,16 @@ export class WhirlpoolContext {
     connection: Connection,
     wallet: Wallet,
     programId: PublicKey,
-    fetcher: WhirlpoolAccountFetcherInterface = buildDefaultAccountFetcher(connection),
+    fetcher: ElysiumPoolAccountFetcherInterface = buildDefaultAccountFetcher(connection),
     lookupTableFetcher?: LookupTableFetcher,
-    opts: WhirlpoolContextOpts = {}
-  ): WhirlpoolContext {
+    opts: ElysiumPoolContextOpts = {}
+  ): ElysiumPoolContext {
     const anchorProvider = new AnchorProvider(connection, wallet, {
       commitment: opts.userDefaultConfirmCommitment || "confirmed",
       preflightCommitment: opts.userDefaultConfirmCommitment || "confirmed",
     });
-    const program = new Program(WhirlpoolIDL as Idl, programId, anchorProvider);
-    return new WhirlpoolContext(
+    const program = new Program(ElysiumPoolIDL as Idl, programId, anchorProvider);
+    return new ElysiumPoolContext(
       anchorProvider,
       anchorProvider.wallet,
       program,
@@ -78,11 +78,11 @@ export class WhirlpoolContext {
   public static fromWorkspace(
     provider: AnchorProvider,
     program: Program,
-    fetcher: WhirlpoolAccountFetcherInterface = buildDefaultAccountFetcher(provider.connection),
+    fetcher: ElysiumPoolAccountFetcherInterface = buildDefaultAccountFetcher(provider.connection),
     lookupTableFetcher?: LookupTableFetcher,
-    opts: WhirlpoolContextOpts = {}
+    opts: ElysiumPoolContextOpts = {}
   ) {
-    return new WhirlpoolContext(
+    return new ElysiumPoolContext(
       provider,
       provider.wallet,
       program,
@@ -95,12 +95,12 @@ export class WhirlpoolContext {
   public static withProvider(
     provider: AnchorProvider,
     programId: PublicKey,
-    fetcher: WhirlpoolAccountFetcherInterface = buildDefaultAccountFetcher(provider.connection),
+    fetcher: ElysiumPoolAccountFetcherInterface = buildDefaultAccountFetcher(provider.connection),
     lookupTableFetcher?: LookupTableFetcher,
-    opts: WhirlpoolContextOpts = {}
-  ): WhirlpoolContext {
-    const program = new Program(WhirlpoolIDL as Idl, programId, provider);
-    return new WhirlpoolContext(
+    opts: ElysiumPoolContextOpts = {}
+  ): ElysiumPoolContext {
+    const program = new Program(ElysiumPoolIDL as Idl, programId, provider);
+    return new ElysiumPoolContext(
       provider,
       provider.wallet,
       program,
@@ -114,14 +114,14 @@ export class WhirlpoolContext {
     provider: AnchorProvider,
     wallet: Wallet,
     program: Program,
-    fetcher: WhirlpoolAccountFetcherInterface,
+    fetcher: ElysiumPoolAccountFetcherInterface,
     lookupTableFetcher?: LookupTableFetcher,
-    opts: WhirlpoolContextOpts = {}
+    opts: ElysiumPoolContextOpts = {}
   ) {
     this.connection = provider.connection;
     this.wallet = wallet;
     // It's a hack but it works on Anchor workspace *shrug*
-    this.program = program as unknown as Program<Whirlpool>;
+    this.program = program as unknown as Program<ElysiumPool>;
     this.provider = provider;
     this.fetcher = fetcher;
     this.lookupTableFetcher = lookupTableFetcher;

@@ -29,23 +29,23 @@ export enum RouteQueryErrorCode {
   General = "General",
 }
 
-export type WhirlpoolsErrorCode =
+export type ElysiumPoolsErrorCode =
   | TokenErrorCode
   | SwapErrorCode
   | MathErrorCode
   | RouteQueryErrorCode;
 
-export class WhirlpoolsError extends Error {
+export class ElysiumPoolsError extends Error {
   message: string;
-  errorCode?: WhirlpoolsErrorCode;
-  constructor(message: string, errorCode?: WhirlpoolsErrorCode, stack?: string) {
+  errorCode?: ElysiumPoolsErrorCode;
+  constructor(message: string, errorCode?: ElysiumPoolsErrorCode, stack?: string) {
     super(message);
     this.message = message;
     this.errorCode = errorCode;
     this.stack = stack;
   }
 
-  public static isWhirlpoolsErrorCode(e: any, code: WhirlpoolsErrorCode): boolean {
-    return e instanceof WhirlpoolsError && e.errorCode === code;
+  public static isElysiumPoolsErrorCode(e: any, code: ElysiumPoolsErrorCode): boolean {
+    return e instanceof ElysiumPoolsError && e.errorCode === code;
   }
 }

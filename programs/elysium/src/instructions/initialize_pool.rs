@@ -3,9 +3,9 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
 #[derive(Accounts)]
-#[instruction(bumps: WhirlpoolBumps, tick_spacing: u16)]
+#[instruction(bumps: ElysiumPoolBumps, tick_spacing: u16)]
 pub struct InitializePool<'info> {
-    pub whirlpools_config: Box<Account<'info, WhirlpoolsConfig>>,
+    pub whirlpools_config: Box<Account<'info, ElysiumPoolsConfig>>,
 
     pub token_mint_a: Account<'info, Mint>,
     pub token_mint_b: Account<'info, Mint>,
@@ -23,8 +23,8 @@ pub struct InitializePool<'info> {
       ],
       bump,
       payer = funder,
-      space = Whirlpool::LEN)]
-    pub whirlpool: Box<Account<'info, Whirlpool>>,
+      space = ElysiumPool::LEN)]
+    pub whirlpool: Box<Account<'info, ElysiumPool>>,
 
     #[account(init,
       payer = funder,
@@ -49,7 +49,7 @@ pub struct InitializePool<'info> {
 
 pub fn handler(
     ctx: Context<InitializePool>,
-    _bumps: WhirlpoolBumps,
+    _bumps: ElysiumPoolBumps,
     tick_spacing: u16,
     initial_sqrt_price: u128,
 ) -> Result<()> {

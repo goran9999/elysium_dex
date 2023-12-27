@@ -1,15 +1,15 @@
 import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 /**
- * Parameters to set the fee authority in a WhirlpoolsConfig
+ * Parameters to set the fee authority in a ElysiumPoolsConfig
  *
  * @category Instruction Types
- * @param whirlpoolsConfig - The public key for the WhirlpoolsConfig this pool is initialized in
- * @param feeAuthority - The current feeAuthority in the WhirlpoolsConfig
- * @param newFeeAuthority - The new feeAuthority in the WhirlpoolsConfig
+ * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
+ * @param feeAuthority - The current feeAuthority in the ElysiumPoolsConfig
+ * @param newFeeAuthority - The new feeAuthority in the ElysiumPoolsConfig
  */
 export type SetFeeAuthorityParams = {
   whirlpoolsConfig: PublicKey;
@@ -18,7 +18,7 @@ export type SetFeeAuthorityParams = {
 };
 
 /**
- * Sets the fee authority for a WhirlpoolsConfig.
+ * Sets the fee authority for a ElysiumPoolsConfig.
  * The fee authority can set the fee & protocol fee rate for individual pools or set the default fee rate for newly minted pools.
  * Only the current fee authority has permission to invoke this instruction.
  *
@@ -28,7 +28,7 @@ export type SetFeeAuthorityParams = {
  * @returns - Instruction to perform the action.
  */
 export function setFeeAuthorityIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: SetFeeAuthorityParams
 ): Instruction {
   const { whirlpoolsConfig, feeAuthority, newFeeAuthority } = params;

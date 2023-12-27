@@ -1,13 +1,13 @@
-import { WhirlpoolContext } from "../..";
-import { WhirlpoolAccountFetchOptions } from "../../network/public/fetcher";
-import { PositionData, WhirlpoolData } from "../../types/public";
+import { ElysiumPoolContext } from "../..";
+import { ElysiumPoolAccountFetchOptions } from "../../network/public/fetcher";
+import { PositionData, ElysiumPoolData } from "../../types/public";
 import { PDAUtil } from "../public";
 
 export async function getTickArrayDataForPosition(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   position: PositionData,
-  whirlpool: WhirlpoolData,
-  opts?: WhirlpoolAccountFetchOptions
+  whirlpool: ElysiumPoolData,
+  opts?: ElysiumPoolAccountFetchOptions
 ) {
   const lowerTickArrayKey = PDAUtil.getTickArrayFromTickIndex(
     position.tickLowerIndex,

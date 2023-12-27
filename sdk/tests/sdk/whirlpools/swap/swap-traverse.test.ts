@@ -3,30 +3,37 @@ import { Percentage } from "@orca-so/common-sdk";
 import * as assert from "assert";
 import { BN } from "bn.js";
 import {
-  buildWhirlpoolClient, MAX_SQRT_PRICE, MAX_TICK_INDEX, MIN_SQRT_PRICE, MIN_TICK_INDEX, PriceMath,
+  buildElysiumPoolClient,
+  MAX_SQRT_PRICE,
+  MAX_TICK_INDEX,
+  MIN_SQRT_PRICE,
+  MIN_TICK_INDEX,
+  PriceMath,
   swapQuoteByInputToken,
   swapQuoteByOutputToken,
-  swapQuoteWithParams, SwapUtils, TICK_ARRAY_SIZE,
-  WhirlpoolContext
+  swapQuoteWithParams,
+  SwapUtils,
+  TICK_ARRAY_SIZE,
+  ElysiumPoolContext,
 } from "../../../../src";
-import { SwapErrorCode, WhirlpoolsError } from "../../../../src/errors/errors";
+import { SwapErrorCode, ElysiumPoolsError } from "../../../../src/errors/errors";
 import { IGNORE_CACHE } from "../../../../src/network/public/fetcher";
 import { assertInputOutputQuoteEqual, assertQuoteAndResults, TickSpacing } from "../../../utils";
 import { defaultConfirmOptions } from "../../../utils/const";
 import {
   arrayTickIndexToTickIndex,
   buildPosition,
-  setupSwapTest
+  setupSwapTest,
 } from "../../../utils/swap-test-utils";
 import { getVaultAmounts } from "../../../utils/whirlpools-test-utils";
 
 describe("swap traversal tests", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
-  const client = buildWhirlpoolClient(ctx);
+  const client = buildElysiumPoolClient(ctx);
   const tickSpacing = TickSpacing.SixtyFour;
   const slippageTolerance = Percentage.fromFraction(0, 100);
 
@@ -1020,7 +1027,7 @@ describe("swap traversal tests", () => {
           IGNORE_CACHE
         ),
       (err) => {
-        const whirlErr = err as WhirlpoolsError;
+        const whirlErr = err as ElysiumPoolsError;
         const errorMatch = whirlErr.errorCode === SwapErrorCode.TickArraySequenceInvalid;
         // Message contains failure on finding beyond tickIndex
         const messageMatch = whirlErr.message.indexOf("11264") >= 0;
@@ -1067,7 +1074,7 @@ describe("swap traversal tests", () => {
           IGNORE_CACHE
         ),
       (err) => {
-        const whirlErr = err as WhirlpoolsError;
+        const whirlErr = err as ElysiumPoolsError;
         const errorMatch = whirlErr.errorCode === SwapErrorCode.TickArraySequenceInvalid;
         // Message contains failure on finding beyond tickIndex
         const messageMatch = whirlErr.message.indexOf("-5696") >= 0;
@@ -1198,7 +1205,7 @@ describe("swap traversal tests", () => {
       fetcher,
       IGNORE_CACHE
     );
-    const ta2StartTickIndex = 11264
+    const ta2StartTickIndex = 11264;
     assert.ok(inputTokenQuote.estimatedEndTickIndex > ta2StartTickIndex); // traverse ta0, ta1, and ta2
 
     const outputTokenQuote = await swapQuoteByOutputToken(
@@ -1254,7 +1261,7 @@ describe("swap traversal tests", () => {
       fetcher,
       IGNORE_CACHE
     );
-    const ta2StartTickIndex = 11264
+    const ta2StartTickIndex = 11264;
     assert.ok(inputTokenQuote.estimatedEndTickIndex > ta2StartTickIndex); // traverse ta0, ta1, and ta2
 
     const outputTokenQuote = await swapQuoteByOutputToken(
@@ -1310,7 +1317,7 @@ describe("swap traversal tests", () => {
       fetcher,
       IGNORE_CACHE
     );
-    const ta2StartTickIndex = 11264
+    const ta2StartTickIndex = 11264;
     assert.ok(inputTokenQuote.estimatedEndTickIndex > ta2StartTickIndex); // traverse ta0, ta1, and ta2
 
     const outputTokenQuote = await swapQuoteByOutputToken(
@@ -1378,7 +1385,7 @@ describe("swap traversal tests", () => {
           },
           slippageTolerance
         ),
-      (err) => (err as WhirlpoolsError).errorCode === SwapErrorCode.SqrtPriceOutOfBounds
+      (err) => (err as ElysiumPoolsError).errorCode === SwapErrorCode.SqrtPriceOutOfBounds
     );
   });
 
@@ -1430,7 +1437,7 @@ describe("swap traversal tests", () => {
           },
           slippageTolerance
         ),
-      (err) => (err as WhirlpoolsError).errorCode === SwapErrorCode.SqrtPriceOutOfBounds
+      (err) => (err as ElysiumPoolsError).errorCode === SwapErrorCode.SqrtPriceOutOfBounds
     );
   });
 });

@@ -3,7 +3,7 @@ import { PublicKey } from "@solana/web3.js";
 
 /**
  * Checks if a wallet is connected.
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  * @param wallet The wallet to check.
  * @returns True if the wallet is connected, false otherwise.
  */

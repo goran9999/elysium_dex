@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use crate::{errors::ErrorCode, math::MAX_PROTOCOL_FEE_RATE};
 
 #[account]
-pub struct WhirlpoolsConfig {
+pub struct ElysiumPoolsConfig {
     pub fee_authority: Pubkey,
     pub collect_protocol_fees_authority: Pubkey,
     pub reward_emissions_super_authority: Pubkey,
@@ -11,7 +11,7 @@ pub struct WhirlpoolsConfig {
     pub default_protocol_fee_rate: u16,
 }
 
-impl WhirlpoolsConfig {
+impl ElysiumPoolsConfig {
     pub const LEN: usize = 8 + 96 + 4;
 
     pub fn update_fee_authority(&mut self, fee_authority: Pubkey) {

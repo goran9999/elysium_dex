@@ -15,7 +15,7 @@ const PDA_POSITION_BUNDLE_SEED = "position_bundle";
 const PDA_BUNDLED_POSITION_SEED = "bundled_position";
 
 /**
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  */
 export class PDAUtil {
   /**
@@ -27,7 +27,7 @@ export class PDAUtil {
    * @param tickSpacing
    * @returns
    */
-  public static getWhirlpool(
+  public static getElysiumPool(
     programId: PublicKey,
     whirlpoolsConfigKey: PublicKey,
     tokenMintAKey: PublicKey,

@@ -1,5 +1,5 @@
 import BN from "bn.js";
-import { WhirlpoolContext, WhirlpoolData } from "../../src";
+import { ElysiumPoolContext, ElysiumPoolData } from "../../src";
 import { getTokenBalance } from "./token";
 
 export type VaultAmounts = {
@@ -7,7 +7,7 @@ export type VaultAmounts = {
   tokenB: BN;
 };
 
-export async function getVaultAmounts(ctx: WhirlpoolContext, whirlpoolData: WhirlpoolData) {
+export async function getVaultAmounts(ctx: ElysiumPoolContext, whirlpoolData: ElysiumPoolData) {
   return {
     tokenA: new BN(await getTokenBalance(ctx.provider, whirlpoolData.tokenVaultA)),
     tokenB: new BN(await getTokenBalance(ctx.provider, whirlpoolData.tokenVaultB)),

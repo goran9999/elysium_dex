@@ -1,14 +1,14 @@
 use crate::{
     errors::ErrorCode,
     math::add_liquidity_delta,
-    state::{Tick, TickUpdate, WhirlpoolRewardInfo, NUM_REWARDS},
+    state::{ElysiumPoolRewardInfo, Tick, TickUpdate, NUM_REWARDS},
 };
 
 pub fn next_tick_cross_update(
     tick: &Tick,
     fee_growth_global_a: u128,
     fee_growth_global_b: u128,
-    reward_infos: &[WhirlpoolRewardInfo; NUM_REWARDS],
+    reward_infos: &[ElysiumPoolRewardInfo; NUM_REWARDS],
 ) -> Result<TickUpdate, ErrorCode> {
     let mut update = TickUpdate::from(tick);
 
@@ -33,7 +33,7 @@ pub fn next_tick_modify_liquidity_update(
     tick_current_index: i32,
     fee_growth_global_a: u128,
     fee_growth_global_b: u128,
-    reward_infos: &[WhirlpoolRewardInfo; NUM_REWARDS],
+    reward_infos: &[ElysiumPoolRewardInfo; NUM_REWARDS],
     liquidity_delta: i128,
     is_upper_tick: bool,
 ) -> Result<TickUpdate, ErrorCode> {
@@ -56,7 +56,7 @@ pub fn next_tick_modify_liquidity_update(
                 (
                     fee_growth_global_a,
                     fee_growth_global_b,
-                    WhirlpoolRewardInfo::to_reward_growths(reward_infos),
+                    ElysiumPoolRewardInfo::to_reward_growths(reward_infos),
                 )
             } else {
                 (0, 0, [0; NUM_REWARDS])
@@ -148,7 +148,7 @@ pub fn next_reward_growths_inside(
     tick_lower_index: i32,
     tick_upper: &Tick,
     tick_upper_index: i32,
-    reward_infos: &[WhirlpoolRewardInfo; NUM_REWARDS],
+    reward_infos: &[ElysiumPoolRewardInfo; NUM_REWARDS],
 ) -> [u128; NUM_REWARDS] {
     let mut reward_growths_inside = [0; NUM_REWARDS];
 
@@ -199,7 +199,7 @@ mod tick_manager_tests {
             TickUpdate,
         },
         math::Q64_RESOLUTION,
-        state::{tick_builder::TickBuilder, Tick, WhirlpoolRewardInfo, NUM_REWARDS},
+        state::{tick_builder::TickBuilder, ElysiumPoolRewardInfo, Tick, NUM_REWARDS},
     };
 
     use super::next_reward_growths_inside;
@@ -208,8 +208,8 @@ mod tick_manager_tests {
         emissions_per_second_x64: u128,
         growth_global_x64: u128,
         initialized: bool,
-    ) -> WhirlpoolRewardInfo {
-        WhirlpoolRewardInfo {
+    ) -> ElysiumPoolRewardInfo {
+        ElysiumPoolRewardInfo {
             mint: if initialized {
                 Pubkey::new_unique()
             } else {
@@ -332,7 +332,7 @@ mod tick_manager_tests {
             tick_lower_index: i32,
             tick_upper: Tick,
             tick_upper_index: i32,
-            reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+            reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
             expected_reward_growths_inside: [u128; NUM_REWARDS],
         }
 
@@ -461,27 +461,27 @@ mod tick_manager_tests {
             tick_current_index: i32,
             fee_growth_global_a: u128,
             fee_growth_global_b: u128,
-            reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+            reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
             liquidity_delta: i128,
             is_upper_tick: bool,
             expected_update: TickUpdate,
         }
 
-        // Whirlpool rewards re-used in the tests
+        // ElysiumPool rewards re-used in the tests
         let reward_infos = [
-            WhirlpoolRewardInfo {
+            ElysiumPoolRewardInfo {
                 mint: Pubkey::new_unique(),
                 emissions_per_second_x64: 1 << Q64_RESOLUTION,
                 growth_global_x64: 100 << Q64_RESOLUTION,
                 ..Default::default()
             },
-            WhirlpoolRewardInfo {
+            ElysiumPoolRewardInfo {
                 mint: Pubkey::new_unique(),
                 emissions_per_second_x64: 1 << Q64_RESOLUTION,
                 growth_global_x64: 100 << Q64_RESOLUTION,
                 ..Default::default()
             },
-            WhirlpoolRewardInfo {
+            ElysiumPoolRewardInfo {
                 mint: Pubkey::new_unique(),
                 emissions_per_second_x64: 1 << Q64_RESOLUTION,
                 growth_global_x64: 100 << Q64_RESOLUTION,
@@ -642,16 +642,16 @@ mod tick_manager_tests {
                 fee_growth_global_a: 100,
                 fee_growth_global_b: 100,
                 reward_infos: [
-                    WhirlpoolRewardInfo{
+                    ElysiumPoolRewardInfo{
                         ..Default::default()
                     },
-                    WhirlpoolRewardInfo{
+                    ElysiumPoolRewardInfo{
                         mint: Pubkey::new_unique(),
                         emissions_per_second_x64: 1,
                         growth_global_x64: 250,
                         ..Default::default()
                     },
-                    WhirlpoolRewardInfo{
+                    ElysiumPoolRewardInfo{
                         ..Default::default()
                     }
                 ],
@@ -775,7 +775,7 @@ mod tick_manager_tests {
                 test.tick_current_index,
                 0,
                 0,
-                &[WhirlpoolRewardInfo::default(); NUM_REWARDS],
+                &[ElysiumPoolRewardInfo::default(); NUM_REWARDS],
                 test.liquidity_delta,
                 test.is_upper_tick,
             )
@@ -792,7 +792,7 @@ mod tick_manager_tests {
             tick: Tick,
             fee_growth_global_a: u128,
             fee_growth_global_b: u128,
-            reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+            reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
             expected_update: TickUpdate,
         }
 
@@ -806,19 +806,19 @@ mod tick_manager_tests {
             fee_growth_global_a: 2500,
             fee_growth_global_b: 6750,
             reward_infos: [
-                WhirlpoolRewardInfo {
+                ElysiumPoolRewardInfo {
                     mint: Pubkey::new_unique(),
                     emissions_per_second_x64: 1,
                     growth_global_x64: 1000,
                     ..Default::default()
                 },
-                WhirlpoolRewardInfo {
+                ElysiumPoolRewardInfo {
                     mint: Pubkey::new_unique(),
                     emissions_per_second_x64: 1,
                     growth_global_x64: 1000,
                     ..Default::default()
                 },
-                WhirlpoolRewardInfo {
+                ElysiumPoolRewardInfo {
                     mint: Pubkey::new_unique(),
                     emissions_per_second_x64: 1,
                     growth_global_x64: 1000,

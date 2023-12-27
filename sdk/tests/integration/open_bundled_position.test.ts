@@ -12,8 +12,8 @@ import {
   PositionBundleData,
   PositionData,
   toTx,
-  WhirlpoolContext,
-  WhirlpoolIx
+  ElysiumPoolContext,
+  ElysiumPoolIx,
 } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import {
@@ -23,7 +23,7 @@ import {
   systemTransferTx,
   TickSpacing,
   transferToken,
-  ZERO_BN
+  ZERO_BN,
 } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
 import { initializePositionBundle, initTestPool, openBundledPosition } from "../utils/init-utils";
@@ -31,9 +31,8 @@ import { initializePositionBundle, initTestPool, openBundledPosition } from "../
 describe("open_bundled_position", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   const tickLowerIndex = 0;
@@ -49,13 +48,20 @@ describe("open_bundled_position", () => {
   });
 
   async function createOpenBundledPositionTx(
-    ctx: WhirlpoolContext,
+    ctx: ElysiumPoolContext,
     positionBundleMint: PublicKey,
     bundleIndex: number,
-    overwrite: any,
+    overwrite: any
   ) {
-    const bundledPositionPda = PDAUtil.getBundledPosition(ctx.program.programId, positionBundleMint, bundleIndex);
-    const positionBundle = PDAUtil.getPositionBundle(ctx.program.programId, positionBundleMint).publicKey;
+    const bundledPositionPda = PDAUtil.getBundledPosition(
+      ctx.program.programId,
+      positionBundleMint,
+      bundleIndex
+    );
+    const positionBundle = PDAUtil.getPositionBundle(
+      ctx.program.programId,
+      positionBundleMint
+    ).publicKey;
     const positionBundleTokenAccount = getAssociatedTokenAddressSync(
       positionBundleMint,
       ctx.wallet.publicKey
@@ -71,12 +77,17 @@ describe("open_bundled_position", () => {
       rent: anchor.web3.SYSVAR_RENT_PUBKEY,
     };
 
-    const ix = program.instruction.openBundledPosition(bundleIndex, tickLowerIndex, tickUpperIndex, {
-      accounts: {
-        ...defaultAccounts,
-        ...overwrite,
+    const ix = program.instruction.openBundledPosition(
+      bundleIndex,
+      tickLowerIndex,
+      tickUpperIndex,
+      {
+        accounts: {
+          ...defaultAccounts,
+          ...overwrite,
+        },
       }
-    });
+    );
 
     return toTx(ctx, {
       instructions: [ix],
@@ -104,7 +115,8 @@ describe("open_bundled_position", () => {
   }
 
   function checkBitmapIsOpened(account: PositionBundleData, bundleIndex: number): boolean {
-    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE) throw Error("bundleIndex is out of bounds");
+    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE)
+      throw Error("bundleIndex is out of bounds");
 
     const bitmapIndex = Math.floor(bundleIndex / 8);
     const bitmapOffset = bundleIndex % 8;
@@ -112,7 +124,8 @@ describe("open_bundled_position", () => {
   }
 
   function checkBitmapIsClosed(account: PositionBundleData, bundleIndex: number): boolean {
-    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE) throw Error("bundleIndex is out of bounds");
+    if (bundleIndex < 0 || bundleIndex >= POSITION_BUNDLE_SIZE)
+      throw Error("bundleIndex is out of bounds");
 
     const bitmapIndex = Math.floor(bundleIndex / 8);
     const bitmapOffset = bundleIndex % 8;
@@ -123,8 +136,7 @@ describe("open_bundled_position", () => {
     for (let i = 0; i < POSITION_BUNDLE_SIZE; i++) {
       if (openedBundleIndexes.includes(i)) {
         assert.ok(checkBitmapIsOpened(account, i));
-      }
-      else {
+      } else {
         assert.ok(checkBitmapIsClosed(account, i));
       }
     }
@@ -147,7 +159,10 @@ describe("open_bundled_position", () => {
     const position = (await fetcher.getPosition(bundledPositionPda.publicKey)) as PositionData;
     checkPositionAccountContents(position, positionBundleInfo.positionBundleMintKeypair.publicKey);
 
-    const positionBundle = (await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE)) as PositionBundleData;
+    const positionBundle = (await fetcher.getPositionBundle(
+      positionBundleInfo.positionBundlePda.publicKey,
+      IGNORE_CACHE
+    )) as PositionBundleData;
     checkBitmap(positionBundle, [bundleIndex]);
   });
 
@@ -165,7 +180,7 @@ describe("open_bundled_position", () => {
       tickLowerIndex,
       tickUpperIndex,
       ctx.wallet.publicKey,
-      funderKeypair,
+      funderKeypair
     );
     const { bundledPositionPda } = positionInitInfo.params;
 
@@ -177,7 +192,10 @@ describe("open_bundled_position", () => {
     const position = (await fetcher.getPosition(bundledPositionPda.publicKey)) as PositionData;
     checkPositionAccountContents(position, positionBundleInfo.positionBundleMintKeypair.publicKey);
 
-    const positionBundle = (await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE)) as PositionBundleData;
+    const positionBundle = (await fetcher.getPositionBundle(
+      positionBundleInfo.positionBundlePda.publicKey,
+      IGNORE_CACHE
+    )) as PositionBundleData;
     checkBitmap(positionBundle, [bundleIndex]);
   });
 
@@ -197,10 +215,16 @@ describe("open_bundled_position", () => {
       const { bundledPositionPda } = positionInitInfo.params;
 
       const position = (await fetcher.getPosition(bundledPositionPda.publicKey)) as PositionData;
-      checkPositionAccountContents(position, positionBundleInfo.positionBundleMintKeypair.publicKey);
+      checkPositionAccountContents(
+        position,
+        positionBundleInfo.positionBundleMintKeypair.publicKey
+      );
     }
 
-    const positionBundle = (await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE)) as PositionBundleData;
+    const positionBundle = (await fetcher.getPositionBundle(
+      positionBundleInfo.positionBundlePda.publicKey,
+      IGNORE_CACHE
+    )) as PositionBundleData;
     checkBitmap(positionBundle, bundleIndexes);
   });
 
@@ -216,7 +240,7 @@ describe("open_bundled_position", () => {
           positionBundleInfo.positionBundleMintKeypair.publicKey,
           bundleIndex,
           tickLowerIndex,
-          tickUpperIndex,
+          tickUpperIndex
         ),
         /It must be >= 0 and <= 65535/ // rejected by client
       );
@@ -233,12 +257,11 @@ describe("open_bundled_position", () => {
           positionBundleInfo.positionBundleMintKeypair.publicKey,
           bundleIndex,
           tickLowerIndex,
-          tickUpperIndex,
+          tickUpperIndex
         ),
         /0x179b/ // InvalidBundleIndex
       );
     });
-
 
     it("should be failed: invalid bundle index (u16 max)", async () => {
       const positionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
@@ -251,7 +274,7 @@ describe("open_bundled_position", () => {
           positionBundleInfo.positionBundleMintKeypair.publicKey,
           bundleIndex,
           tickLowerIndex,
-          tickUpperIndex,
+          tickUpperIndex
         ),
         /0x179b/ // InvalidBundleIndex
       );
@@ -315,7 +338,10 @@ describe("open_bundled_position", () => {
       tickUpperIndex
     );
 
-    const positionBundle = (await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE)) as PositionBundleData;
+    const positionBundle = (await fetcher.getPositionBundle(
+      positionBundleInfo.positionBundlePda.publicKey,
+      IGNORE_CACHE
+    )) as PositionBundleData;
     assert.ok(checkBitmapIsOpened(positionBundle, bundleIndex));
 
     await assert.rejects(
@@ -327,7 +353,9 @@ describe("open_bundled_position", () => {
         tickLowerIndex,
         tickUpperIndex
       ),
-      (err) => { return JSON.stringify(err).includes("already in use") }
+      (err) => {
+        return JSON.stringify(err).includes("already in use");
+      }
     );
   });
 
@@ -336,14 +364,17 @@ describe("open_bundled_position", () => {
       const positionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
 
       const tx = await createOpenBundledPositionTx(
-        ctx, positionBundleInfo.positionBundleMintKeypair.publicKey, 0, {
-        // invalid parameter
-        bundledPosition: PDAUtil.getBundledPosition(
-          ctx.program.programId,
-          positionBundleInfo.positionBundleMintKeypair.publicKey,
-          1 // another bundle index
-        ).publicKey
-      }
+        ctx,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        0,
+        {
+          // invalid parameter
+          bundledPosition: PDAUtil.getBundledPosition(
+            ctx.program.programId,
+            positionBundleInfo.positionBundleMintKeypair.publicKey,
+            1 // another bundle index
+          ).publicKey,
+        }
       );
 
       await assert.rejects(
@@ -357,10 +388,13 @@ describe("open_bundled_position", () => {
       const otherPositionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
 
       const tx = await createOpenBundledPositionTx(
-        ctx, positionBundleInfo.positionBundleMintKeypair.publicKey, 0, {
-        // invalid parameter
-        positionBundle: otherPositionBundleInfo.positionBundlePda.publicKey,
-      }
+        ctx,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        0,
+        {
+          // invalid parameter
+          positionBundle: otherPositionBundleInfo.positionBundlePda.publicKey,
+        }
       );
 
       await assert.rejects(
@@ -370,7 +404,11 @@ describe("open_bundled_position", () => {
     });
 
     it("should be failed: invalid ATA (amount is zero)", async () => {
-      const positionBundleInfo = await initializePositionBundle(ctx, funderKeypair.publicKey, funderKeypair);
+      const positionBundleInfo = await initializePositionBundle(
+        ctx,
+        funderKeypair.publicKey,
+        funderKeypair
+      );
 
       const ata = await createAssociatedTokenAccount(
         provider,
@@ -380,10 +418,13 @@ describe("open_bundled_position", () => {
       );
 
       const tx = await createOpenBundledPositionTx(
-        ctx, positionBundleInfo.positionBundleMintKeypair.publicKey, 0, {
-        // invalid parameter
-        positionBundleTokenAccount: ata,
-      }
+        ctx,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        0,
+        {
+          // invalid parameter
+          positionBundleTokenAccount: ata,
+        }
       );
 
       await assert.rejects(
@@ -393,14 +434,21 @@ describe("open_bundled_position", () => {
     });
 
     it("should be failed: invalid ATA (invalid mint)", async () => {
-      const positionBundleInfo = await initializePositionBundle(ctx, funderKeypair.publicKey, funderKeypair);
+      const positionBundleInfo = await initializePositionBundle(
+        ctx,
+        funderKeypair.publicKey,
+        funderKeypair
+      );
       const otherPositionBundleInfo = await initializePositionBundle(ctx, ctx.wallet.publicKey);
 
       const tx = await createOpenBundledPositionTx(
-        ctx, positionBundleInfo.positionBundleMintKeypair.publicKey, 0, {
-        // invalid parameter
-        positionBundleTokenAccount: otherPositionBundleInfo.positionBundleTokenAccount,
-      }
+        ctx,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        0,
+        {
+          // invalid parameter
+          positionBundleTokenAccount: otherPositionBundleInfo.positionBundleTokenAccount,
+        }
       );
 
       await assert.rejects(
@@ -410,14 +458,21 @@ describe("open_bundled_position", () => {
     });
 
     it("should be failed: invalid position bundle authority", async () => {
-      const positionBundleInfo = await initializePositionBundle(ctx, funderKeypair.publicKey, funderKeypair);
+      const positionBundleInfo = await initializePositionBundle(
+        ctx,
+        funderKeypair.publicKey,
+        funderKeypair
+      );
 
       const tx = await createOpenBundledPositionTx(
-        ctx, positionBundleInfo.positionBundleMintKeypair.publicKey, 0, {
-        positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-        // invalid parameter
-        positionBundleAuthority: ctx.wallet.publicKey,
-      }
+        ctx,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        0,
+        {
+          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+          // invalid parameter
+          positionBundleAuthority: ctx.wallet.publicKey,
+        }
       );
 
       await assert.rejects(
@@ -430,10 +485,13 @@ describe("open_bundled_position", () => {
       const positionBundleInfo = await initializePositionBundle(ctx);
 
       const tx = await createOpenBundledPositionTx(
-        ctx, positionBundleInfo.positionBundleMintKeypair.publicKey, 0, {
-        // invalid parameter
-        whirlpool: positionBundleInfo.positionBundlePda.publicKey,
-      }
+        ctx,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        0,
+        {
+          // invalid parameter
+          whirlpool: positionBundleInfo.positionBundlePda.publicKey,
+        }
       );
 
       await assert.rejects(
@@ -442,15 +500,17 @@ describe("open_bundled_position", () => {
       );
     });
 
-
     it("should be failed: invalid system program", async () => {
       const positionBundleInfo = await initializePositionBundle(ctx);
 
       const tx = await createOpenBundledPositionTx(
-        ctx, positionBundleInfo.positionBundleMintKeypair.publicKey, 0, {
-        // invalid parameter
-        systemProgram: TOKEN_PROGRAM_ID,
-      }
+        ctx,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        0,
+        {
+          // invalid parameter
+          systemProgram: TOKEN_PROGRAM_ID,
+        }
       );
 
       await assert.rejects(
@@ -463,10 +523,13 @@ describe("open_bundled_position", () => {
       const positionBundleInfo = await initializePositionBundle(ctx);
 
       const tx = await createOpenBundledPositionTx(
-        ctx, positionBundleInfo.positionBundleMintKeypair.publicKey, 0, {
-        // invalid parameter
-        rent: anchor.web3.SYSVAR_CLOCK_PUBKEY,
-      }
+        ctx,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        0,
+        {
+          // invalid parameter
+          rent: anchor.web3.SYSVAR_CLOCK_PUBKEY,
+        }
       );
 
       await assert.rejects(
@@ -478,13 +541,20 @@ describe("open_bundled_position", () => {
 
   describe("authority delegation", () => {
     it("successfully opens bundled position with delegated authority", async () => {
-      const positionBundleInfo = await initializePositionBundle(ctx, funderKeypair.publicKey, funderKeypair);
+      const positionBundleInfo = await initializePositionBundle(
+        ctx,
+        funderKeypair.publicKey,
+        funderKeypair
+      );
 
       const tx = await createOpenBundledPositionTx(
-        ctx, positionBundleInfo.positionBundleMintKeypair.publicKey, 0, {
-        positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-        positionBundleAuthority: ctx.wallet.publicKey,
-      }
+        ctx,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        0,
+        {
+          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+          positionBundleAuthority: ctx.wallet.publicKey,
+        }
       );
 
       await assert.rejects(
@@ -501,7 +571,10 @@ describe("open_bundled_position", () => {
         funderKeypair
       );
       await tx.buildAndExecute();
-      const positionBundle = await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE);
+      const positionBundle = await fetcher.getPositionBundle(
+        positionBundleInfo.positionBundlePda.publicKey,
+        IGNORE_CACHE
+      );
       checkBitmapIsOpened(positionBundle!, 0);
     });
 
@@ -509,10 +582,13 @@ describe("open_bundled_position", () => {
       const positionBundleInfo = await initializePositionBundle(ctx);
 
       const tx = await createOpenBundledPositionTx(
-        ctx, positionBundleInfo.positionBundleMintKeypair.publicKey, 0, {
-        positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-        positionBundleAuthority: ctx.wallet.publicKey,
-      }
+        ctx,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        0,
+        {
+          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+          positionBundleAuthority: ctx.wallet.publicKey,
+        }
       );
 
       // delegate 1 token from ctx.wallet to funder
@@ -520,23 +596,32 @@ describe("open_bundled_position", () => {
         provider,
         positionBundleInfo.positionBundleTokenAccount,
         funderKeypair.publicKey,
-        1,
+        1
       );
       // owner can open even if delegation exists
       await tx.buildAndExecute();
-      const positionBundle = await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE);
+      const positionBundle = await fetcher.getPositionBundle(
+        positionBundleInfo.positionBundlePda.publicKey,
+        IGNORE_CACHE
+      );
       checkBitmapIsOpened(positionBundle!, 0);
     });
 
-
     it("should be failed: delegated amount is zero", async () => {
-      const positionBundleInfo = await initializePositionBundle(ctx, funderKeypair.publicKey, funderKeypair);
+      const positionBundleInfo = await initializePositionBundle(
+        ctx,
+        funderKeypair.publicKey,
+        funderKeypair
+      );
 
       const tx = await createOpenBundledPositionTx(
-        ctx, positionBundleInfo.positionBundleMintKeypair.publicKey, 0, {
-        positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
-        positionBundleAuthority: ctx.wallet.publicKey,
-      }
+        ctx,
+        positionBundleInfo.positionBundleMintKeypair.publicKey,
+        0,
+        {
+          positionBundleTokenAccount: positionBundleInfo.positionBundleTokenAccount,
+          positionBundleAuthority: ctx.wallet.publicKey,
+        }
       );
 
       await assert.rejects(
@@ -568,23 +653,22 @@ describe("open_bundled_position", () => {
         provider,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         funderKeypair.publicKey,
-        ctx.wallet.publicKey,
+        ctx.wallet.publicKey
       );
 
-      await transferToken(
-        provider,
-        positionBundleInfo.positionBundleTokenAccount,
-        funderATA,
-        1
-      );
+      await transferToken(provider, positionBundleInfo.positionBundleTokenAccount, funderATA, 1);
 
       const tokenInfo = await fetcher.getTokenInfo(funderATA, IGNORE_CACHE);
       assert.ok(tokenInfo?.amount === 1n);
 
       const tx = toTx(
         ctx,
-        WhirlpoolIx.openBundledPositionIx(ctx.program, {
-          bundledPositionPda: PDAUtil.getBundledPosition(ctx.program.programId, positionBundleInfo.positionBundleMintKeypair.publicKey, 0),
+        ElysiumPoolIx.openBundledPositionIx(ctx.program, {
+          bundledPositionPda: PDAUtil.getBundledPosition(
+            ctx.program.programId,
+            positionBundleInfo.positionBundleMintKeypair.publicKey,
+            0
+          ),
           bundleIndex: 0,
           funder: funderKeypair.publicKey,
           positionBundle: positionBundleInfo.positionBundlePda.publicKey,
@@ -598,9 +682,11 @@ describe("open_bundled_position", () => {
       tx.addSigner(funderKeypair);
 
       await tx.buildAndExecute();
-      const positionBundle = await fetcher.getPositionBundle(positionBundleInfo.positionBundlePda.publicKey, IGNORE_CACHE);
+      const positionBundle = await fetcher.getPositionBundle(
+        positionBundleInfo.positionBundlePda.publicKey,
+        IGNORE_CACHE
+      );
       checkBitmapIsOpened(positionBundle!, 0);
     });
   });
-
 });

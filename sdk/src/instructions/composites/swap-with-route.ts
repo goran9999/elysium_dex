@@ -22,10 +22,10 @@ import {
   SwapUtils,
   TickArrayUtil,
   TradeRoute,
-  WhirlpoolContext,
+  ElysiumPoolContext,
   twoHopSwapQuoteFromSwapQuotes,
 } from "../..";
-import { PREFER_CACHE, WhirlpoolAccountFetchOptions } from "../../network/public/fetcher";
+import { PREFER_CACHE, ElysiumPoolAccountFetchOptions } from "../../network/public/fetcher";
 import { adjustForSlippage } from "../../utils/position-util";
 import { contextOptionsToBuilderOptions } from "../../utils/txn-utils";
 import { swapIx } from "../swap-ix";
@@ -39,9 +39,9 @@ export type SwapFromRouteParams = {
 };
 
 export async function getSwapFromRoute(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   params: SwapFromRouteParams,
-  opts: WhirlpoolAccountFetchOptions = PREFER_CACHE,
+  opts: ElysiumPoolAccountFetchOptions = PREFER_CACHE,
   txBuilder: TransactionBuilder = new TransactionBuilder(
     ctx.connection,
     ctx.wallet,

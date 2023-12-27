@@ -12,7 +12,7 @@ const LOG_B_P_ERR_MARGIN_UPPER_X64 = "15793534762490258745";
 /**
  * A collection of utility functions to convert between price, tickIndex and sqrtPrice.
  *
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  */
 export class PriceMath {
   public static priceToSqrtPriceX64(price: Decimal, decimalsA: number, decimalsB: number): BN {

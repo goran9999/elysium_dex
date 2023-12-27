@@ -10,51 +10,51 @@ import { AccountLayout, Mint, Account as TokenAccount } from "@solana/spl-token"
 import { Connection } from "@solana/web3.js";
 import {
   DEFAULT_WHIRLPOOL_RETENTION_POLICY,
-  WhirlpoolAccountFetchOptions,
-  WhirlpoolAccountFetcherInterface,
-  WhirlpoolSupportedTypes,
+  ElysiumPoolAccountFetchOptions,
+  ElysiumPoolAccountFetcherInterface,
+  ElysiumPoolSupportedTypes,
 } from "..";
 import {
   FeeTierData,
   PositionBundleData,
   PositionData,
   TickArrayData,
-  WhirlpoolData,
-  WhirlpoolsConfigData,
+  ElysiumPoolData,
+  ElysiumPoolsConfigData,
 } from "../../../types/public";
 import {
   ParsableFeeTier,
   ParsablePosition,
   ParsablePositionBundle,
   ParsableTickArray,
-  ParsableWhirlpool,
-  ParsableWhirlpoolsConfig,
+  ParsableElysiumPool,
+  ParsableElysiumPoolsConfig,
 } from "../parsing";
 
 /**
- * Build a default instance of {@link WhirlpoolAccountFetcherInterface} with the default {@link AccountFetcher} implementation
+ * Build a default instance of {@link ElysiumPoolAccountFetcherInterface} with the default {@link AccountFetcher} implementation
  * @param connection An instance of {@link Connection} to use for fetching accounts
- * @returns An instance of {@link WhirlpoolAccountFetcherInterface}
+ * @returns An instance of {@link ElysiumPoolAccountFetcherInterface}
  * @category Network
  */
 export const buildDefaultAccountFetcher = (connection: Connection) => {
-  return new WhirlpoolAccountFetcher(
+  return new ElysiumPoolAccountFetcher(
     connection,
     new SimpleAccountFetcher(connection, DEFAULT_WHIRLPOOL_RETENTION_POLICY)
   );
 };
 
 /**
- * Fetcher and cache layer for fetching {@link WhirlpoolSupportedTypes} from the network
- * Default implementation for {@link WhirlpoolAccountFetcherInterface}
+ * Fetcher and cache layer for fetching {@link ElysiumPoolSupportedTypes} from the network
+ * Default implementation for {@link ElysiumPoolAccountFetcherInterface}
  * @category Network
  */
-export class WhirlpoolAccountFetcher implements WhirlpoolAccountFetcherInterface {
+export class ElysiumPoolAccountFetcher implements ElysiumPoolAccountFetcherInterface {
   private _accountRentExempt: number | undefined;
 
   constructor(
     readonly connection: Connection,
-    readonly fetcher: AccountFetcher<WhirlpoolSupportedTypes, WhirlpoolAccountFetchOptions>
+    readonly fetcher: AccountFetcher<ElysiumPoolSupportedTypes, ElysiumPoolAccountFetchOptions>
   ) {}
 
   async getAccountRentExempt(refresh: boolean = false): Promise<number> {
@@ -68,91 +68,97 @@ export class WhirlpoolAccountFetcher implements WhirlpoolAccountFetcherInterface
     return this._accountRentExempt;
   }
 
-  getPool(address: Address, opts?: WhirlpoolAccountFetchOptions): Promise<WhirlpoolData | null> {
-    return this.fetcher.getAccount(address, ParsableWhirlpool, opts);
+  getPool(
+    address: Address,
+    opts?: ElysiumPoolAccountFetchOptions
+  ): Promise<ElysiumPoolData | null> {
+    return this.fetcher.getAccount(address, ParsableElysiumPool, opts);
   }
   getPools(
     addresses: Address[],
-    opts?: WhirlpoolAccountFetchOptions
-  ): Promise<ReadonlyMap<string, WhirlpoolData | null>> {
-    return this.fetcher.getAccounts(addresses, ParsableWhirlpool, opts);
+    opts?: ElysiumPoolAccountFetchOptions
+  ): Promise<ReadonlyMap<string, ElysiumPoolData | null>> {
+    return this.fetcher.getAccounts(addresses, ParsableElysiumPool, opts);
   }
-  getPosition(address: Address, opts?: WhirlpoolAccountFetchOptions): Promise<PositionData | null> {
+  getPosition(
+    address: Address,
+    opts?: ElysiumPoolAccountFetchOptions
+  ): Promise<PositionData | null> {
     return this.fetcher.getAccount(address, ParsablePosition, opts);
   }
   getPositions(
     addresses: Address[],
-    opts?: WhirlpoolAccountFetchOptions
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<ReadonlyMap<string, PositionData | null>> {
     return this.fetcher.getAccounts(addresses, ParsablePosition, opts);
   }
   getTickArray(
     address: Address,
-    opts?: WhirlpoolAccountFetchOptions
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<TickArrayData | null> {
     return this.fetcher.getAccount(address, ParsableTickArray, opts);
   }
   getTickArrays(
     addresses: Address[],
-    opts?: WhirlpoolAccountFetchOptions
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<ReadonlyArray<TickArrayData | null>> {
     return this.fetcher.getAccountsAsArray(addresses, ParsableTickArray, opts);
   }
-  getFeeTier(address: Address, opts?: WhirlpoolAccountFetchOptions): Promise<FeeTierData | null> {
+  getFeeTier(address: Address, opts?: ElysiumPoolAccountFetchOptions): Promise<FeeTierData | null> {
     return this.fetcher.getAccount(address, ParsableFeeTier, opts);
   }
   getFeeTiers(
     addresses: Address[],
-    opts?: WhirlpoolAccountFetchOptions
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<ReadonlyMap<string, FeeTierData | null>> {
     return this.fetcher.getAccounts(addresses, ParsableFeeTier, opts);
   }
   getTokenInfo(
     address: Address,
-    opts?: WhirlpoolAccountFetchOptions
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<TokenAccount | null> {
     return this.fetcher.getAccount(address, ParsableTokenAccountInfo, opts);
   }
   getTokenInfos(
     addresses: Address[],
-    opts?: WhirlpoolAccountFetchOptions
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<ReadonlyMap<string, TokenAccount | null>> {
     return this.fetcher.getAccounts(addresses, ParsableTokenAccountInfo, opts);
   }
-  getMintInfo(address: Address, opts?: WhirlpoolAccountFetchOptions): Promise<Mint | null> {
+  getMintInfo(address: Address, opts?: ElysiumPoolAccountFetchOptions): Promise<Mint | null> {
     return this.fetcher.getAccount(address, ParsableMintInfo, opts);
   }
   getMintInfos(
     addresses: Address[],
-    opts?: WhirlpoolAccountFetchOptions
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<ReadonlyMap<string, Mint | null>> {
     return this.fetcher.getAccounts(addresses, ParsableMintInfo, opts);
   }
   getConfig(
     address: Address,
-    opts?: WhirlpoolAccountFetchOptions
-  ): Promise<WhirlpoolsConfigData | null> {
-    return this.fetcher.getAccount(address, ParsableWhirlpoolsConfig, opts);
+    opts?: ElysiumPoolAccountFetchOptions
+  ): Promise<ElysiumPoolsConfigData | null> {
+    return this.fetcher.getAccount(address, ParsableElysiumPoolsConfig, opts);
   }
   getConfigs(
     addresses: Address[],
-    opts?: WhirlpoolAccountFetchOptions
-  ): Promise<ReadonlyMap<string, WhirlpoolsConfigData | null>> {
-    return this.fetcher.getAccounts(addresses, ParsableWhirlpoolsConfig, opts);
+    opts?: ElysiumPoolAccountFetchOptions
+  ): Promise<ReadonlyMap<string, ElysiumPoolsConfigData | null>> {
+    return this.fetcher.getAccounts(addresses, ParsableElysiumPoolsConfig, opts);
   }
   getPositionBundle(
     address: Address,
-    opts?: WhirlpoolAccountFetchOptions
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<PositionBundleData | null> {
     return this.fetcher.getAccount(address, ParsablePositionBundle, opts);
   }
   getPositionBundles(
     addresses: Address[],
-    opts?: WhirlpoolAccountFetchOptions
+    opts?: ElysiumPoolAccountFetchOptions
   ): Promise<ReadonlyMap<string, PositionBundleData | null>> {
     return this.fetcher.getAccounts(addresses, ParsablePositionBundle, opts);
   }
-  populateCache<T extends WhirlpoolSupportedTypes>(
+  populateCache<T extends ElysiumPoolSupportedTypes>(
     accounts: ReadonlyMap<string, T>,
     parser: ParsableEntity<T>,
     now = Date.now()

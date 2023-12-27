@@ -1,6 +1,6 @@
 import { BN, BorshAccountsCoder, Idl } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import WhirlpoolIDL from "../../artifacts/whirlpool.json";
+import ElysiumPoolIDL from "../../artifacts/whirlpool.json";
 
 /**
  * This file contains the types that has the same structure as the types anchor functions returns.
@@ -11,29 +11,29 @@ import WhirlpoolIDL from "../../artifacts/whirlpool.json";
  */
 
 /**
- * Supported parasable account names from the Whirlpool contract.
+ * Supported parasable account names from the ElysiumPool contract.
  * @category Network
  */
 export enum AccountName {
-  WhirlpoolsConfig = "WhirlpoolsConfig",
+  ElysiumPoolsConfig = "ElysiumPoolsConfig",
   Position = "Position",
   TickArray = "TickArray",
-  Whirlpool = "Whirlpool",
+  ElysiumPool = "ElysiumPool",
   FeeTier = "FeeTier",
   PositionBundle = "PositionBundle",
 }
 
-export const WHIRLPOOL_IDL = WhirlpoolIDL as Idl;
+export const WHIRLPOOL_IDL = ElysiumPoolIDL as Idl;
 
 /**
- * The Anchor coder for the Whirlpool program.
+ * The Anchor coder for the ElysiumPool program.
  * @category Solana Accounts
  */
 export const WHIRLPOOL_CODER = new BorshAccountsCoder(WHIRLPOOL_IDL);
 
 /**
- * Get the size of an account owned by the Whirlpool program in bytes.
- * @param accountName Whirlpool account name
+ * Get the size of an account owned by the ElysiumPool program in bytes.
+ * @param accountName ElysiumPool account name
  * @returns Size in bytes of the account
  */
 export function getAccountSize(accountName: AccountName) {
@@ -47,10 +47,10 @@ export function getAccountSize(accountName: AccountName) {
  * Reserved bytes for each account used for calculating the account size.
  */
 const RESERVED_BYTES: ReservedBytes = {
-  [AccountName.WhirlpoolsConfig]: 2,
+  [AccountName.ElysiumPoolsConfig]: 2,
   [AccountName.Position]: 0,
   [AccountName.TickArray]: 0,
-  [AccountName.Whirlpool]: 0,
+  [AccountName.ElysiumPool]: 0,
   [AccountName.FeeTier]: 0,
   [AccountName.PositionBundle]: 64,
 };
@@ -60,16 +60,16 @@ type ReservedBytes = {
 };
 
 /**
- * Size of the Whirlpool account in bytes.
+ * Size of the ElysiumPool account in bytes.
  * @deprecated Please use {@link getAccountSize} instead.
  * @category Solana Accounts
  */
-export const WHIRLPOOL_ACCOUNT_SIZE = getAccountSize(AccountName.Whirlpool);
+export const WHIRLPOOL_ACCOUNT_SIZE = getAccountSize(AccountName.ElysiumPool);
 
 /**
  * @category Solana Accounts
  */
-export type WhirlpoolsConfigData = {
+export type ElysiumPoolsConfigData = {
   feeAuthority: PublicKey;
   collectProtocolFeesAuthority: PublicKey;
   rewardEmissionsSuperAuthority: PublicKey;
@@ -80,7 +80,7 @@ export type WhirlpoolsConfigData = {
 /**
  * @category Solana Accounts
  */
-export type WhirlpoolRewardInfoData = {
+export type ElysiumPoolRewardInfoData = {
   mint: PublicKey;
   vault: PublicKey;
   authority: PublicKey;
@@ -91,14 +91,14 @@ export type WhirlpoolRewardInfoData = {
 /**
  * @category Solana Accounts
  */
-export type WhirlpoolBumpsData = {
+export type ElysiumPoolBumpsData = {
   whirlpoolBump: number;
 };
 
 /**
  * @category Solana Accounts
  */
-export type WhirlpoolData = {
+export type ElysiumPoolData = {
   whirlpoolsConfig: PublicKey;
   whirlpoolBump: number[];
   feeRate: number;
@@ -115,7 +115,7 @@ export type WhirlpoolData = {
   tokenVaultB: PublicKey;
   feeGrowthGlobalB: BN;
   rewardLastUpdatedTimestamp: BN;
-  rewardInfos: WhirlpoolRewardInfoData[];
+  rewardInfos: ElysiumPoolRewardInfoData[];
   tickSpacing: number;
 };
 

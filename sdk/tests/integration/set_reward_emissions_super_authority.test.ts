@@ -1,14 +1,14 @@
 import * as anchor from "@coral-xyz/anchor";
 import * as assert from "assert";
-import { toTx, WhirlpoolContext, WhirlpoolIx, WhirlpoolsConfigData } from "../../src";
+import { toTx, ElysiumPoolContext, ElysiumPoolIx, ElysiumPoolsConfigData } from "../../src";
 import { defaultConfirmOptions } from "../utils/const";
 import { generateDefaultConfigParams } from "../utils/test-builders";
 
 describe("set_reward_emissions_super_authority", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully set_reward_emissions_super_authority with super authority keypair", async () => {
@@ -17,12 +17,15 @@ describe("set_reward_emissions_super_authority", () => {
       configKeypairs: { rewardEmissionsSuperAuthorityKeypair },
     } = generateDefaultConfigParams(ctx);
 
-    await toTx(ctx, WhirlpoolIx.initializeConfigIx(ctx.program, configInitInfo)).buildAndExecute();
+    await toTx(
+      ctx,
+      ElysiumPoolIx.initializeConfigIx(ctx.program, configInitInfo)
+    ).buildAndExecute();
     const newAuthorityKeypair = anchor.web3.Keypair.generate();
 
     await toTx(
       ctx,
-      WhirlpoolIx.setRewardEmissionsSuperAuthorityIx(ctx.program, {
+      ElysiumPoolIx.setRewardEmissionsSuperAuthorityIx(ctx.program, {
         whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
         rewardEmissionsSuperAuthority: rewardEmissionsSuperAuthorityKeypair.publicKey,
         newRewardEmissionsSuperAuthority: newAuthorityKeypair.publicKey,
@@ -33,7 +36,7 @@ describe("set_reward_emissions_super_authority", () => {
 
     const config = (await fetcher.getConfig(
       configInitInfo.whirlpoolsConfigKeypair.publicKey
-    )) as WhirlpoolsConfigData;
+    )) as ElysiumPoolsConfigData;
     assert.ok(config.rewardEmissionsSuperAuthority.equals(newAuthorityKeypair.publicKey));
   });
 
@@ -42,7 +45,10 @@ describe("set_reward_emissions_super_authority", () => {
       configInitInfo,
       configKeypairs: { rewardEmissionsSuperAuthorityKeypair },
     } = generateDefaultConfigParams(ctx);
-    await toTx(ctx, WhirlpoolIx.initializeConfigIx(ctx.program, configInitInfo)).buildAndExecute();
+    await toTx(
+      ctx,
+      ElysiumPoolIx.initializeConfigIx(ctx.program, configInitInfo)
+    ).buildAndExecute();
 
     await assert.rejects(
       ctx.program.rpc.setRewardEmissionsSuperAuthority({
@@ -58,12 +64,15 @@ describe("set_reward_emissions_super_authority", () => {
 
   it("fails if incorrect reward_emissions_super_authority is passed in", async () => {
     const { configInitInfo } = generateDefaultConfigParams(ctx);
-    await toTx(ctx, WhirlpoolIx.initializeConfigIx(ctx.program, configInitInfo)).buildAndExecute();
+    await toTx(
+      ctx,
+      ElysiumPoolIx.initializeConfigIx(ctx.program, configInitInfo)
+    ).buildAndExecute();
 
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.setRewardEmissionsSuperAuthorityIx(ctx.program, {
+        ElysiumPoolIx.setRewardEmissionsSuperAuthorityIx(ctx.program, {
           whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
           rewardEmissionsSuperAuthority: provider.wallet.publicKey,
           newRewardEmissionsSuperAuthority: provider.wallet.publicKey,

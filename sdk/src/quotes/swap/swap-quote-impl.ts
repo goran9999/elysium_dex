@@ -1,6 +1,6 @@
 import { BN } from "@coral-xyz/anchor";
 import { ZERO } from "@orca-so/common-sdk";
-import { SwapErrorCode, WhirlpoolsError } from "../../errors/errors";
+import { SwapErrorCode, ElysiumPoolsError } from "../../errors/errors";
 import { MAX_SQRT_PRICE, MAX_SWAP_TICK_ARRAYS, MIN_SQRT_PRICE } from "../../types/public";
 import { SwapQuote, SwapQuoteParam } from "../public";
 import { computeSwap } from "./swap-manager";
@@ -24,7 +24,7 @@ export function simulateSwap(params: SwapQuoteParam): SwapQuote {
   } = params;
 
   if (sqrtPriceLimit.gt(new BN(MAX_SQRT_PRICE)) || sqrtPriceLimit.lt(new BN(MIN_SQRT_PRICE))) {
-    throw new WhirlpoolsError(
+    throw new ElysiumPoolsError(
       "Provided SqrtPriceLimit is out of bounds.",
       SwapErrorCode.SqrtPriceOutOfBounds
     );
@@ -34,22 +34,22 @@ export function simulateSwap(params: SwapQuoteParam): SwapQuote {
     (aToB && sqrtPriceLimit.gt(whirlpoolData.sqrtPrice)) ||
     (!aToB && sqrtPriceLimit.lt(whirlpoolData.sqrtPrice))
   ) {
-    throw new WhirlpoolsError(
+    throw new ElysiumPoolsError(
       "Provided SqrtPriceLimit is in the opposite direction of the trade.",
       SwapErrorCode.InvalidSqrtPriceLimitDirection
     );
   }
 
   if (tokenAmount.eq(ZERO)) {
-    throw new WhirlpoolsError("Provided tokenAmount is zero.", SwapErrorCode.ZeroTradableAmount);
+    throw new ElysiumPoolsError("Provided tokenAmount is zero.", SwapErrorCode.ZeroTradableAmount);
   }
 
   const tickSequence = new TickArraySequence(tickArrays, whirlpoolData.tickSpacing, aToB);
 
   // Ensure 1st search-index resides on the 1st array in the sequence to match smart contract expectation.
   if (!tickSequence.isValidTickArray0(whirlpoolData.tickCurrentIndex)) {
-    throw new WhirlpoolsError(
-      "TickArray at index 0 does not contain the Whirlpool current tick index.",
+    throw new ElysiumPoolsError(
+      "TickArray at index 0 does not contain the ElysiumPool current tick index.",
       SwapErrorCode.TickArraySequenceInvalid
     );
   }
@@ -68,7 +68,7 @@ export function simulateSwap(params: SwapQuoteParam): SwapQuote {
       (aToB && otherAmountThreshold.gt(swapResults.amountB)) ||
       (!aToB && otherAmountThreshold.gt(swapResults.amountA))
     ) {
-      throw new WhirlpoolsError(
+      throw new ElysiumPoolsError(
         "Quoted amount for the other token is below the otherAmountThreshold.",
         SwapErrorCode.AmountOutBelowMinimum
       );
@@ -78,7 +78,7 @@ export function simulateSwap(params: SwapQuoteParam): SwapQuote {
       (aToB && otherAmountThreshold.lt(swapResults.amountA)) ||
       (!aToB && otherAmountThreshold.lt(swapResults.amountB))
     ) {
-      throw new WhirlpoolsError(
+      throw new ElysiumPoolsError(
         "Quoted amount for the other token is above the otherAmountThreshold.",
         SwapErrorCode.AmountInAboveMaximum
       );
@@ -93,7 +93,7 @@ export function simulateSwap(params: SwapQuoteParam): SwapQuote {
 
   const numOfTickCrossings = tickSequence.getNumOfTouchedArrays();
   if (numOfTickCrossings > MAX_SWAP_TICK_ARRAYS) {
-    throw new WhirlpoolsError(
+    throw new ElysiumPoolsError(
       `Input amount causes the quote to traverse more than the allowable amount of tick-arrays ${numOfTickCrossings}`,
       SwapErrorCode.TickArrayCrossingAboveMax
     );

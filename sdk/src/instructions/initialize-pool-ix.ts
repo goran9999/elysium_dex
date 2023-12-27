@@ -2,15 +2,15 @@ import { BN, Program } from "@coral-xyz/anchor";
 import { Instruction, PDA } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Keypair, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
-import { WhirlpoolBumpsData } from "../types/public/anchor-types";
+import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPoolBumpsData } from "../types/public/anchor-types";
 
 /**
- * Parameters to initialize a Whirlpool account.
+ * Parameters to initialize a ElysiumPool account.
  *
  * @category Instruction Types
  * @param initSqrtPrice - The desired initial sqrt-price for this pool
- * @param whirlpoolsConfig - The public key for the WhirlpoolsConfig this pool is initialized in
+ * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
  * @param whirlpoolPda - PDA for the whirlpool account that would be initialized
  * @param tokenMintA - Mint public key for token A
  * @param tokenMintB - Mint public key for token B
@@ -34,7 +34,7 @@ export type InitPoolParams = {
 };
 
 /**
- * Initializes a tick_array account to represent a tick-range in a Whirlpool.
+ * Initializes a tick_array account to represent a tick-range in a ElysiumPool.
  *
  * Special Errors
  * `InvalidTokenMintOrder` - The order of mints have to be ordered by
@@ -45,7 +45,10 @@ export type InitPoolParams = {
  * @param params - InitPoolParams object
  * @returns - Instruction to perform the action.
  */
-export function initializePoolIx(program: Program<Whirlpool>, params: InitPoolParams): Instruction {
+export function initializePoolIx(
+  program: Program<ElysiumPool>,
+  params: InitPoolParams
+): Instruction {
   const {
     initSqrtPrice,
     tokenMintA,
@@ -59,7 +62,7 @@ export function initializePoolIx(program: Program<Whirlpool>, params: InitPoolPa
     funder,
   } = params;
 
-  const whirlpoolBumps: WhirlpoolBumpsData = {
+  const whirlpoolBumps: ElysiumPoolBumpsData = {
     whirlpoolBump: whirlpoolPda.bump,
   };
 

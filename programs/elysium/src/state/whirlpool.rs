@@ -7,11 +7,11 @@ use crate::{
 };
 use anchor_lang::prelude::*;
 
-use super::WhirlpoolsConfig;
+use super::ElysiumPoolsConfig;
 
 #[account]
 #[derive(Default)]
-pub struct Whirlpool {
+pub struct ElysiumPool {
     pub whirlpools_config: Pubkey, // 32
     pub whirlpool_bump: [u8; 1],   // 1
 
@@ -50,13 +50,13 @@ pub struct Whirlpool {
 
     pub reward_last_updated_timestamp: u64, // 8
 
-    pub reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS], // 384
+    pub reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS], // 384
 }
 
-// Number of rewards supported by Whirlpools
+// Number of rewards supported by ElysiumPools
 pub const NUM_REWARDS: usize = 3;
 
-impl Whirlpool {
+impl ElysiumPool {
     pub const LEN: usize = 8 + 261 + 384;
     pub fn seeds(&self) -> [&[u8]; 6] {
         [
@@ -71,7 +71,7 @@ impl Whirlpool {
 
     pub fn initialize(
         &mut self,
-        whirlpools_config: &Account<WhirlpoolsConfig>,
+        whirlpools_config: &Account<ElysiumPoolsConfig>,
         bump: u8,
         tick_spacing: u16,
         sqrt_price: u128,
@@ -114,20 +114,20 @@ impl Whirlpool {
         self.fee_growth_global_b = 0;
 
         self.reward_infos =
-            [WhirlpoolRewardInfo::new(whirlpools_config.reward_emissions_super_authority);
+            [ElysiumPoolRewardInfo::new(whirlpools_config.reward_emissions_super_authority);
                 NUM_REWARDS];
 
         Ok(())
     }
 
-    /// Update all reward values for the Whirlpool.
+    /// Update all reward values for the ElysiumPool.
     ///
     /// # Parameters
     /// - `reward_infos` - An array of all updated whirlpool rewards
     /// - `reward_last_updated_timestamp` - The timestamp when the rewards were last updated
     pub fn update_rewards(
         &mut self,
-        reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+        reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
         reward_last_updated_timestamp: u64,
     ) {
         self.reward_last_updated_timestamp = reward_last_updated_timestamp;
@@ -136,7 +136,7 @@ impl Whirlpool {
 
     pub fn update_rewards_and_liquidity(
         &mut self,
-        reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+        reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
         liquidity: u128,
         reward_last_updated_timestamp: u64,
     ) {
@@ -144,7 +144,7 @@ impl Whirlpool {
         self.liquidity = liquidity;
     }
 
-    /// Update the reward authority at the specified Whirlpool reward index.
+    /// Update the reward authority at the specified ElysiumPool reward index.
     pub fn update_reward_authority(&mut self, index: usize, authority: Pubkey) -> Result<()> {
         if index >= NUM_REWARDS {
             return Err(ErrorCode::InvalidRewardIndex.into());
@@ -157,7 +157,7 @@ impl Whirlpool {
     pub fn update_emissions(
         &mut self,
         index: usize,
-        reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+        reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
         timestamp: u64,
         emissions_per_second_x64: u128,
     ) -> Result<()> {
@@ -196,7 +196,7 @@ impl Whirlpool {
         tick_index: i32,
         sqrt_price: u128,
         fee_growth_global: u128,
-        reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+        reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
         protocol_fee: u64,
         is_token_fee_in_a: bool,
         reward_last_updated_timestamp: u64,
@@ -241,12 +241,12 @@ impl Whirlpool {
     }
 }
 
-/// Stores the state relevant for tracking liquidity mining rewards at the `Whirlpool` level.
+/// Stores the state relevant for tracking liquidity mining rewards at the `ElysiumPool` level.
 /// These values are used in conjunction with `PositionRewardInfo`, `Tick.reward_growths_outside`,
-/// and `Whirlpool.reward_last_updated_timestamp` to determine how many rewards are earned by open
+/// and `ElysiumPool.reward_last_updated_timestamp` to determine how many rewards are earned by open
 /// positions.
 #[derive(Copy, Clone, AnchorSerialize, AnchorDeserialize, Default, Debug, PartialEq)]
-pub struct WhirlpoolRewardInfo {
+pub struct ElysiumPoolRewardInfo {
     /// Reward token mint.
     pub mint: Pubkey,
     /// Reward vault token account.
@@ -260,8 +260,8 @@ pub struct WhirlpoolRewardInfo {
     pub growth_global_x64: u128,
 }
 
-impl WhirlpoolRewardInfo {
-    /// Creates a new `WhirlpoolRewardInfo` with the authority set
+impl ElysiumPoolRewardInfo {
+    /// Creates a new `ElysiumPoolRewardInfo` with the authority set
     pub fn new(authority: Pubkey) -> Self {
         Self {
             authority,
@@ -277,7 +277,7 @@ impl WhirlpoolRewardInfo {
 
     /// Maps all reward data to only the reward growth accumulators
     pub fn to_reward_growths(
-        reward_infos: &[WhirlpoolRewardInfo; NUM_REWARDS],
+        reward_infos: &[ElysiumPoolRewardInfo; NUM_REWARDS],
     ) -> [u128; NUM_REWARDS] {
         let mut reward_growths = [0u128; NUM_REWARDS];
         for i in 0..NUM_REWARDS {
@@ -288,29 +288,29 @@ impl WhirlpoolRewardInfo {
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
-pub struct WhirlpoolBumps {
+pub struct ElysiumPoolBumps {
     pub whirlpool_bump: u8,
 }
 
 #[test]
 fn test_whirlpool_reward_info_not_initialized() {
-    let reward_info = WhirlpoolRewardInfo::default();
+    let reward_info = ElysiumPoolRewardInfo::default();
     assert_eq!(reward_info.initialized(), false);
 }
 
 #[test]
 fn test_whirlpool_reward_info_initialized() {
-    let reward_info = &mut WhirlpoolRewardInfo::default();
+    let reward_info = &mut ElysiumPoolRewardInfo::default();
     reward_info.mint = Pubkey::new_unique();
     assert_eq!(reward_info.initialized(), true);
 }
 
 #[cfg(test)]
 pub mod whirlpool_builder {
-    use super::{Whirlpool, WhirlpoolRewardInfo, NUM_REWARDS};
+    use super::{ElysiumPool, ElysiumPoolRewardInfo, NUM_REWARDS};
 
     #[derive(Default)]
-    pub struct WhirlpoolBuilder {
+    pub struct ElysiumPoolBuilder {
         liquidity: u128,
         tick_spacing: u16,
         tick_current_index: i32,
@@ -320,13 +320,13 @@ pub mod whirlpool_builder {
         fee_growth_global_a: u128,
         fee_growth_global_b: u128,
         reward_last_updated_timestamp: u64,
-        reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS],
+        reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS],
     }
 
-    impl WhirlpoolBuilder {
+    impl ElysiumPoolBuilder {
         pub fn new() -> Self {
             Self {
-                reward_infos: [WhirlpoolRewardInfo::default(); NUM_REWARDS],
+                reward_infos: [ElysiumPoolRewardInfo::default(); NUM_REWARDS],
                 ..Default::default()
             }
         }
@@ -341,12 +341,12 @@ pub mod whirlpool_builder {
             self
         }
 
-        pub fn reward_info(mut self, index: usize, reward_info: WhirlpoolRewardInfo) -> Self {
+        pub fn reward_info(mut self, index: usize, reward_info: ElysiumPoolRewardInfo) -> Self {
             self.reward_infos[index] = reward_info;
             self
         }
 
-        pub fn reward_infos(mut self, reward_infos: [WhirlpoolRewardInfo; NUM_REWARDS]) -> Self {
+        pub fn reward_infos(mut self, reward_infos: [ElysiumPoolRewardInfo; NUM_REWARDS]) -> Self {
             self.reward_infos = reward_infos;
             self
         }
@@ -386,8 +386,8 @@ pub mod whirlpool_builder {
             self
         }
 
-        pub fn build(self) -> Whirlpool {
-            Whirlpool {
+        pub fn build(self) -> ElysiumPool {
+            ElysiumPool {
                 liquidity: self.liquidity,
                 reward_last_updated_timestamp: self.reward_last_updated_timestamp,
                 reward_infos: self.reward_infos,

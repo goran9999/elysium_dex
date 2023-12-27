@@ -6,10 +6,10 @@ import Decimal from "decimal.js";
 import {
   PositionData,
   TickArrayData,
-  WhirlpoolContext,
-  WhirlpoolData,
-  WhirlpoolIx,
-  toTx
+  ElysiumPoolContext,
+  ElysiumPoolData,
+  ElysiumPoolIx,
+  toTx,
 } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import { decreaseLiquidityQuoteByLiquidityWithParams } from "../../src/quotes/public/decrease-liquidity-quote";
@@ -22,31 +22,34 @@ import {
   createMint,
   createTokenAccount,
   sleep,
-  transferToken
+  transferToken,
 } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
-import { WhirlpoolTestFixture } from "../utils/fixture";
+import { ElysiumPoolTestFixture } from "../utils/fixture";
 import { initTestPool, initTickArray, openPosition } from "../utils/init-utils";
 
 describe("decrease_liquidity", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully decrease liquidity from position in one tick array", async () => {
     const liquidityAmount = new anchor.BN(1_250_000);
     const tickLower = 7168,
       tickUpper = 8960;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1.48)),
       positions: [{ tickLowerIndex: tickLower, tickUpperIndex: tickUpper, liquidityAmount }],
     });
     const { poolInitInfo, tokenAccountA, tokenAccountB, positions } = fixture.getInfos();
     const { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair } = poolInitInfo;
-    const poolBefore = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolBefore = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
 
     // To check if rewardLastUpdatedTimestamp is updated
     await sleep(1200);
@@ -62,7 +65,7 @@ describe("decrease_liquidity", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
         ...removalQuote,
         whirlpool: whirlpoolPda.publicKey,
         positionAuthority: provider.wallet.publicKey,
@@ -78,7 +81,10 @@ describe("decrease_liquidity", () => {
     ).buildAndExecute();
 
     const remainingLiquidity = liquidityAmount.sub(removalQuote.liquidityAmount);
-    const poolAfter = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolAfter = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
     assert.ok(poolAfter.rewardLastUpdatedTimestamp.gt(poolBefore.rewardLastUpdatedTimestamp));
     assert.ok(poolAfter.liquidity.eq(remainingLiquidity));
 
@@ -97,7 +103,7 @@ describe("decrease_liquidity", () => {
     const liquidityAmount = new anchor.BN(1_250_000);
     const tickLower = -1280,
       tickUpper = 1280;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount }],
@@ -105,7 +111,10 @@ describe("decrease_liquidity", () => {
     const { poolInitInfo, positions, tokenAccountA, tokenAccountB } = fixture.getInfos();
     const { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair } = poolInitInfo;
     const position = positions[0];
-    const poolBefore = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolBefore = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
 
     const removalQuote = decreaseLiquidityQuoteByLiquidityWithParams({
       liquidity: new anchor.BN(1_000_000),
@@ -118,7 +127,7 @@ describe("decrease_liquidity", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
         ...removalQuote,
         whirlpool: whirlpoolPda.publicKey,
         positionAuthority: provider.wallet.publicKey,
@@ -134,12 +143,18 @@ describe("decrease_liquidity", () => {
     ).buildAndExecute();
 
     const remainingLiquidity = liquidityAmount.sub(removalQuote.liquidityAmount);
-    const poolAfter = (await fetcher.getPool(whirlpoolPda.publicKey, IGNORE_CACHE)) as WhirlpoolData;
+    const poolAfter = (await fetcher.getPool(
+      whirlpoolPda.publicKey,
+      IGNORE_CACHE
+    )) as ElysiumPoolData;
 
     assert.ok(poolAfter.rewardLastUpdatedTimestamp.gte(poolBefore.rewardLastUpdatedTimestamp));
     assert.ok(poolAfter.liquidity.eq(remainingLiquidity));
 
-    const positionAfter = (await fetcher.getPosition(position.publicKey, IGNORE_CACHE)) as PositionData;
+    const positionAfter = (await fetcher.getPosition(
+      position.publicKey,
+      IGNORE_CACHE
+    )) as PositionData;
     assert.ok(positionAfter.liquidity.eq(remainingLiquidity));
 
     const tickArrayLower = (await fetcher.getTickArray(
@@ -156,7 +171,7 @@ describe("decrease_liquidity", () => {
 
   it("successfully decrease liquidity with approved delegate", async () => {
     const liquidityAmount = new anchor.BN(1_250_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount }],
@@ -175,7 +190,7 @@ describe("decrease_liquidity", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
         liquidityAmount: removeAmount,
         tokenMinA: new BN(0),
         tokenMinB: new BN(0),
@@ -197,7 +212,7 @@ describe("decrease_liquidity", () => {
 
   it("successfully decrease liquidity with owner even if there is approved delegate", async () => {
     const liquidityAmount = new anchor.BN(1_250_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1.48)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -216,7 +231,7 @@ describe("decrease_liquidity", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
         liquidityAmount: removeAmount,
         tokenMinA: new BN(0),
         tokenMinB: new BN(0),
@@ -236,7 +251,7 @@ describe("decrease_liquidity", () => {
 
   it("successfully decrease liquidity with transferred position token", async () => {
     const liquidityAmount = new anchor.BN(1_250_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1.48)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -256,7 +271,7 @@ describe("decrease_liquidity", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+      ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
         liquidityAmount: removeAmount,
         tokenMinA: new BN(0),
         tokenMinB: new BN(0),
@@ -278,7 +293,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when liquidity amount is zero", async () => {
     const liquidityAmount = new anchor.BN(1_250_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount }],
@@ -290,7 +305,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount: new anchor.BN(0),
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -311,7 +326,7 @@ describe("decrease_liquidity", () => {
   });
 
   it("fails when position has insufficient liquidity for the withdraw amount", async () => {
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount: ZERO_BN }],
@@ -323,7 +338,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount: new anchor.BN(1_000),
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -345,7 +360,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when token min a subceeded", async () => {
     const liquidityAmount = new anchor.BN(1_250_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(0.005)),
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount }],
@@ -357,7 +372,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(1_000_000),
           tokenMinB: new BN(0),
@@ -379,7 +394,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when token min b subceeded", async () => {
     const liquidityAmount = new anchor.BN(1_250_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(5)),
       positions: [{ tickLowerIndex: -1280, tickUpperIndex: 1280, liquidityAmount }],
@@ -390,7 +405,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(1_000_000),
@@ -412,7 +427,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when position account does not have exactly 1 token", async () => {
     const liquidityAmount = new anchor.BN(1_250_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(2.2)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -431,7 +446,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -456,7 +471,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -478,7 +493,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when position token account mint does not match position mint", async () => {
     const liquidityAmount = new anchor.BN(6_500_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(2.2)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -492,7 +507,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -514,7 +529,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when position does not match whirlpool", async () => {
     const liquidityAmount = new anchor.BN(6_500_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(2.2)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -531,7 +546,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -553,7 +568,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when token vaults do not match whirlpool vaults", async () => {
     const liquidityAmount = new anchor.BN(6_500_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(2.2)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -568,7 +583,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -590,7 +605,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -612,7 +627,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when owner token account mint does not match whirlpool token mint", async () => {
     const liquidityAmount = new anchor.BN(6_500_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(2.2)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -626,7 +641,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -648,7 +663,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -670,7 +685,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when position authority is not approved delegate for position token account", async () => {
     const liquidityAmount = new anchor.BN(6_500_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(2.2)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -686,7 +701,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -710,7 +725,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when position authority is not authorized for exactly 1 token", async () => {
     const liquidityAmount = new anchor.BN(6_500_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(2.2)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -727,7 +742,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -751,7 +766,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when position authority was not a signer", async () => {
     const liquidityAmount = new anchor.BN(6_500_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(2.2)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -768,7 +783,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(167_000),
@@ -790,7 +805,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when tick arrays do not match the position", async () => {
     const liquidityAmount = new anchor.BN(6_500_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(2.2)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -810,7 +825,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),
@@ -832,7 +847,7 @@ describe("decrease_liquidity", () => {
 
   it("fails when the tick arrays are for a different whirlpool", async () => {
     const liquidityAmount = new anchor.BN(6_500_000);
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(2.2)),
       positions: [{ tickLowerIndex: 7168, tickUpperIndex: 8960, liquidityAmount }],
@@ -854,7 +869,7 @@ describe("decrease_liquidity", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount,
           tokenMinA: new BN(0),
           tokenMinB: new BN(0),

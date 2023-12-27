@@ -3,31 +3,31 @@ import { AddressUtil, MathUtil, Percentage } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import Decimal from "decimal.js";
-import { WhirlpoolData, WhirlpoolRewardInfoData } from "../../types/public";
+import { ElysiumPoolData, ElysiumPoolRewardInfoData } from "../../types/public";
 import { TOKEN_MINTS } from "../constants";
 import { PriceMath } from "./price-math";
 import { TokenType } from "./types";
 
 /**
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  */
 export class PoolUtil {
   private constructor() {}
 
-  public static isRewardInitialized(rewardInfo: WhirlpoolRewardInfoData): boolean {
+  public static isRewardInitialized(rewardInfo: ElysiumPoolRewardInfoData): boolean {
     return (
       !PublicKey.default.equals(rewardInfo.mint) && !PublicKey.default.equals(rewardInfo.vault)
     );
   }
 
   /**
-   * Return the corresponding token type (TokenA/B) for this mint key for a Whirlpool.
+   * Return the corresponding token type (TokenA/B) for this mint key for a ElysiumPool.
    *
-   * @param pool The Whirlpool to evaluate the mint against
+   * @param pool The ElysiumPool to evaluate the mint against
    * @param mint The token mint PublicKey
    * @returns The match result in the form of TokenType enum. undefined if the token mint is not part of the trade pair of the pool.
    */
-  public static getTokenType(pool: WhirlpoolData, mint: PublicKey): TokenType | undefined {
+  public static getTokenType(pool: ElysiumPoolData, mint: PublicKey): TokenType | undefined {
     if (pool.tokenMintA.equals(mint)) {
       return TokenType.TokenA;
     } else if (pool.tokenMintB.equals(mint)) {
@@ -67,7 +67,7 @@ export class PoolUtil {
   }
 
   /**
-   * @category Whirlpool Utils
+   * @category ElysiumPool Utils
    * @param liquidity
    * @param currentSqrtPrice
    * @param lowerSqrtPrice
@@ -125,8 +125,8 @@ export class PoolUtil {
    *
    * // TODO: At the top end of the price range, tick calcuation is off therefore the results can be off
    *
-   * @category Whirlpool Utils
-   * @param currTick - Whirlpool's current tick index (aka price)
+   * @category ElysiumPool Utils
+   * @param currTick - ElysiumPool's current tick index (aka price)
    * @param lowerTick - Position lower tick index
    * @param upperTick - Position upper tick index
    * @param tokenAmount - The desired amount of tokens to deposit/withdraw
@@ -170,7 +170,7 @@ export class PoolUtil {
    * in the format [base, quote]. USD based stable coins are prioritized as the quote currency
    * followed by variants of SOL.
    *
-   * @category Whirlpool Utils
+   * @category ElysiumPool Utils
    * @param tokenMintAKey - The mint of token A in the token pair.
    * @param tokenMintBKey - The mint of token B in the token pair.
    * @returns A two-element array with the tokens sorted in the order of [baseToken, quoteToken].
@@ -185,7 +185,7 @@ export class PoolUtil {
 }
 
 /**
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  */
 export type TokenAmounts = {
   tokenA: BN;
@@ -193,7 +193,7 @@ export type TokenAmounts = {
 };
 
 /**
- * @category Whirlpool Utils
+ * @category ElysiumPool Utils
  */
 export function toTokenAmount(a: number, b: number): TokenAmounts {
   return {

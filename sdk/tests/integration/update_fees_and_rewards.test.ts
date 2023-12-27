@@ -3,18 +3,18 @@ import { MathUtil } from "@orca-so/common-sdk";
 import * as assert from "assert";
 import { BN } from "bn.js";
 import Decimal from "decimal.js";
-import { PDAUtil, PositionData, toTx, WhirlpoolContext, WhirlpoolIx } from "../../src";
+import { PDAUtil, PositionData, toTx, ElysiumPoolContext, ElysiumPoolIx } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import { sleep, TickSpacing, ZERO_BN } from "../utils";
 import { defaultConfirmOptions } from "../utils/const";
-import { WhirlpoolTestFixture } from "../utils/fixture";
+import { ElysiumPoolTestFixture } from "../utils/fixture";
 import { initTestPool } from "../utils/init-utils";
 
 describe("update_fees_and_rewards", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
 
   it("successfully updates fees and rewards", async () => {
@@ -23,7 +23,7 @@ describe("update_fees_and_rewards", () => {
     const tickUpperIndex = 33536;
 
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(1_000_000) }],
       rewards: [
@@ -52,7 +52,7 @@ describe("update_fees_and_rewards", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.swapIx(ctx.program, {
+      ElysiumPoolIx.swapIx(ctx.program, {
         amount: new BN(100_000),
         otherAmountThreshold: ZERO_BN,
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
@@ -75,14 +75,17 @@ describe("update_fees_and_rewards", () => {
 
     await toTx(
       ctx,
-      WhirlpoolIx.updateFeesAndRewardsIx(ctx.program, {
+      ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
         whirlpool: whirlpoolPda.publicKey,
         position: positions[0].publicKey,
         tickArrayLower: tickArrayPda.publicKey,
         tickArrayUpper: tickArrayPda.publicKey,
       })
     ).buildAndExecute();
-    const positionAfter = (await fetcher.getPosition(positions[0].publicKey, IGNORE_CACHE)) as PositionData;
+    const positionAfter = (await fetcher.getPosition(
+      positions[0].publicKey,
+      IGNORE_CACHE
+    )) as PositionData;
     assert.ok(positionAfter.feeOwedA.gt(positionBefore.feeOwedA));
     assert.ok(positionAfter.feeOwedB.eq(ZERO_BN));
     assert.ok(positionAfter.feeGrowthCheckpointA.gt(positionBefore.feeGrowthCheckpointA));
@@ -102,7 +105,7 @@ describe("update_fees_and_rewards", () => {
     const tickUpperIndex = 33536;
 
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: ZERO_BN }],
     });
@@ -116,7 +119,7 @@ describe("update_fees_and_rewards", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.updateFeesAndRewardsIx(ctx.program, {
+        ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           position: positions[0].publicKey,
           tickArrayLower: tickArrayPda.publicKey,
@@ -137,7 +140,7 @@ describe("update_fees_and_rewards", () => {
     } = await initTestPool(ctx, tickSpacing);
     const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, whirlpoolPda.publicKey, 22528);
 
-    const other = await new WhirlpoolTestFixture(ctx).init({
+    const other = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(1_000_000) }],
     });
@@ -146,7 +149,7 @@ describe("update_fees_and_rewards", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.updateFeesAndRewardsIx(ctx.program, {
+        ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           position: otherPositions[0].publicKey,
           tickArrayLower: tickArrayPda.publicKey,
@@ -163,7 +166,7 @@ describe("update_fees_and_rewards", () => {
     const tickUpperIndex = 33536;
 
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(1_000_000) }],
     });
@@ -177,7 +180,7 @@ describe("update_fees_and_rewards", () => {
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.updateFeesAndRewardsIx(ctx.program, {
+        ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           position: positions[0].publicKey,
           tickArrayLower: tickArrayPda.publicKey,
@@ -194,7 +197,7 @@ describe("update_fees_and_rewards", () => {
     const tickUpperIndex = 33536;
 
     const tickSpacing = TickSpacing.Standard;
-    const fixture = await new WhirlpoolTestFixture(ctx).init({
+    const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: ZERO_BN }],
     });
@@ -204,19 +207,19 @@ describe("update_fees_and_rewards", () => {
     } = fixture.getInfos();
 
     const {
-      poolInitInfo: { whirlpoolPda: otherWhirlpoolPda },
+      poolInitInfo: { whirlpoolPda: otherElysiumPoolPda },
     } = await initTestPool(ctx, tickSpacing);
 
     const tickArrayPda = PDAUtil.getTickArray(
       ctx.program.programId,
-      otherWhirlpoolPda.publicKey,
+      otherElysiumPoolPda.publicKey,
       22528
     );
 
     await assert.rejects(
       toTx(
         ctx,
-        WhirlpoolIx.updateFeesAndRewardsIx(ctx.program, {
+        ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
           whirlpool: whirlpoolPda.publicKey,
           position: positions[0].publicKey,
           tickArrayLower: tickArrayPda.publicKey,

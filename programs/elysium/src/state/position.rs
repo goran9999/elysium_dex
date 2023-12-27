@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 use crate::{errors::ErrorCode, state::NUM_REWARDS};
 
-use super::{Tick, Whirlpool};
+use super::{ElysiumPool, Tick};
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
 pub struct OpenPositionBumps {
@@ -57,7 +57,7 @@ impl Position {
 
     pub fn open_position(
         &mut self,
-        whirlpool: &Account<Whirlpool>,
+        whirlpool: &Account<ElysiumPool>,
         position_mint: Pubkey,
         tick_lower_index: i32,
         tick_upper_index: i32,

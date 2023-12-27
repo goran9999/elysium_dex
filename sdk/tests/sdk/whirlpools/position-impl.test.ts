@@ -4,12 +4,12 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import * as assert from "assert";
 import Decimal from "decimal.js";
 import {
-  buildWhirlpoolClient,
+  buildElysiumPoolClient,
   decreaseLiquidityQuoteByLiquidity,
   increaseLiquidityQuoteByInputToken,
-  PriceMath
+  PriceMath,
 } from "../../../src";
-import { WhirlpoolContext } from "../../../src/context";
+import { ElysiumPoolContext } from "../../../src/context";
 import { IGNORE_CACHE } from "../../../src/network/public/fetcher";
 import { createAssociatedTokenAccount, TickSpacing, transferToken } from "../../utils";
 import { defaultConfirmOptions } from "../../utils/const";
@@ -19,10 +19,10 @@ import { initPosition, mintTokensToTestAccount } from "../../utils/test-builders
 describe("position-impl", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
-  const program = anchor.workspace.Whirlpool;
-  const ctx = WhirlpoolContext.fromWorkspace(provider, program);
+  const program = anchor.workspace.ElysiumPool;
+  const ctx = ElysiumPoolContext.fromWorkspace(provider, program);
   const fetcher = ctx.fetcher;
-  const client = buildWhirlpoolClient(ctx);
+  const client = buildElysiumPoolClient(ctx);
 
   it("increase and decrease liquidity on position", async () => {
     const { poolInitInfo } = await initTestPool(
@@ -183,7 +183,10 @@ describe("position-impl", () => {
 
     // Transfer the position token to another wallet
     const otherWallet = anchor.web3.Keypair.generate();
-    const walletPositionTokenAccount = getAssociatedTokenAddressSync(positionMint, ctx.wallet.publicKey);
+    const walletPositionTokenAccount = getAssociatedTokenAddressSync(
+      positionMint,
+      ctx.wallet.publicKey
+    );
     const newOwnerPositionTokenAccount = await createAssociatedTokenAccount(
       ctx.provider,
       positionMint,

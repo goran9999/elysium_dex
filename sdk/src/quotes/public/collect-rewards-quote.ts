@@ -1,7 +1,7 @@
 import { BN } from "@coral-xyz/anchor";
 import { MathUtil } from "@orca-so/common-sdk";
 import invariant from "tiny-invariant";
-import { NUM_REWARDS, PositionData, TickData, WhirlpoolData } from "../../types/public";
+import { NUM_REWARDS, PositionData, TickData, ElysiumPoolData } from "../../types/public";
 import { BitMath } from "../../utils/math/bit-math";
 import { PoolUtil } from "../../utils/public/pool-utils";
 
@@ -15,7 +15,7 @@ import { PoolUtil } from "../../utils/public/pool-utils";
  * @param timeStampInSeconds - optional parameter to generate this quote to a unix time stamp.
  */
 export type CollectRewardsQuoteParam = {
-  whirlpool: WhirlpoolData;
+  whirlpool: ElysiumPoolData;
   position: PositionData;
   tickLower: TickData;
   tickUpper: TickData;
@@ -32,7 +32,7 @@ export type CollectRewardsQuote = [BN | undefined, BN | undefined, BN | undefine
  * Get a quote on the outstanding rewards owed to a position.
  *
  * @category Quotes
- * @param param A collection of fetched Whirlpool accounts to faciliate the quote.
+ * @param param A collection of fetched ElysiumPool accounts to faciliate the quote.
  * @returns A quote object containing the rewards owed for each reward in the pool.
  */
 export function collectRewardsQuote(param: CollectRewardsQuoteParam): CollectRewardsQuote {

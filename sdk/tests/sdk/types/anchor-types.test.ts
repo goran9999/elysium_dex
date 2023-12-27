@@ -5,10 +5,10 @@ describe("anchor-types", () => {
   it("all whirlpool account names exist in IDL", async () => {
     type ExpectedSize = { [a in AccountName]: number };
     const expectedSizes: ExpectedSize = {
-      [AccountName.WhirlpoolsConfig]: 108,
+      [AccountName.ElysiumPoolsConfig]: 108,
       [AccountName.Position]: 216,
       [AccountName.TickArray]: 9988,
-      [AccountName.Whirlpool]: 653,
+      [AccountName.ElysiumPool]: 653,
       [AccountName.FeeTier]: 44,
       [AccountName.PositionBundle]: 136,
     };

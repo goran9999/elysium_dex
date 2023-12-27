@@ -13,11 +13,11 @@ import {
   defaultGetPricesConfig,
 } from ".";
 import { swapQuoteWithParams } from "../quotes/public/swap-quote";
-import { TickArray, WhirlpoolData } from "../types/public";
+import { TickArray, ElysiumPoolData } from "../types/public";
 import { PoolUtil, PriceMath, SwapUtils } from "../utils/public";
 
 function checkLiquidity(
-  pool: WhirlpoolData,
+  pool: ElysiumPoolData,
   tickArrays: TickArray[],
   aToB: boolean,
   thresholdConfig: GetPricesThresholdConfig,
@@ -69,7 +69,7 @@ function checkLiquidity(
   return estimatedAmountInDecimals.lte(maxAmountInDecimals);
 }
 
-type PoolObject = { pool: WhirlpoolData; address: PublicKey };
+type PoolObject = { pool: ElysiumPoolData; address: PublicKey };
 function getMostLiquidPools(
   quoteTokenMint: PublicKey,
   poolMap: PoolMap
@@ -145,7 +145,7 @@ export function calculatePricesForQuoteToken(
 }
 
 function getTickArrays(
-  pool: WhirlpoolData,
+  pool: ElysiumPoolData,
   address: PublicKey,
   aToB: boolean,
   tickArrayMap: TickArrayMap,
@@ -165,7 +165,7 @@ function getTickArrays(
   });
 }
 
-function getPrice(pool: WhirlpoolData, decimalsMap: DecimalsMap) {
+function getPrice(pool: ElysiumPoolData, decimalsMap: DecimalsMap) {
   const tokenAAddress = pool.tokenMintA.toBase58();
   const tokenBAddress = pool.tokenMintB.toBase58();
   if (!(tokenAAddress in decimalsMap) || !(tokenBAddress in decimalsMap)) {

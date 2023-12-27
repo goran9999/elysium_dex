@@ -9,7 +9,7 @@ import {
   ZERO_BN,
   createAndMintToAssociatedTokenAccount,
   createMint,
-  mintToDestination
+  mintToDestination,
 } from ".";
 import {
   InitConfigParams,
@@ -22,27 +22,27 @@ import {
   PriceMath,
   TICK_ARRAY_SIZE,
   TickUtil,
-  WhirlpoolClient,
-  WhirlpoolContext,
-  WhirlpoolIx,
-  toTx
+  ElysiumPoolClient,
+  ElysiumPoolContext,
+  ElysiumPoolIx,
+  toTx,
 } from "../../src";
 import { IGNORE_CACHE } from "../../src/network/public/fetcher";
 import { PoolUtil } from "../../src/utils/public/pool-utils";
 import {
   TestConfigParams,
-  TestWhirlpoolsConfigKeypairs,
+  TestElysiumPoolsConfigKeypairs,
   generateDefaultConfigParams,
   generateDefaultInitFeeTierParams,
   generateDefaultInitPoolParams,
   generateDefaultInitTickArrayParams,
   generateDefaultOpenBundledPositionParams,
-  generateDefaultOpenPositionParams
+  generateDefaultOpenPositionParams,
 } from "./test-builders";
 
 interface TestPoolParams {
   configInitInfo: InitConfigParams;
-  configKeypairs: TestWhirlpoolsConfigKeypairs;
+  configKeypairs: TestElysiumPoolsConfigKeypairs;
   poolInitInfo: InitPoolParams;
   feeTierParams: any;
 }
@@ -132,7 +132,7 @@ export function getDefaultAquarium(): InitAquariumParams {
 }
 
 export async function buildTestAquariums(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   initParams: InitAquariumParams[]
 ): Promise<TestAquarium[]> {
   const aquariums = [];
@@ -147,7 +147,7 @@ export async function buildTestAquariums(
     // Could batch
     await toTx(
       ctx,
-      WhirlpoolIx.initializeConfigIx(ctx.program, configParams.configInitInfo)
+      ElysiumPoolIx.initializeConfigIx(ctx.program, configParams.configInitInfo)
     ).buildAndExecute();
 
     const {
@@ -208,7 +208,7 @@ export async function buildTestAquariums(
         );
 
         const configKey = configParams!.configInitInfo.whirlpoolsConfigKeypair.publicKey;
-        const whirlpoolPda = PDAUtil.getWhirlpool(
+        const whirlpoolPda = PDAUtil.getElysiumPool(
           ctx.program.programId,
           configKey,
           tokenMintA,
@@ -230,7 +230,7 @@ export async function buildTestAquariums(
           funder: ctx.wallet.publicKey,
         };
 
-        const tx = toTx(ctx, WhirlpoolIx.initializePoolIx(ctx.program, poolParam));
+        const tx = toTx(ctx, ElysiumPoolIx.initializePoolIx(ctx.program, poolParam));
         await tx.buildAndExecute();
         return poolParam;
       })
@@ -285,20 +285,18 @@ export function getTokenAccsForPools(
     mints.push(pool.tokenMintA);
     mints.push(pool.tokenMintB);
   }
-  return mints.map((mint) =>
-    tokenAccounts.find((acc) => acc.mint.equals(mint))!.account
-  );
+  return mints.map((mint) => tokenAccounts.find((acc) => acc.mint.equals(mint))!.account);
 }
 
 /**
- * Initialize a brand new WhirlpoolsConfig account and construct a set of InitPoolParams
+ * Initialize a brand new ElysiumPoolsConfig account and construct a set of InitPoolParams
  * that can be used to initialize a pool with.
  * @param client - an instance of whirlpool client containing the program & provider
  * @param initSqrtPrice - the initial sqrt-price for this newly generated pool
  * @returns An object containing the params used to init the config account & the param that can be used to init the pool account.
  */
 export async function buildTestPoolParams(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   tickSpacing: number,
   defaultFeeRate = 3000,
   initSqrtPrice = DEFAULT_SQRT_PRICE,
@@ -306,7 +304,7 @@ export async function buildTestPoolParams(
   reuseTokenA?: PublicKey
 ) {
   const { configInitInfo, configKeypairs } = generateDefaultConfigParams(ctx);
-  await toTx(ctx, WhirlpoolIx.initializeConfigIx(ctx.program, configInitInfo)).buildAndExecute();
+  await toTx(ctx, ElysiumPoolIx.initializeConfigIx(ctx.program, configInitInfo)).buildAndExecute();
 
   const { params: feeTierParams } = await initFeeTier(
     ctx,
@@ -333,13 +331,13 @@ export async function buildTestPoolParams(
 }
 
 /**
- * Initialize a brand new set of WhirlpoolsConfig & Whirlpool account
+ * Initialize a brand new set of ElysiumPoolsConfig & ElysiumPool account
  * @param client - an instance of whirlpool client containing the program & provider
  * @param initSqrtPrice - the initial sqrt-price for this newly generated pool
  * @returns An object containing the params used to initialize both accounts.
  */
 export async function initTestPool(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   tickSpacing: number,
   initSqrtPrice = DEFAULT_SQRT_PRICE,
   funder?: Keypair,
@@ -358,12 +356,12 @@ export async function initTestPool(
 }
 
 export async function initTestPoolFromParams(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   poolParams: TestPoolParams,
   funder?: Keypair
 ) {
   const { configInitInfo, poolInitInfo, configKeypairs, feeTierParams } = poolParams;
-  const tx = toTx(ctx, WhirlpoolIx.initializePoolIx(ctx.program, poolInitInfo));
+  const tx = toTx(ctx, ElysiumPoolIx.initializePoolIx(ctx.program, poolInitInfo));
   if (funder) {
     tx.addSigner(funder);
   }
@@ -378,7 +376,7 @@ export async function initTestPoolFromParams(
 }
 
 export async function initFeeTier(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   configInitInfo: InitConfigParams,
   feeAuthorityKeypair: Keypair,
   tickSpacing: number,
@@ -394,7 +392,7 @@ export async function initFeeTier(
     funder?.publicKey
   );
 
-  const tx = toTx(ctx, WhirlpoolIx.initializeFeeTierIx(ctx.program, params)).addSigner(
+  const tx = toTx(ctx, ElysiumPoolIx.initializeFeeTierIx(ctx.program, params)).addSigner(
     feeAuthorityKeypair
   );
   if (funder) {
@@ -408,7 +406,7 @@ export async function initFeeTier(
 }
 
 export async function initializeReward(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   rewardAuthorityKeypair: anchor.web3.Keypair,
   whirlpool: PublicKey,
   rewardIndex: number,
@@ -427,7 +425,7 @@ export async function initializeReward(
     rewardIndex,
   };
 
-  const tx = toTx(ctx, WhirlpoolIx.initializeRewardIx(ctx.program, params)).addSigner(
+  const tx = toTx(ctx, ElysiumPoolIx.initializeRewardIx(ctx.program, params)).addSigner(
     rewardAuthorityKeypair
   );
   if (funder) {
@@ -441,7 +439,7 @@ export async function initializeReward(
 }
 
 export async function initRewardAndSetEmissions(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   rewardAuthorityKeypair: anchor.web3.Keypair,
   whirlpool: PublicKey,
   rewardIndex: number,
@@ -457,7 +455,7 @@ export async function initRewardAndSetEmissions(
 
   await toTx(
     ctx,
-    WhirlpoolIx.setRewardEmissionsIx(ctx.program, {
+    ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
       rewardAuthority: rewardAuthorityKeypair.publicKey,
       whirlpool,
       rewardIndex,
@@ -471,7 +469,7 @@ export async function initRewardAndSetEmissions(
 }
 
 export async function openPosition(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   whirlpool: PublicKey,
   tickLowerIndex: number,
   tickUpperIndex: number,
@@ -490,7 +488,7 @@ export async function openPosition(
 }
 
 export async function openPositionWithMetadata(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   whirlpool: PublicKey,
   tickLowerIndex: number,
   tickUpperIndex: number,
@@ -509,7 +507,7 @@ export async function openPositionWithMetadata(
 }
 
 async function openPositionWithOptMetadata(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   whirlpool: PublicKey,
   tickLowerIndex: number,
   tickUpperIndex: number,
@@ -526,8 +524,8 @@ async function openPositionWithOptMetadata(
     funder?.publicKey || ctx.provider.wallet.publicKey
   );
   let tx = withMetadata
-    ? toTx(ctx, WhirlpoolIx.openPositionWithMetadataIx(ctx.program, params))
-    : toTx(ctx, WhirlpoolIx.openPositionIx(ctx.program, params));
+    ? toTx(ctx, ElysiumPoolIx.openPositionWithMetadataIx(ctx.program, params))
+    : toTx(ctx, ElysiumPoolIx.openPositionIx(ctx.program, params));
   tx.addSigner(mint);
   if (funder) {
     tx.addSigner(funder);
@@ -537,7 +535,7 @@ async function openPositionWithOptMetadata(
 }
 
 export async function initTickArray(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   whirlpool: PublicKey,
   startTickIndex: number,
   funder?: Keypair
@@ -548,7 +546,7 @@ export async function initTickArray(
     startTickIndex,
     funder?.publicKey
   );
-  const tx = toTx(ctx, WhirlpoolIx.initTickArrayIx(ctx.program, params));
+  const tx = toTx(ctx, ElysiumPoolIx.initTickArrayIx(ctx.program, params));
   if (funder) {
     tx.addSigner(funder);
   }
@@ -556,7 +554,7 @@ export async function initTickArray(
 }
 
 export async function initTestPoolWithTokens(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   tickSpacing: number,
   initSqrtPrice = DEFAULT_SQRT_PRICE,
   mintAmount = new anchor.BN("15000000000"),
@@ -580,10 +578,13 @@ export async function initTestPoolWithTokens(
     ctx.provider.wallet.publicKey,
     100_000_000_000_000
   );
-  await ctx.connection.confirmTransaction({
-    signature: airdropTx,
-    ...(await ctx.connection.getLatestBlockhash("confirmed")),
-  }, "confirmed");
+  await ctx.connection.confirmTransaction(
+    {
+      signature: airdropTx,
+      ...(await ctx.connection.getLatestBlockhash("confirmed")),
+    },
+    "confirmed"
+  );
 
   const tokenAccountA = await createAndMintToAssociatedTokenAccount(
     provider,
@@ -609,7 +610,7 @@ export async function initTestPoolWithTokens(
 }
 
 export async function initTickArrayRange(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   whirlpool: PublicKey,
   startTickIndex: number,
   arrayCount: number,
@@ -639,7 +640,7 @@ export type FundedPositionParams = {
 };
 
 export async function withdrawPositions(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   positionInfos: FundedPositionInfo[],
   tokenOwnerAccountA: PublicKey,
   tokenOwnerAccountB: PublicKey
@@ -687,7 +688,7 @@ export async function withdrawPositions(
 
       await toTx(
         ctx,
-        WhirlpoolIx.decreaseLiquidityIx(ctx.program, {
+        ElysiumPoolIx.decreaseLiquidityIx(ctx.program, {
           liquidityAmount: position.liquidity,
           tokenMinA: tokenA,
           tokenMinB: tokenB,
@@ -706,7 +707,7 @@ export async function withdrawPositions(
 
       await toTx(
         ctx,
-        WhirlpoolIx.collectFeesIx(ctx.program, {
+        ElysiumPoolIx.collectFeesIx(ctx.program, {
           whirlpool: info.initParams.whirlpool,
           positionAuthority: ctx.provider.wallet.publicKey,
           position: info.initParams.positionPda.publicKey,
@@ -731,7 +732,7 @@ export interface FundedPositionInfo {
 }
 
 export async function fundPositionsWithClient(
-  client: WhirlpoolClient,
+  client: ElysiumPoolClient,
   whirlpoolKey: PublicKey,
   fundParams: FundedPositionParams[]
 ) {
@@ -758,7 +759,7 @@ export async function fundPositionsWithClient(
 }
 
 export async function fundPositions(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   poolInitInfo: InitPoolParams,
   tokenAccountA: PublicKey,
   tokenAccountB: PublicKey,
@@ -803,7 +804,7 @@ export async function fundPositions(
         );
         await toTx(
           ctx,
-          WhirlpoolIx.increaseLiquidityIx(ctx.program, {
+          ElysiumPoolIx.increaseLiquidityIx(ctx.program, {
             liquidityAmount: param.liquidityAmount,
             tokenMaxA: tokenA,
             tokenMaxB: tokenB,
@@ -833,7 +834,7 @@ export async function fundPositions(
 }
 
 export async function initTestPoolWithLiquidity(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   initSqrtPrice = DEFAULT_SQRT_PRICE,
   mintAmount = new anchor.BN("15000000000"),
   reuseTokenA?: PublicKey
@@ -892,26 +893,34 @@ export async function initTestPoolWithLiquidity(
 }
 
 export async function initializePositionBundleWithMetadata(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   owner: PublicKey = ctx.provider.wallet.publicKey,
   funder?: Keypair
 ) {
   const positionBundleMintKeypair = Keypair.generate();
-  const positionBundlePda = PDAUtil.getPositionBundle(ctx.program.programId, positionBundleMintKeypair.publicKey);
-  const positionBundleMetadataPda = PDAUtil.getPositionBundleMetadata(positionBundleMintKeypair.publicKey);
-  const positionBundleTokenAccount = getAssociatedTokenAddressSync(positionBundleMintKeypair.publicKey, owner);
+  const positionBundlePda = PDAUtil.getPositionBundle(
+    ctx.program.programId,
+    positionBundleMintKeypair.publicKey
+  );
+  const positionBundleMetadataPda = PDAUtil.getPositionBundleMetadata(
+    positionBundleMintKeypair.publicKey
+  );
+  const positionBundleTokenAccount = getAssociatedTokenAddressSync(
+    positionBundleMintKeypair.publicKey,
+    owner
+  );
 
-  const tx = toTx(ctx, WhirlpoolIx.initializePositionBundleWithMetadataIx(
-    ctx.program,
-    {
+  const tx = toTx(
+    ctx,
+    ElysiumPoolIx.initializePositionBundleWithMetadataIx(ctx.program, {
       positionBundleMintKeypair,
       positionBundlePda,
       positionBundleMetadataPda,
       owner,
       positionBundleTokenAccount,
       funder: !!funder ? funder.publicKey : owner,
-    },
-  ));
+    })
+  );
   if (funder) {
     tx.addSigner(funder);
   }
@@ -928,24 +937,30 @@ export async function initializePositionBundleWithMetadata(
 }
 
 export async function initializePositionBundle(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   owner: PublicKey = ctx.provider.wallet.publicKey,
   funder?: Keypair
 ) {
   const positionBundleMintKeypair = Keypair.generate();
-  const positionBundlePda = PDAUtil.getPositionBundle(ctx.program.programId, positionBundleMintKeypair.publicKey);
-  const positionBundleTokenAccount = getAssociatedTokenAddressSync(positionBundleMintKeypair.publicKey, owner);
+  const positionBundlePda = PDAUtil.getPositionBundle(
+    ctx.program.programId,
+    positionBundleMintKeypair.publicKey
+  );
+  const positionBundleTokenAccount = getAssociatedTokenAddressSync(
+    positionBundleMintKeypair.publicKey,
+    owner
+  );
 
-  const tx = toTx(ctx, WhirlpoolIx.initializePositionBundleIx(
-    ctx.program,
-    {
+  const tx = toTx(
+    ctx,
+    ElysiumPoolIx.initializePositionBundleIx(ctx.program, {
       positionBundleMintKeypair,
       positionBundlePda,
       owner,
       positionBundleTokenAccount,
       funder: !!funder ? funder.publicKey : owner,
-    },
-  ));
+    })
+  );
   if (funder) {
     tx.addSigner(funder);
   }
@@ -961,7 +976,7 @@ export async function initializePositionBundle(
 }
 
 export async function openBundledPosition(
-  ctx: WhirlpoolContext,
+  ctx: ElysiumPoolContext,
   whirlpool: PublicKey,
   positionBundleMint: PublicKey,
   bundleIndex: number,
@@ -981,7 +996,7 @@ export async function openBundledPosition(
     funder?.publicKey || owner
   );
 
-  const tx = toTx(ctx, WhirlpoolIx.openBundledPositionIx(ctx.program, params));
+  const tx = toTx(ctx, ElysiumPoolIx.openBundledPositionIx(ctx.program, params));
   if (funder) {
     tx.addSigner(funder);
   }

@@ -3,8 +3,8 @@ import * as assert from "assert";
 import { TickArraySequence } from "../../../../src/quotes/swap/tick-array-sequence";
 import { buildTickArrayData, testEmptyTickArrray } from "../../../utils/testDataTypes";
 import { TickArrayIndex } from "../../../../src/quotes/swap/tick-array-index";
-import { Whirlpool } from "../../../../src/artifacts/whirlpool";
-import { SwapErrorCode, WhirlpoolsError } from "../../../../src/errors/errors";
+import { ElysiumPool } from "../../../../src/artifacts/whirlpool";
+import { SwapErrorCode, ElysiumPoolsError } from "../../../../src/errors/errors";
 
 describe("TickArray Sequence tests", () => {
   const ts64 = 64;
@@ -127,7 +127,7 @@ describe("TickArray Sequence tests", () => {
       assert.throws(
         () => seq.findNextInitializedTickIndex(nextIndex - 1),
         (err) => {
-          const whirlErr = err as WhirlpoolsError;
+          const whirlErr = err as ElysiumPoolsError;
           return whirlErr.errorCode === SwapErrorCode.TickArraySequenceInvalid;
         }
       );
@@ -149,7 +149,7 @@ describe("TickArray Sequence tests", () => {
       assert.throws(
         () => seq.findNextInitializedTickIndex(nextIndex),
         (err) => {
-          const whirlErr = err as WhirlpoolsError;
+          const whirlErr = err as ElysiumPoolsError;
           return whirlErr.errorCode === SwapErrorCode.TickArraySequenceInvalid;
         }
       );

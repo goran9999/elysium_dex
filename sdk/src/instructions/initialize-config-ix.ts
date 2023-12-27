@@ -1,14 +1,14 @@
 import { Program } from "@coral-xyz/anchor";
 import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
-import { Whirlpool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/whirlpool";
 
 import { Instruction } from "@orca-so/common-sdk";
 
 /**
- * Parameters to initialize a WhirlpoolsConfig account.
+ * Parameters to initialize a ElysiumPoolsConfig account.
  *
  * @category Instruction Types
- * @param whirlpoolsConfigKeypair - Generated keypair for the WhirlpoolsConfig.
+ * @param whirlpoolsConfigKeypair - Generated keypair for the ElysiumPoolsConfig.
  * @param feeAuthority - Authority authorized to initialize fee-tiers and set customs fees.
  * @param collect_protocol_fees_authority - Authority authorized to collect protocol fees.
  * @param rewardEmissionsSuperAuthority - Authority authorized to set reward authorities in pools.
@@ -25,8 +25,8 @@ export type InitConfigParams = {
 };
 
 /**
- * Initializes a WhirlpoolsConfig account that hosts info & authorities
- * required to govern a set of Whirlpools.
+ * Initializes a ElysiumPoolsConfig account that hosts info & authorities
+ * required to govern a set of ElysiumPools.
  *
  * @category Instructions
  * @param context - Context object containing services required to generate the instruction
@@ -34,7 +34,7 @@ export type InitConfigParams = {
  * @returns - Instruction to perform the action.
  */
 export function initializeConfigIx(
-  program: Program<Whirlpool>,
+  program: Program<ElysiumPool>,
   params: InitConfigParams
 ): Instruction {
   const {
