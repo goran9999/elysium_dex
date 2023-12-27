@@ -1,8 +1,7 @@
 use crate::manager::swap_manager::*;
 use crate::math::tick_math::*;
 use crate::state::{
-    tick::*, tick_builder::TickBuilder, whirlpool_builder::ElysiumPoolBuilder, ElysiumPool,
-    TickArray,
+    pool_builder::ElysiumPoolBuilder, tick::*, tick_builder::TickBuilder, ElysiumPool, TickArray,
 };
 use crate::state::{ElysiumPoolRewardInfo, NUM_REWARDS};
 use crate::util::SwapTickSequence;
@@ -15,7 +14,7 @@ pub const TS_128: u16 = 128;
 const NO_TICKS_VEC: &Vec<TestTickInfo> = &vec![];
 
 pub struct SwapTestFixture {
-    pub whirlpool: ElysiumPool,
+    pub pool: ElysiumPool,
     pub tick_arrays: Vec<RefCell<TickArray>>,
     pub trade_amount: u64,
     pub sqrt_price_limit: u128,
@@ -133,7 +132,7 @@ pub fn build_filled_tick_array(start_index: i32, tick_spacing: u16) -> Vec<TestT
 
 impl SwapTestFixture {
     pub fn new<'info>(info: SwapTestFixtureInfo) -> SwapTestFixture {
-        let whirlpool = ElysiumPoolBuilder::new()
+        let pool = ElysiumPoolBuilder::new()
             .liquidity(info.liquidity)
             .sqrt_price(sqrt_price_from_tick_index(info.curr_tick_index))
             .tick_spacing(info.tick_spacing)
@@ -164,7 +163,7 @@ impl SwapTestFixture {
             let mut new_ta = TickArray {
                 start_tick_index: array_start_tick_index,
                 ticks: [Tick::default(); TICK_ARRAY_SIZE_USIZE],
-                whirlpool: Pubkey::default(),
+                pool: Pubkey::default(),
             };
 
             if array.is_none() {
@@ -194,7 +193,7 @@ impl SwapTestFixture {
         }
 
         SwapTestFixture {
-            whirlpool,
+            pool,
             tick_arrays: ref_mut_tick_arrays,
 
             trade_amount: info.trade_amount,
@@ -207,7 +206,7 @@ impl SwapTestFixture {
 
     pub fn run(&self, tick_sequence: &mut SwapTickSequence, next_timestamp: u64) -> PostSwapUpdate {
         swap(
-            &self.whirlpool,
+            &self.pool,
             tick_sequence,
             self.trade_amount,
             self.sqrt_price_limit,
@@ -224,7 +223,7 @@ impl SwapTestFixture {
         next_timestamp: u64,
     ) -> Result<PostSwapUpdate> {
         swap(
-            &self.whirlpool,
+            &self.pool,
             tick_sequence,
             self.trade_amount,
             self.sqrt_price_limit,

@@ -9,7 +9,7 @@ pub enum ErrorCode {
     InvalidEnum, // 0x1770
     #[msg("Invalid start tick index provided.")]
     InvalidStartTick, // 0x1771
-    #[msg("Tick-array already exists in this whirlpool")]
+    #[msg("Tick-array already exists in this pool")]
     TickArrayExistInPool, // 0x1772
     #[msg("Attempt to search for a tick-array failed")]
     TickArrayIndexOutofBounds, // 0x1773

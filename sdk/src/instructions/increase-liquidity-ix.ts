@@ -2,7 +2,7 @@ import { Program } from "@coral-xyz/anchor";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 import { Instruction } from "@orca-so/common-sdk";
 
@@ -13,19 +13,19 @@ import { Instruction } from "@orca-so/common-sdk";
  * @param liquidityAmount - The total amount of Liquidity the user is willing to deposit.
  * @param tokenMaxA - The maximum amount of token A to add to the position.
  * @param tokenMaxB - The maximum amount of token B to add to the position.
- * @param whirlpool - PublicKey for the whirlpool that the position will be opened for.
+ * @param pool - PublicKey for the pool that the position will be opened for.
  * @param position - PublicKey for the  position will be opened for.
  * @param positionTokenAccount - PublicKey for the position token's associated token address.
  * @param tokenOwnerAccountA - PublicKey for the token A account that will be withdrawed from.
  * @param tokenOwnerAccountB - PublicKey for the token B account that will be withdrawed from.
- * @param tokenVaultA - PublicKey for the tokenA vault for this whirlpool.
- * @param tokenVaultB - PublicKey for the tokenB vault for this whirlpool.
+ * @param tokenVaultA - PublicKey for the tokenA vault for this pool.
+ * @param tokenVaultB - PublicKey for the tokenB vault for this pool.
  * @param tickArrayLower - PublicKey for the tick-array account that hosts the tick at the lower tick index.
  * @param tickArrayUpper - PublicKey for the tick-array account that hosts the tick at the upper tick index.
  * @param positionAuthority - authority that owns the token corresponding to this desired position.
  */
 export type IncreaseLiquidityParams = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   position: PublicKey;
   positionTokenAccount: PublicKey;
   tokenOwnerAccountA: PublicKey;
@@ -75,7 +75,7 @@ export function increaseLiquidityIx(
     liquidityAmount,
     tokenMaxA,
     tokenMaxB,
-    whirlpool,
+    pool,
     positionAuthority,
     position,
     positionTokenAccount,
@@ -89,7 +89,7 @@ export function increaseLiquidityIx(
 
   const ix = program.instruction.increaseLiquidity(liquidityAmount, tokenMaxA, tokenMaxB, {
     accounts: {
-      whirlpool,
+      pool,
       tokenProgram: TOKEN_PROGRAM_ID,
       positionAuthority,
       position,

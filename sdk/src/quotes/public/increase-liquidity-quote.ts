@@ -15,7 +15,7 @@ import {
   getTokenBFromLiquidity,
 } from "../../utils/position-util";
 import { PriceMath, TickUtil } from "../../utils/public";
-import { ElysiumPool } from "../../whirlpool-client";
+import { ElysiumPool } from "../../pool-client";
 
 /**
  * @category Quotes
@@ -56,7 +56,7 @@ export type IncreaseLiquidityQuote = IncreaseLiquidityInput & { tokenEstA: BN; t
  * @param tickLower - The lower index of the position that we are withdrawing from.
  * @param tickUpper - The upper index of the position that we are withdrawing from.
  * @param slippageTolerance - The maximum slippage allowed when calculating the minimum tokens received.
- * @param whirlpool - A ElysiumPool helper class to help interact with the ElysiumPool account.
+ * @param pool - A ElysiumPool helper class to help interact with the ElysiumPool account.
  * @returns An IncreaseLiquidityInput object detailing the required token amounts & liquidity values to use when calling increase-liquidity-ix.
  */
 export function increaseLiquidityQuoteByInputToken(
@@ -65,11 +65,11 @@ export function increaseLiquidityQuoteByInputToken(
   tickLower: number,
   tickUpper: number,
   slippageTolerance: Percentage,
-  whirlpool: ElysiumPool
+  pool: ElysiumPool
 ) {
-  const data = whirlpool.getData();
-  const tokenAInfo = whirlpool.getTokenAInfo();
-  const tokenBInfo = whirlpool.getTokenBInfo();
+  const data = pool.getData();
+  const tokenAInfo = pool.getTokenAInfo();
+  const tokenBInfo = pool.getTokenBInfo();
 
   const inputMint = AddressUtil.toPubKey(inputTokenMint);
   const inputTokenInfo = inputMint.equals(tokenAInfo.mint) ? tokenAInfo : tokenBInfo;

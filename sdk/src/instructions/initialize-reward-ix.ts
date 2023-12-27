@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 import { Instruction } from "@orca-so/common-sdk";
 
@@ -10,7 +10,7 @@ import { Instruction } from "@orca-so/common-sdk";
  * Parameters to initialize a rewards for a ElysiumPool
  *
  * @category Instruction Types
- * @param whirlpool - PublicKey for the whirlpool config space that the fee-tier will be initialized for.
+ * @param pool - PublicKey for the pool config space that the fee-tier will be initialized for.
  * @param rewardIndex - The reward index that we'd like to initialize. (0 <= index <= NUM_REWARDS).
  * @param rewardMint - PublicKey for the reward mint that we'd use for the reward index.
  * @param rewardVaultKeypair - Keypair of the vault for this reward index.
@@ -18,7 +18,7 @@ import { Instruction } from "@orca-so/common-sdk";
  * @param funder - The account that would fund the creation of this account
  */
 export type InitializeRewardParams = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   rewardIndex: number;
   rewardMint: PublicKey;
   rewardVaultKeypair: Keypair;
@@ -43,14 +43,13 @@ export function initializeRewardIx(
   program: Program<ElysiumPool>,
   params: InitializeRewardParams
 ): Instruction {
-  const { rewardAuthority, funder, whirlpool, rewardMint, rewardVaultKeypair, rewardIndex } =
-    params;
+  const { rewardAuthority, funder, pool, rewardMint, rewardVaultKeypair, rewardIndex } = params;
 
   const ix = program.instruction.initializeReward(rewardIndex, {
     accounts: {
       rewardAuthority,
       funder,
-      whirlpool,
+      pool,
       rewardMint,
       rewardVault: rewardVaultKeypair.publicKey,
       tokenProgram: TOKEN_PROGRAM_ID,

@@ -82,7 +82,7 @@ export type SubTradeRoute = {
  * @category Router
  * @param amountIn The amount of token being traded in for this hop.
  * @param amountOut The amount of token being traded out for this hop.
- * @param whirlpool The address of the whirlpool that this hop is trading through.
+ * @param pool The address of the pool that this hop is trading through.
  * @param inputMint The address of the input token mint.
  * @param outputMint The address of the output token mint.
  * @param mintA The address of the first mint in the pool.
@@ -90,12 +90,12 @@ export type SubTradeRoute = {
  * @param vaultA The address of the first vault in the pool.
  * @param vaultB The address of the second vault in the pool.
  * @param quote The {@link SwapQuote} for this hop.
- * @param snapshot A snapshot of the whirlpool condition when this hop was made
+ * @param snapshot A snapshot of the pool condition when this hop was made
  */
 export type TradeHop = {
   amountIn: BN;
   amountOut: BN;
-  whirlpool: Address;
+  pool: Address;
   inputMint: Address;
   outputMint: Address;
   mintA: Address;
@@ -107,7 +107,7 @@ export type TradeHop = {
 };
 
 /**
- * A snapshot of the whirlpool condition when a trade hop was made.
+ * A snapshot of the pool condition when a trade hop was made.
  * @category Router
  */
 export type TradeHopSnapshot = {

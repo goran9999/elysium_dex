@@ -5,8 +5,8 @@ use crate::{manager::swap_manager::PostSwapUpdate, state::ElysiumPool};
 
 use super::{transfer_from_owner_to_vault, transfer_from_vault_to_owner};
 
-pub fn update_and_swap_whirlpool<'info>(
-    whirlpool: &mut Account<'info, ElysiumPool>,
+pub fn update_and_swap_pool<'info>(
+    pool: &mut Account<'info, ElysiumPool>,
     token_authority: &Signer<'info>,
     token_owner_account_a: &Account<'info, TokenAccount>,
     token_owner_account_b: &Account<'info, TokenAccount>,
@@ -17,7 +17,7 @@ pub fn update_and_swap_whirlpool<'info>(
     is_token_fee_in_a: bool,
     reward_last_updated_timestamp: u64,
 ) -> Result<()> {
-    whirlpool.update_after_swap(
+    pool.update_after_swap(
         swap_update.next_liquidity,
         swap_update.next_tick_index,
         swap_update.next_sqrt_price,
@@ -29,7 +29,7 @@ pub fn update_and_swap_whirlpool<'info>(
     );
 
     perform_swap(
-        whirlpool,
+        pool,
         token_authority,
         token_owner_account_a,
         token_owner_account_b,
@@ -43,7 +43,7 @@ pub fn update_and_swap_whirlpool<'info>(
 }
 
 fn perform_swap<'info>(
-    whirlpool: &Account<'info, ElysiumPool>,
+    pool: &Account<'info, ElysiumPool>,
     token_authority: &Signer<'info>,
     token_owner_account_a: &Account<'info, TokenAccount>,
     token_owner_account_b: &Account<'info, TokenAccount>,
@@ -91,7 +91,7 @@ fn perform_swap<'info>(
     )?;
 
     transfer_from_vault_to_owner(
-        whirlpool,
+        pool,
         withdrawal_account_pool,
         withdrawal_account_user,
         token_program,

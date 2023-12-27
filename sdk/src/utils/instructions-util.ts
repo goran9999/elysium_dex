@@ -10,7 +10,7 @@ export function openPositionAccounts(params: OpenPositionParams) {
     positionPda,
     positionMintAddress,
     positionTokenAccount: positionTokenAccountAddress,
-    whirlpool: whirlpoolKey,
+    pool: poolKey,
   } = params;
   return {
     funder: funder,
@@ -18,7 +18,7 @@ export function openPositionAccounts(params: OpenPositionParams) {
     position: positionPda.publicKey,
     positionMint: positionMintAddress,
     positionTokenAccount: positionTokenAccountAddress,
-    whirlpool: whirlpoolKey,
+    pool: poolKey,
     tokenProgram: TOKEN_PROGRAM_ID,
     systemProgram: SystemProgram.programId,
     rent: anchor.web3.SYSVAR_RENT_PUBKEY,

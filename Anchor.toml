@@ -1,5 +1,5 @@
 [programs.localnet]
-whirlpool = "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
+pool = "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
 
 [registry]
 url = "https://anchor.projectserum.com"

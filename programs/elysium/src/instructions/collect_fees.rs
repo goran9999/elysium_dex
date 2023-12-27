@@ -8,11 +8,11 @@ use crate::{
 
 #[derive(Accounts)]
 pub struct CollectFees<'info> {
-    pub whirlpool: Box<Account<'info, ElysiumPool>>,
+    pub pool: Box<Account<'info, ElysiumPool>>,
 
     pub position_authority: Signer<'info>,
 
-    #[account(mut, has_one = whirlpool)]
+    #[account(mut, has_one = pool)]
     pub position: Box<Account<'info, Position>>,
     #[account(
         constraint = position_token_account.mint == position.position_mint,
@@ -20,14 +20,14 @@ pub struct CollectFees<'info> {
     )]
     pub position_token_account: Box<Account<'info, TokenAccount>>,
 
-    #[account(mut, constraint = token_owner_account_a.mint == whirlpool.token_mint_a)]
+    #[account(mut, constraint = token_owner_account_a.mint == pool.token_mint_a)]
     pub token_owner_account_a: Box<Account<'info, TokenAccount>>,
-    #[account(mut, address = whirlpool.token_vault_a)]
+    #[account(mut, address = pool.token_vault_a)]
     pub token_vault_a: Box<Account<'info, TokenAccount>>,
 
-    #[account(mut, constraint = token_owner_account_b.mint == whirlpool.token_mint_b)]
+    #[account(mut, constraint = token_owner_account_b.mint == pool.token_mint_b)]
     pub token_owner_account_b: Box<Account<'info, TokenAccount>>,
-    #[account(mut, address = whirlpool.token_vault_b)]
+    #[account(mut, address = pool.token_vault_b)]
     pub token_vault_b: Box<Account<'info, TokenAccount>>,
 
     #[account(address = token::ID)]
@@ -49,7 +49,7 @@ pub fn handler(ctx: Context<CollectFees>) -> Result<()> {
     position.reset_fees_owed();
 
     transfer_from_vault_to_owner(
-        &ctx.accounts.whirlpool,
+        &ctx.accounts.pool,
         &ctx.accounts.token_vault_a,
         &ctx.accounts.token_owner_account_a,
         &ctx.accounts.token_program,
@@ -57,7 +57,7 @@ pub fn handler(ctx: Context<CollectFees>) -> Result<()> {
     )?;
 
     transfer_from_vault_to_owner(
-        &ctx.accounts.whirlpool,
+        &ctx.accounts.pool,
         &ctx.accounts.token_vault_b,
         &ctx.accounts.token_owner_account_b,
         &ctx.accounts.token_program,

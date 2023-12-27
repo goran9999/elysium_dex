@@ -2,9 +2,7 @@ use solana_program::msg;
 
 use crate::{
     errors::ErrorCode,
-    manager::{
-        tick_manager::next_tick_cross_update, whirlpool_manager::next_whirlpool_reward_infos,
-    },
+    manager::{pool_manager::next_pool_reward_infos, tick_manager::next_tick_cross_update},
     math::*,
     state::*,
     util::SwapTickSequence,
@@ -25,7 +23,7 @@ pub struct PostSwapUpdate {
 }
 
 pub fn swap(
-    whirlpool: &ElysiumPool,
+    pool: &ElysiumPool,
     swap_tick_sequence: &mut SwapTickSequence,
     amount: u64,
     sqrt_price_limit: u128,
@@ -37,8 +35,7 @@ pub fn swap(
         return Err(ErrorCode::SqrtPriceOutOfBounds.into());
     }
 
-    if a_to_b && sqrt_price_limit > whirlpool.sqrt_price
-        || !a_to_b && sqrt_price_limit < whirlpool.sqrt_price
+    if a_to_b && sqrt_price_limit > pool.sqrt_price || !a_to_b && sqrt_price_limit < pool.sqrt_price
     {
         return Err(ErrorCode::InvalidSqrtPriceLimitDirection.into());
     }
@@ -47,22 +44,22 @@ pub fn swap(
         return Err(ErrorCode::ZeroTradableAmount.into());
     }
 
-    let tick_spacing = whirlpool.tick_spacing;
-    let fee_rate = whirlpool.fee_rate;
-    let protocol_fee_rate = whirlpool.protocol_fee_rate;
-    let next_reward_infos = next_whirlpool_reward_infos(whirlpool, timestamp)?;
+    let tick_spacing = pool.tick_spacing;
+    let fee_rate = pool.fee_rate;
+    let protocol_fee_rate = pool.protocol_fee_rate;
+    let next_reward_infos = next_pool_reward_infos(pool, timestamp)?;
 
     let mut amount_remaining: u64 = amount;
     let mut amount_calculated: u64 = 0;
-    let mut curr_sqrt_price = whirlpool.sqrt_price;
-    let mut curr_tick_index = whirlpool.tick_current_index;
-    let mut curr_liquidity = whirlpool.liquidity;
+    let mut curr_sqrt_price = pool.sqrt_price;
+    let mut curr_tick_index = pool.tick_current_index;
+    let mut curr_liquidity = pool.liquidity;
     let mut curr_protocol_fee: u64 = 0;
     let mut curr_array_index: usize = 0;
     let mut curr_fee_growth_global_input = if a_to_b {
-        whirlpool.fee_growth_global_a
+        pool.fee_growth_global_a
     } else {
-        whirlpool.fee_growth_global_b
+        pool.fee_growth_global_b
     };
 
     while amount_remaining > 0 && sqrt_price_limit != curr_sqrt_price {
@@ -128,9 +125,9 @@ pub fn swap(
 
             if next_tick_initialized {
                 let (fee_growth_global_a, fee_growth_global_b) = if a_to_b {
-                    (curr_fee_growth_global_input, whirlpool.fee_growth_global_b)
+                    (curr_fee_growth_global_input, pool.fee_growth_global_b)
                 } else {
-                    (whirlpool.fee_growth_global_a, curr_fee_growth_global_input)
+                    (pool.fee_growth_global_a, curr_fee_growth_global_input)
                 };
 
                 let (update, next_liquidity) = calculate_update(
@@ -189,9 +186,9 @@ pub fn swap(
     };
 
     let fee_growth = if a_to_b {
-        curr_fee_growth_global_input - whirlpool.fee_growth_global_a
+        curr_fee_growth_global_input - pool.fee_growth_global_a
     } else {
-        curr_fee_growth_global_input - whirlpool.fee_growth_global_b
+        curr_fee_growth_global_input - pool.fee_growth_global_b
     };
 
     // Log delta in fee growth to track pool usage over time with off-chain analytics
@@ -280,7 +277,7 @@ fn get_next_sqrt_prices(
 #[cfg(test)]
 mod swap_liquidity_tests {
     use super::*;
-    use crate::util::{create_whirlpool_reward_infos, test_utils::swap_test_fixture::*};
+    use crate::util::{create_pool_reward_infos, test_utils::swap_test_fixture::*};
 
     #[test]
     /// A rightward swap on a pool with zero liquidity across the range with initialized ticks.
@@ -311,7 +308,7 @@ mod swap_liquidity_tests {
                 ..Default::default()
             }]),
             array_3_ticks: Some(&vec![]),
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
             ..Default::default()
@@ -381,7 +378,7 @@ mod swap_liquidity_tests {
                 liquidity_net: 0,
                 ..Default::default()
             }]),
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
             ..Default::default()
@@ -449,7 +446,7 @@ mod swap_liquidity_tests {
             array_3_ticks: Some(&vec![]),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -506,7 +503,7 @@ mod swap_liquidity_tests {
             }]),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -581,7 +578,7 @@ mod swap_liquidity_tests {
             }]),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -669,7 +666,7 @@ mod swap_liquidity_tests {
             }]),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -758,7 +755,7 @@ mod swap_liquidity_tests {
             ],
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence =
@@ -851,7 +848,7 @@ mod swap_liquidity_tests {
             ],
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence =
@@ -953,7 +950,7 @@ mod swap_liquidity_tests {
             ]),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -1044,7 +1041,7 @@ mod swap_liquidity_tests {
             ]),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -1138,7 +1135,7 @@ mod swap_liquidity_tests {
             ]),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -1231,7 +1228,7 @@ mod swap_liquidity_tests {
             ]),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -1295,7 +1292,7 @@ mod swap_liquidity_tests {
             a_to_b: false,
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -1336,7 +1333,7 @@ mod swap_liquidity_tests {
             a_to_b: false,
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -1380,7 +1377,7 @@ mod swap_liquidity_tests {
             a_to_b: true,
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -1422,7 +1419,7 @@ mod swap_liquidity_tests {
             a_to_b: true,
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
         let mut tick_sequence = SwapTickSequence::new(
@@ -1568,7 +1565,7 @@ mod swap_liquidity_tests {
                 ..Default::default()
             }]),
             array_3_ticks: Some(&vec![]),
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
             ..Default::default()
@@ -1621,7 +1618,7 @@ mod swap_liquidity_tests {
                 ..Default::default()
             }]),
             array_3_ticks: Some(&vec![]),
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
             ..Default::default()
@@ -1673,7 +1670,7 @@ mod swap_liquidity_tests {
                 liquidity_net: -100,
                 ..Default::default()
             }]),
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
             ..Default::default()
@@ -1726,7 +1723,7 @@ mod swap_liquidity_tests {
                 liquidity_net: -100,
                 ..Default::default()
             }]),
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
             ..Default::default()
@@ -1779,7 +1776,7 @@ mod swap_liquidity_tests {
                 liquidity_net: 100,
                 ..Default::default()
             }]),
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
             ..Default::default()
@@ -1828,7 +1825,7 @@ mod swap_liquidity_tests {
                 liquidity_net: 100,
                 ..Default::default()
             }]),
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             fee_growth_global_a: 100,
             fee_growth_global_b: 100,
             ..Default::default()

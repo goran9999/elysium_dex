@@ -30,7 +30,7 @@ function checkLiquidity(
   try {
     ({ estimatedAmountIn } = swapQuoteWithParams(
       {
-        whirlpoolData: pool,
+        poolData: pool,
         aToB,
         amountSpecifiedIsInput: false,
         tokenAmount: amountOut,

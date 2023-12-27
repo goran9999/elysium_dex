@@ -207,8 +207,8 @@ export async function buildTestAquariums(
           AddressUtil.toPubKey
         );
 
-        const configKey = configParams!.configInitInfo.whirlpoolsConfigKeypair.publicKey;
-        const whirlpoolPda = PDAUtil.getElysiumPool(
+        const configKey = configParams!.configInitInfo.poolsConfigKeypair.publicKey;
+        const poolPda = PDAUtil.getElysiumPool(
           ctx.program.programId,
           configKey,
           tokenMintA,
@@ -218,10 +218,10 @@ export async function buildTestAquariums(
 
         const poolParam = {
           initSqrtPrice,
-          whirlpoolsConfig: configKey,
+          poolsConfig: configKey,
           tokenMintA,
           tokenMintB,
-          whirlpoolPda,
+          poolPda,
           tokenVaultAKeypair: Keypair.generate(),
           tokenVaultBKeypair: Keypair.generate(),
           feeTierKey: feeTierParams[feeTierIndex].feeTierPda.publicKey,
@@ -242,7 +242,7 @@ export async function buildTestAquariums(
         const pool = pools[poolIndex];
         const pdas = await initTickArrayRange(
           ctx,
-          pool.whirlpoolPda.publicKey,
+          pool.poolPda.publicKey,
           startTickIndex,
           arrayCount,
           pool.tickSpacing,
@@ -291,7 +291,7 @@ export function getTokenAccsForPools(
 /**
  * Initialize a brand new ElysiumPoolsConfig account and construct a set of InitPoolParams
  * that can be used to initialize a pool with.
- * @param client - an instance of whirlpool client containing the program & provider
+ * @param client - an instance of pool client containing the program & provider
  * @param initSqrtPrice - the initial sqrt-price for this newly generated pool
  * @returns An object containing the params used to init the config account & the param that can be used to init the pool account.
  */
@@ -315,7 +315,7 @@ export async function buildTestPoolParams(
   );
   const poolInitInfo = await generateDefaultInitPoolParams(
     ctx,
-    configInitInfo.whirlpoolsConfigKeypair.publicKey,
+    configInitInfo.poolsConfigKeypair.publicKey,
     feeTierParams.feeTierPda.publicKey,
     tickSpacing,
     initSqrtPrice,
@@ -332,7 +332,7 @@ export async function buildTestPoolParams(
 
 /**
  * Initialize a brand new set of ElysiumPoolsConfig & ElysiumPool account
- * @param client - an instance of whirlpool client containing the program & provider
+ * @param client - an instance of pool client containing the program & provider
  * @param initSqrtPrice - the initial sqrt-price for this newly generated pool
  * @returns An object containing the params used to initialize both accounts.
  */
@@ -385,7 +385,7 @@ export async function initFeeTier(
 ) {
   const params = generateDefaultInitFeeTierParams(
     ctx,
-    configInitInfo.whirlpoolsConfigKeypair.publicKey,
+    configInitInfo.poolsConfigKeypair.publicKey,
     configInitInfo.feeAuthority,
     tickSpacing,
     defaultFeeRate,
@@ -408,7 +408,7 @@ export async function initFeeTier(
 export async function initializeReward(
   ctx: ElysiumPoolContext,
   rewardAuthorityKeypair: anchor.web3.Keypair,
-  whirlpool: PublicKey,
+  pool: PublicKey,
   rewardIndex: number,
   funder?: Keypair
 ): Promise<{ txId: string; params: InitializeRewardParams }> {
@@ -419,7 +419,7 @@ export async function initializeReward(
   const params = {
     rewardAuthority: rewardAuthorityKeypair.publicKey,
     funder: funder?.publicKey || ctx.wallet.publicKey,
-    whirlpool,
+    pool,
     rewardMint,
     rewardVaultKeypair,
     rewardIndex,
@@ -441,7 +441,7 @@ export async function initializeReward(
 export async function initRewardAndSetEmissions(
   ctx: ElysiumPoolContext,
   rewardAuthorityKeypair: anchor.web3.Keypair,
-  whirlpool: PublicKey,
+  pool: PublicKey,
   rewardIndex: number,
   vaultAmount: BN | number,
   emissionsPerSecondX64: anchor.BN,
@@ -449,7 +449,7 @@ export async function initRewardAndSetEmissions(
 ) {
   const {
     params: { rewardMint, rewardVaultKeypair },
-  } = await initializeReward(ctx, rewardAuthorityKeypair, whirlpool, rewardIndex, funder);
+  } = await initializeReward(ctx, rewardAuthorityKeypair, pool, rewardIndex, funder);
 
   await mintToDestination(ctx.provider, rewardMint, rewardVaultKeypair.publicKey, vaultAmount);
 
@@ -457,7 +457,7 @@ export async function initRewardAndSetEmissions(
     ctx,
     ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
       rewardAuthority: rewardAuthorityKeypair.publicKey,
-      whirlpool,
+      pool,
       rewardIndex,
       rewardVaultKey: rewardVaultKeypair.publicKey,
       emissionsPerSecondX64,
@@ -470,7 +470,7 @@ export async function initRewardAndSetEmissions(
 
 export async function openPosition(
   ctx: ElysiumPoolContext,
-  whirlpool: PublicKey,
+  pool: PublicKey,
   tickLowerIndex: number,
   tickUpperIndex: number,
   owner: PublicKey = ctx.provider.wallet.publicKey,
@@ -478,7 +478,7 @@ export async function openPosition(
 ) {
   return openPositionWithOptMetadata(
     ctx,
-    whirlpool,
+    pool,
     tickLowerIndex,
     tickUpperIndex,
     false,
@@ -489,7 +489,7 @@ export async function openPosition(
 
 export async function openPositionWithMetadata(
   ctx: ElysiumPoolContext,
-  whirlpool: PublicKey,
+  pool: PublicKey,
   tickLowerIndex: number,
   tickUpperIndex: number,
   owner: PublicKey = ctx.provider.wallet.publicKey,
@@ -497,7 +497,7 @@ export async function openPositionWithMetadata(
 ) {
   return openPositionWithOptMetadata(
     ctx,
-    whirlpool,
+    pool,
     tickLowerIndex,
     tickUpperIndex,
     true,
@@ -508,7 +508,7 @@ export async function openPositionWithMetadata(
 
 async function openPositionWithOptMetadata(
   ctx: ElysiumPoolContext,
-  whirlpool: PublicKey,
+  pool: PublicKey,
   tickLowerIndex: number,
   tickUpperIndex: number,
   withMetadata: boolean = false,
@@ -517,7 +517,7 @@ async function openPositionWithOptMetadata(
 ) {
   const { params, mint } = await generateDefaultOpenPositionParams(
     ctx,
-    whirlpool,
+    pool,
     tickLowerIndex,
     tickUpperIndex,
     owner,
@@ -536,16 +536,11 @@ async function openPositionWithOptMetadata(
 
 export async function initTickArray(
   ctx: ElysiumPoolContext,
-  whirlpool: PublicKey,
+  pool: PublicKey,
   startTickIndex: number,
   funder?: Keypair
 ): Promise<{ txId: string; params: InitTickArrayParams }> {
-  const params = generateDefaultInitTickArrayParams(
-    ctx,
-    whirlpool,
-    startTickIndex,
-    funder?.publicKey
-  );
+  const params = generateDefaultInitTickArrayParams(ctx, pool, startTickIndex, funder?.publicKey);
   const tx = toTx(ctx, ElysiumPoolIx.initTickArrayIx(ctx.program, params));
   if (funder) {
     tx.addSigner(funder);
@@ -570,7 +565,7 @@ export async function initTestPoolWithTokens(
     reuseTokenA
   );
 
-  const { tokenMintA, tokenMintB, whirlpoolPda } = poolInitInfo;
+  const { tokenMintA, tokenMintB, poolPda } = poolInitInfo;
 
   // Airdrop SOL into provider's wallet for SOL native token testing.
   const connection = ctx.provider.connection;
@@ -603,7 +598,7 @@ export async function initTestPoolWithTokens(
     configInitInfo,
     configKeypairs,
     feeTierParams,
-    whirlpoolPda,
+    poolPda,
     tokenAccountA,
     tokenAccountB,
   };
@@ -611,7 +606,7 @@ export async function initTestPoolWithTokens(
 
 export async function initTickArrayRange(
   ctx: ElysiumPoolContext,
-  whirlpool: PublicKey,
+  pool: PublicKey,
   startTickIndex: number,
   arrayCount: number,
   tickSpacing: number,
@@ -624,7 +619,7 @@ export async function initTickArrayRange(
   for (let i = 0; i < arrayCount; i++) {
     const { params } = await initTickArray(
       ctx,
-      whirlpool,
+      pool,
       startTickIndex + direction * ticksInArray * i
     );
     result.push(params.tickArrayPda);
@@ -648,15 +643,15 @@ export async function withdrawPositions(
   const fetcher = ctx.fetcher;
   await Promise.all(
     positionInfos.map(async (info) => {
-      const pool = await fetcher.getPool(info.initParams.whirlpool);
+      const pool = await fetcher.getPool(info.initParams.pool);
       const position = await fetcher.getPosition(info.initParams.positionPda.publicKey);
 
       if (!pool) {
-        throw new Error(`Failed to fetch pool - ${info.initParams.whirlpool}`);
+        throw new Error(`Failed to fetch pool - ${info.initParams.pool}`);
       }
 
       if (!position) {
-        throw new Error(`Failed to fetch position - ${info.initParams.whirlpool}`);
+        throw new Error(`Failed to fetch position - ${info.initParams.pool}`);
       }
 
       const priceLower = PriceMath.tickIndexToSqrtPriceX64(position.tickLowerIndex);
@@ -675,14 +670,14 @@ export async function withdrawPositions(
         position.tickLowerIndex - (position.tickLowerIndex % numTicksInTickArray);
       const tickArrayLower = PDAUtil.getTickArray(
         ctx.program.programId,
-        info.initParams.whirlpool,
+        info.initParams.pool,
         lowerStartTick
       );
       const upperStartTick =
         position.tickUpperIndex - (position.tickUpperIndex % numTicksInTickArray);
       const tickArrayUpper = PDAUtil.getTickArray(
         ctx.program.programId,
-        info.initParams.whirlpool,
+        info.initParams.pool,
         upperStartTick
       );
 
@@ -692,7 +687,7 @@ export async function withdrawPositions(
           liquidityAmount: position.liquidity,
           tokenMinA: tokenA,
           tokenMinB: tokenB,
-          whirlpool: info.initParams.whirlpool,
+          pool: info.initParams.pool,
           positionAuthority: ctx.provider.wallet.publicKey,
           position: info.initParams.positionPda.publicKey,
           positionTokenAccount: info.initParams.positionTokenAccount,
@@ -708,7 +703,7 @@ export async function withdrawPositions(
       await toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: info.initParams.whirlpool,
+          pool: info.initParams.pool,
           positionAuthority: ctx.provider.wallet.publicKey,
           position: info.initParams.positionPda.publicKey,
           positionTokenAccount: info.initParams.positionTokenAccount,
@@ -733,22 +728,22 @@ export interface FundedPositionInfo {
 
 export async function fundPositionsWithClient(
   client: ElysiumPoolClient,
-  whirlpoolKey: PublicKey,
+  poolKey: PublicKey,
   fundParams: FundedPositionParams[]
 ) {
-  const whirlpool = await client.getPool(whirlpoolKey, IGNORE_CACHE);
-  const whirlpoolData = whirlpool.getData();
+  const pool = await client.getPool(poolKey, IGNORE_CACHE);
+  const poolData = pool.getData();
   await Promise.all(
     fundParams.map(async (param, idx) => {
       const { tokenA, tokenB } = PoolUtil.getTokenAmountsFromLiquidity(
         param.liquidityAmount,
-        whirlpoolData.sqrtPrice,
+        poolData.sqrtPrice,
         PriceMath.tickIndexToSqrtPriceX64(param.tickLowerIndex),
         PriceMath.tickIndexToSqrtPriceX64(param.tickUpperIndex),
         true
       );
 
-      const { tx } = await whirlpool.openPosition(param.tickLowerIndex, param.tickUpperIndex, {
+      const { tx } = await pool.openPosition(param.tickLowerIndex, param.tickUpperIndex, {
         liquidityAmount: param.liquidityAmount,
         tokenMaxA: tokenA,
         tokenMaxB: tokenB,
@@ -766,7 +761,7 @@ export async function fundPositions(
   fundParams: FundedPositionParams[]
 ): Promise<FundedPositionInfo[]> {
   const {
-    whirlpoolPda: { publicKey: whirlpool },
+    poolPda: { publicKey: pool },
     tickSpacing,
     tokenVaultAKeypair,
     tokenVaultBKeypair,
@@ -777,20 +772,20 @@ export async function fundPositions(
     fundParams.map(async (param): Promise<FundedPositionInfo> => {
       const { params: positionInfo, mint } = await openPosition(
         ctx,
-        whirlpool,
+        pool,
         param.tickLowerIndex,
         param.tickUpperIndex
       );
 
       const tickArrayLower = PDAUtil.getTickArray(
         ctx.program.programId,
-        whirlpool,
+        pool,
         TickUtil.getStartTickIndex(param.tickLowerIndex, tickSpacing)
       ).publicKey;
 
       const tickArrayUpper = PDAUtil.getTickArray(
         ctx.program.programId,
-        whirlpool,
+        pool,
         TickUtil.getStartTickIndex(param.tickUpperIndex, tickSpacing)
       ).publicKey;
 
@@ -808,7 +803,7 @@ export async function fundPositions(
             liquidityAmount: param.liquidityAmount,
             tokenMaxA: tokenA,
             tokenMaxB: tokenB,
-            whirlpool: whirlpool,
+            pool: pool,
             positionAuthority: ctx.provider.wallet.publicKey,
             position: positionInfo.positionPda.publicKey,
             positionTokenAccount: positionInfo.positionTokenAccount,
@@ -844,7 +839,7 @@ export async function initTestPoolWithLiquidity(
     configInitInfo,
     configKeypairs,
     feeTierParams,
-    whirlpoolPda,
+    poolPda,
     tokenAccountA,
     tokenAccountB,
   } = await initTestPoolWithTokens(
@@ -857,7 +852,7 @@ export async function initTestPoolWithLiquidity(
 
   const tickArrays = await initTickArrayRange(
     ctx,
-    whirlpoolPda.publicKey,
+    poolPda.publicKey,
     22528, // to 33792
     3,
     TickSpacing.Standard,
@@ -977,7 +972,7 @@ export async function initializePositionBundle(
 
 export async function openBundledPosition(
   ctx: ElysiumPoolContext,
-  whirlpool: PublicKey,
+  pool: PublicKey,
   positionBundleMint: PublicKey,
   bundleIndex: number,
   tickLowerIndex: number,
@@ -987,7 +982,7 @@ export async function openBundledPosition(
 ) {
   const { params } = await generateDefaultOpenBundledPositionParams(
     ctx,
-    whirlpool,
+    pool,
     positionBundleMint,
     bundleIndex,
     tickLowerIndex,

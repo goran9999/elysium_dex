@@ -24,23 +24,23 @@ export type ElysiumPoolsTokenMints = {
 };
 
 /**
- * Fetch a list of affliated tokens from a list of whirlpools
+ * Fetch a list of affliated tokens from a list of pools
  *
  * SOL tokens does not use the ATA program and therefore not handled.
- * @param whirlpoolDatas An array of whirlpoolData (from fetcher.listPools)
- * @param mintTypes The set of mints to collect from these whirlpools
- * @returns All the whirlpool, reward token mints in the given set of whirlpools
+ * @param poolDatas An array of poolData (from fetcher.listPools)
+ * @param mintTypes The set of mints to collect from these pools
+ * @returns All the pool, reward token mints in the given set of pools
  */
 export function getTokenMintsFromElysiumPools(
-  whirlpoolDatas: (ElysiumPoolData | null)[],
+  poolDatas: (ElysiumPoolData | null)[],
   mintTypes = TokenMintTypes.ALL
 ): ElysiumPoolsTokenMints {
   let hasNativeMint = false;
   const mints = Array.from(
-    whirlpoolDatas.reduce<Set<string>>((accu, whirlpoolData) => {
-      if (whirlpoolData) {
+    poolDatas.reduce<Set<string>>((accu, poolData) => {
+      if (poolData) {
         if (mintTypes === TokenMintTypes.ALL || mintTypes === TokenMintTypes.POOL_ONLY) {
-          const { tokenMintA, tokenMintB } = whirlpoolData;
+          const { tokenMintA, tokenMintB } = poolData;
           // TODO: Once we move to sync-native for wSOL wrapping, we can simplify and use wSOL ATA instead of a custom token account.
           if (!TokenUtil.isNativeMint(tokenMintA)) {
             accu.add(tokenMintA.toBase58());
@@ -56,7 +56,7 @@ export function getTokenMintsFromElysiumPools(
         }
 
         if (mintTypes === TokenMintTypes.ALL || mintTypes === TokenMintTypes.REWARD_ONLY) {
-          const rewardInfos = whirlpoolData.rewardInfos;
+          const rewardInfos = poolData.rewardInfos;
           rewardInfos.forEach((reward) => {
             if (TokenUtil.isNativeMint(reward.mint)) {
               hasNativeMint = true;

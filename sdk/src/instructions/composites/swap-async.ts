@@ -6,7 +6,7 @@ import { SwapInput, swapIx } from "../swap-ix";
 
 export type SwapAsyncParams = {
   swapInput: SwapInput;
-  whirlpool: ElysiumPool;
+  pool: ElysiumPool;
   wallet: PublicKey;
 };
 
@@ -22,7 +22,7 @@ export async function swapAsync(
   params: SwapAsyncParams,
   opts: ElysiumPoolAccountFetchOptions
 ): Promise<TransactionBuilder> {
-  const { wallet, whirlpool, swapInput } = params;
+  const { wallet, pool, swapInput } = params;
   const { aToB, amount } = swapInput;
   const txBuilder = new TransactionBuilder(ctx.connection, ctx.wallet, ctx.txBuilderOpts);
   const tickArrayAddresses = [swapInput.tickArray0, swapInput.tickArray1, swapInput.tickArray2];
@@ -36,7 +36,7 @@ export async function swapAsync(
     throw new Error(`TickArray addresses - [${uninitializedArrays}] need to be initialized.`);
   }
 
-  const data = whirlpool.getData();
+  const data = pool.getData();
   const [resolvedAtaA, resolvedAtaB] = await resolveOrCreateATAs(
     ctx.connection,
     wallet,
@@ -62,7 +62,7 @@ export async function swapAsync(
       SwapUtils.getSwapParamsFromQuote(
         swapInput,
         ctx,
-        whirlpool,
+        pool,
         inputTokenAccount,
         outputTokenAccount,
         wallet

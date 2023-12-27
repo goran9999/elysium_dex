@@ -40,7 +40,7 @@ export const generateDefaultConfigParams = (
     rewardEmissionsSuperAuthorityKeypair: Keypair.generate(),
   };
   const configInitInfo = {
-    whirlpoolsConfigKeypair: Keypair.generate(),
+    poolsConfigKeypair: Keypair.generate(),
     feeAuthority: configKeypairs.feeAuthorityKeypair.publicKey,
     collectProtocolFeesAuthority: configKeypairs.collectProtocolFeesAuthorityKeypair.publicKey,
     rewardEmissionsSuperAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
@@ -74,7 +74,7 @@ export const generateDefaultInitPoolParams = async (
 ): Promise<InitPoolParams> => {
   const [tokenAMintPubKey, tokenBMintPubKey] = await createInOrderMints(context, reuseTokenA);
 
-  const whirlpoolPda = PDAUtil.getElysiumPool(
+  const poolPda = PDAUtil.getElysiumPool(
     context.program.programId,
     configKey,
     tokenAMintPubKey,
@@ -84,10 +84,10 @@ export const generateDefaultInitPoolParams = async (
 
   return {
     initSqrtPrice,
-    whirlpoolsConfig: configKey,
+    poolsConfig: configKey,
     tokenMintA: tokenAMintPubKey,
     tokenMintB: tokenBMintPubKey,
-    whirlpoolPda,
+    poolPda,
     tokenVaultAKeypair: Keypair.generate(),
     tokenVaultBKeypair: Keypair.generate(),
     feeTierKey,
@@ -98,37 +98,33 @@ export const generateDefaultInitPoolParams = async (
 
 export const generateDefaultInitFeeTierParams = (
   context: ElysiumPoolContext,
-  whirlpoolsConfigKey: PublicKey,
-  whirlpoolFeeAuthority: PublicKey,
+  poolsConfigKey: PublicKey,
+  poolFeeAuthority: PublicKey,
   tickSpacing: number,
   defaultFeeRate: number,
   funder?: PublicKey
 ): InitFeeTierParams => {
-  const feeTierPda = PDAUtil.getFeeTier(
-    context.program.programId,
-    whirlpoolsConfigKey,
-    tickSpacing
-  );
+  const feeTierPda = PDAUtil.getFeeTier(context.program.programId, poolsConfigKey, tickSpacing);
   return {
     feeTierPda,
-    whirlpoolsConfig: whirlpoolsConfigKey,
+    poolsConfig: poolsConfigKey,
     tickSpacing,
     defaultFeeRate,
-    feeAuthority: whirlpoolFeeAuthority,
+    feeAuthority: poolFeeAuthority,
     funder: funder || context.wallet.publicKey,
   };
 };
 
 export const generateDefaultInitTickArrayParams = (
   context: ElysiumPoolContext,
-  whirlpool: PublicKey,
+  pool: PublicKey,
   startTick: number,
   funder?: PublicKey
 ): InitTickArrayParams => {
-  const tickArrayPda = PDAUtil.getTickArray(context.program.programId, whirlpool, startTick);
+  const tickArrayPda = PDAUtil.getTickArray(context.program.programId, pool, startTick);
 
   return {
-    whirlpool,
+    pool,
     tickArrayPda: tickArrayPda,
     startTick,
     funder: funder || context.wallet.publicKey,
@@ -137,7 +133,7 @@ export const generateDefaultInitTickArrayParams = (
 
 export async function generateDefaultOpenPositionParams(
   context: ElysiumPoolContext,
-  whirlpool: PublicKey,
+  pool: PublicKey,
   tickLowerIndex: number,
   tickUpperIndex: number,
   owner: PublicKey,
@@ -160,7 +156,7 @@ export async function generateDefaultOpenPositionParams(
     metadataPda,
     positionMintAddress: positionMintKeypair.publicKey,
     positionTokenAccount: positionTokenAccountAddress,
-    whirlpool: whirlpool,
+    pool: pool,
     tickLowerIndex,
     tickUpperIndex,
   };
@@ -251,7 +247,7 @@ export async function initPosition(
 
 export async function generateDefaultOpenBundledPositionParams(
   context: ElysiumPoolContext,
-  whirlpool: PublicKey,
+  pool: PublicKey,
   positionBundleMint: PublicKey,
   bundleIndex: number,
   tickLowerIndex: number,
@@ -278,7 +274,7 @@ export async function generateDefaultOpenBundledPositionParams(
     positionBundleAuthority: owner,
     funder: funder || owner,
     positionBundleTokenAccount,
-    whirlpool: whirlpool,
+    pool: pool,
     tickLowerIndex,
     tickUpperIndex,
   };

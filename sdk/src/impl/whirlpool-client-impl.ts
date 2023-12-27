@@ -19,10 +19,10 @@ import { ElysiumPoolRouter, ElysiumPoolRouterBuilder } from "../router/public";
 import { ElysiumPoolData } from "../types/public";
 import { getTickArrayDataForPosition } from "../utils/builder/position-builder-util";
 import { PDAUtil, PoolUtil, PriceMath, TickUtil } from "../utils/public";
-import { Position, ElysiumPool, ElysiumPoolClient } from "../whirlpool-client";
+import { Position, ElysiumPool, ElysiumPoolClient } from "../pool-client";
 import { PositionImpl } from "./position-impl";
 import { getRewardInfos, getTokenMintInfos, getTokenVaultAccountInfos } from "./util";
-import { ElysiumPoolImpl } from "./whirlpool-impl";
+import { ElysiumPoolImpl } from "./pool-impl";
 
 export class ElysiumPoolClientImpl implements ElysiumPoolClient {
   constructor(readonly ctx: ElysiumPoolContext) {}
@@ -82,14 +82,14 @@ export class ElysiumPoolClientImpl implements ElysiumPoolClient {
     await this.ctx.fetcher.getMintInfos(Array.from(tokenMints), opts);
     await this.ctx.fetcher.getTokenInfos(Array.from(tokenAccounts), opts);
 
-    const whirlpools: ElysiumPool[] = [];
+    const pools: ElysiumPool[] = [];
     for (let i = 0; i < accounts.length; i++) {
       const account = accounts[i];
       const poolAddress = poolAddresses[i];
       const tokenInfos = await getTokenMintInfos(this.ctx.fetcher, account, PREFER_CACHE);
       const vaultInfos = await getTokenVaultAccountInfos(this.ctx.fetcher, account, PREFER_CACHE);
       const rewardInfos = await getRewardInfos(this.ctx.fetcher, account, PREFER_CACHE);
-      whirlpools.push(
+      pools.push(
         new ElysiumPoolImpl(
           this.ctx,
           AddressUtil.toPubKey(poolAddress),
@@ -102,7 +102,7 @@ export class ElysiumPoolClientImpl implements ElysiumPoolClient {
         )
       );
     }
-    return whirlpools;
+    return pools;
   }
 
   public async getPosition(positionAddress: Address, opts = PREFER_CACHE): Promise<Position> {
@@ -110,7 +110,7 @@ export class ElysiumPoolClientImpl implements ElysiumPoolClient {
     if (!account) {
       throw new Error(`Unable to fetch Position at address at ${positionAddress}`);
     }
-    const whirlAccount = await this.ctx.fetcher.getPool(account.whirlpool, opts);
+    const whirlAccount = await this.ctx.fetcher.getPool(account.pool, opts);
     if (!whirlAccount) {
       throw new Error(`Unable to fetch ElysiumPool for Position at address at ${positionAddress}`);
     }
@@ -142,26 +142,26 @@ export class ElysiumPoolClientImpl implements ElysiumPoolClient {
     const positions = Array.from(
       (await this.ctx.fetcher.getPositions(positionAddresses, opts)).values()
     );
-    const whirlpoolAddrs = positions
-      .map((position) => position?.whirlpool.toBase58())
+    const poolAddrs = positions
+      .map((position) => position?.pool.toBase58())
       .flatMap((x) => (!!x ? x : []));
-    await this.ctx.fetcher.getPools(whirlpoolAddrs, opts);
+    await this.ctx.fetcher.getPools(poolAddrs, opts);
     const tickArrayAddresses: Set<string> = new Set();
     await Promise.all(
       positions.map(async (pos) => {
         if (pos) {
-          const pool = await this.ctx.fetcher.getPool(pos.whirlpool, PREFER_CACHE);
+          const pool = await this.ctx.fetcher.getPool(pos.pool, PREFER_CACHE);
           if (pool) {
             const lowerTickArrayPda = PDAUtil.getTickArrayFromTickIndex(
               pos.tickLowerIndex,
               pool.tickSpacing,
-              pos.whirlpool,
+              pos.pool,
               this.ctx.program.programId
             ).publicKey;
             const upperTickArrayPda = PDAUtil.getTickArrayFromTickIndex(
               pos.tickUpperIndex,
               pool.tickSpacing,
-              pos.whirlpool,
+              pos.pool,
               this.ctx.program.programId
             ).publicKey;
             tickArrayAddresses.add(lowerTickArrayPda.toBase58());
@@ -187,7 +187,7 @@ export class ElysiumPoolClientImpl implements ElysiumPoolClient {
   }
 
   public async createPool(
-    whirlpoolsConfig: Address,
+    poolsConfig: Address,
     tokenMintA: Address,
     tokenMintB: Address,
     tickSpacing: number,
@@ -210,11 +210,11 @@ export class ElysiumPoolClientImpl implements ElysiumPoolClient {
       "Token order needs to be flipped to match the canonical ordering (i.e. sorted on the byte repr. of the mint pubkeys)"
     );
 
-    whirlpoolsConfig = AddressUtil.toPubKey(whirlpoolsConfig);
+    poolsConfig = AddressUtil.toPubKey(poolsConfig);
 
     const feeTierKey = PDAUtil.getFeeTier(
       this.ctx.program.programId,
-      whirlpoolsConfig,
+      poolsConfig,
       tickSpacing
     ).publicKey;
 
@@ -222,9 +222,9 @@ export class ElysiumPoolClientImpl implements ElysiumPoolClient {
     const tokenVaultAKeypair = Keypair.generate();
     const tokenVaultBKeypair = Keypair.generate();
 
-    const whirlpoolPda = PDAUtil.getElysiumPool(
+    const poolPda = PDAUtil.getElysiumPool(
       this.ctx.program.programId,
-      whirlpoolsConfig,
+      poolsConfig,
       new PublicKey(tokenMintA),
       new PublicKey(tokenMintB),
       tickSpacing
@@ -241,8 +241,8 @@ export class ElysiumPoolClientImpl implements ElysiumPoolClient {
 
     const initPoolIx = ElysiumPoolIx.initializePoolIx(this.ctx.program, {
       initSqrtPrice,
-      whirlpoolsConfig,
-      whirlpoolPda,
+      poolsConfig,
+      poolPda,
       tokenMintA: new PublicKey(tokenMintA),
       tokenMintB: new PublicKey(tokenMintB),
       tokenVaultAKeypair,
@@ -255,7 +255,7 @@ export class ElysiumPoolClientImpl implements ElysiumPoolClient {
     const initialTickArrayStartTick = TickUtil.getStartTickIndex(initialTick, tickSpacing);
     const initialTickArrayPda = PDAUtil.getTickArray(
       this.ctx.program.programId,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       initialTickArrayStartTick
     );
 
@@ -264,13 +264,13 @@ export class ElysiumPoolClientImpl implements ElysiumPoolClient {
       initTickArrayIx(this.ctx.program, {
         startTick: initialTickArrayStartTick,
         tickArrayPda: initialTickArrayPda,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         funder: AddressUtil.toPubKey(funder),
       })
     );
 
     return {
-      poolKey: whirlpoolPda.publicKey,
+      poolKey: poolPda.publicKey,
       tx: txBuilder,
     };
   }

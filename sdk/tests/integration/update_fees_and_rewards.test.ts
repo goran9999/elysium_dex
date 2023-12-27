@@ -31,13 +31,13 @@ describe("update_fees_and_rewards", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       tokenAccountA,
       tokenAccountB,
       positions,
     } = fixture.getInfos();
 
-    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, whirlpoolPda.publicKey, 22528);
+    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, poolPda.publicKey, 22528);
 
     const positionBefore = (await fetcher.getPosition(
       positions[0].publicKey,
@@ -48,7 +48,7 @@ describe("update_fees_and_rewards", () => {
     assert.ok(positionBefore.rewardInfos[0].amountOwed.eq(ZERO_BN));
     assert.ok(positionBefore.rewardInfos[0].growthInsideCheckpoint.eq(ZERO_BN));
 
-    const oraclePda = PDAUtil.getOracle(ctx.program.programId, whirlpoolPda.publicKey);
+    const oraclePda = PDAUtil.getOracle(ctx.program.programId, poolPda.publicKey);
 
     await toTx(
       ctx,
@@ -58,7 +58,7 @@ describe("update_fees_and_rewards", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4.95)),
         amountSpecifiedIsInput: true,
         aToB: true,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -76,7 +76,7 @@ describe("update_fees_and_rewards", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         position: positions[0].publicKey,
         tickArrayLower: tickArrayPda.publicKey,
         tickArrayUpper: tickArrayPda.publicKey,
@@ -110,17 +110,17 @@ describe("update_fees_and_rewards", () => {
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: ZERO_BN }],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
     } = fixture.getInfos();
 
-    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, whirlpoolPda.publicKey, 22528);
+    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, poolPda.publicKey, 22528);
 
     await assert.rejects(
       toTx(
         ctx,
         ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           position: positions[0].publicKey,
           tickArrayLower: tickArrayPda.publicKey,
           tickArrayUpper: tickArrayPda.publicKey,
@@ -130,15 +130,15 @@ describe("update_fees_and_rewards", () => {
     );
   });
 
-  it("fails when position does not match whirlpool", async () => {
+  it("fails when position does not match pool", async () => {
     const tickLowerIndex = 29440;
     const tickUpperIndex = 33536;
 
     const tickSpacing = TickSpacing.Standard;
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
     } = await initTestPool(ctx, tickSpacing);
-    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, whirlpoolPda.publicKey, 22528);
+    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, poolPda.publicKey, 22528);
 
     const other = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
@@ -150,7 +150,7 @@ describe("update_fees_and_rewards", () => {
       toTx(
         ctx,
         ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           position: otherPositions[0].publicKey,
           tickArrayLower: tickArrayPda.publicKey,
           tickArrayUpper: tickArrayPda.publicKey,
@@ -171,17 +171,17 @@ describe("update_fees_and_rewards", () => {
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(1_000_000) }],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
     } = fixture.getInfos();
 
-    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, whirlpoolPda.publicKey, 0);
+    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, poolPda.publicKey, 0);
 
     await assert.rejects(
       toTx(
         ctx,
         ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           position: positions[0].publicKey,
           tickArrayLower: tickArrayPda.publicKey,
           tickArrayUpper: tickArrayPda.publicKey,
@@ -191,7 +191,7 @@ describe("update_fees_and_rewards", () => {
     );
   });
 
-  it("fails when tick arrays do not match whirlpool", async () => {
+  it("fails when tick arrays do not match pool", async () => {
     // In same tick array - start index 22528
     const tickLowerIndex = 29440;
     const tickUpperIndex = 33536;
@@ -202,12 +202,12 @@ describe("update_fees_and_rewards", () => {
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: ZERO_BN }],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
     } = fixture.getInfos();
 
     const {
-      poolInitInfo: { whirlpoolPda: otherElysiumPoolPda },
+      poolInitInfo: { poolPda: otherElysiumPoolPda },
     } = await initTestPool(ctx, tickSpacing);
 
     const tickArrayPda = PDAUtil.getTickArray(
@@ -220,7 +220,7 @@ describe("update_fees_and_rewards", () => {
       toTx(
         ctx,
         ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           position: positions[0].publicKey,
           tickArrayLower: tickArrayPda.publicKey,
           tickArrayUpper: tickArrayPda.publicKey,

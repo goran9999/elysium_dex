@@ -28,7 +28,7 @@ Trace:
 
 npm manifest: 
   {
-    "name": "@orca-so/whirlpools-sdk",
+    "name": "@orca-so/pools-sdk",
     "version": "0.5.2",
     "description": "Typescript SDK to interact with Orca's ElysiumPool program.",
     "license": "Apache-2.0",
@@ -73,7 +73,7 @@ npm manifest:
     ],
     "repository": {
       "type": "git",
-      "url": "git+https://github.com/orca-so/whirlpools.git"
+      "url": "git+https://github.com/orca-so/pools.git"
     },
     "keywords": [
       "orca_so",
@@ -86,7 +86,7 @@ npm manifest:
     ],
     "author": "team@orca.so",
     "bugs": {
-      "url": "https://github.com/orca-so/whirlpools/issues"
+      "url": "https://github.com/orca-so/pools/issues"
     },
     "homepage": "https://www.orca.so"
   }
@@ -672,9 +672,9 @@ Lockfile:
       decimal.js "^10.3.1"
       tiny-invariant "^1.2.0"
   
-  "@orca-so/whirlpool-client-sdk@0.0.7":
+  "@orca-so/pool-client-sdk@0.0.7":
     version "0.0.7"
-    resolved "https://registry.yarnpkg.com/@orca-so/whirlpool-client-sdk/-/whirlpool-client-sdk-0.0.7.tgz#a589a7437807d9840e1813961a4b17c7fe58f5f0"
+    resolved "https://registry.yarnpkg.com/@orca-so/pool-client-sdk/-/pool-client-sdk-0.0.7.tgz#a589a7437807d9840e1813961a4b17c7fe58f5f0"
     integrity sha512-fmGQjdRkW2lX1GqZVvrkklYfk0VpXbwuOw8AZA05RrqMZtSL+ePNZMBjBztlccxqKulweCPRCEYFXC17ZdNbAQ==
     dependencies:
       "@metaplex-foundation/mpl-token-metadata" "1.2.5"

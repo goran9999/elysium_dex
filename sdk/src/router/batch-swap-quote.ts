@@ -10,7 +10,7 @@ import { SwapQuoteParam } from "../quotes/public";
 import { PoolUtil, SwapDirection, SwapUtils } from "../utils/public";
 
 export interface SwapQuoteRequest {
-  whirlpool: Address;
+  pool: Address;
   tradeTokenMint: Address;
   tokenAmount: BN;
   amountSpecifiedIsInput: boolean;
@@ -22,28 +22,28 @@ export async function batchBuildSwapQuoteParams(
   fetcher: ElysiumPoolAccountFetcherInterface,
   opts?: ElysiumPoolAccountFetchOptions
 ): Promise<SwapQuoteParam[]> {
-  const whirlpools = await fetcher.getPools(
-    quoteRequests.map((req) => req.whirlpool),
+  const pools = await fetcher.getPools(
+    quoteRequests.map((req) => req.pool),
     opts
   );
   const program = AddressUtil.toPubKey(programId);
 
   const tickArrayRequests = quoteRequests.map((quoteReq) => {
-    const { whirlpool, tokenAmount, tradeTokenMint, amountSpecifiedIsInput } = quoteReq;
-    const whirlpoolData = whirlpools.get(AddressUtil.toString(whirlpool))!;
+    const { pool, tokenAmount, tradeTokenMint, amountSpecifiedIsInput } = quoteReq;
+    const poolData = pools.get(AddressUtil.toString(pool))!;
     const swapMintKey = AddressUtil.toPubKey(tradeTokenMint);
-    const swapTokenType = PoolUtil.getTokenType(whirlpoolData, swapMintKey);
+    const swapTokenType = PoolUtil.getTokenType(poolData, swapMintKey);
     invariant(!!swapTokenType, "swapTokenMint does not match any tokens on this pool");
     const aToB =
-      SwapUtils.getSwapDirection(whirlpoolData, swapMintKey, amountSpecifiedIsInput) ===
+      SwapUtils.getSwapDirection(poolData, swapMintKey, amountSpecifiedIsInput) ===
       SwapDirection.AtoB;
     return {
-      whirlpoolData,
+      poolData,
       tokenAmount,
       aToB,
-      tickCurrentIndex: whirlpoolData.tickCurrentIndex,
-      tickSpacing: whirlpoolData.tickSpacing,
-      whirlpoolAddress: AddressUtil.toPubKey(whirlpool),
+      tickCurrentIndex: poolData.tickCurrentIndex,
+      tickSpacing: poolData.tickSpacing,
+      poolAddress: AddressUtil.toPubKey(pool),
       amountSpecifiedIsInput,
     };
   });
@@ -51,9 +51,9 @@ export async function batchBuildSwapQuoteParams(
   const tickArrays = await SwapUtils.getBatchTickArrays(program, fetcher, tickArrayRequests, opts);
 
   return tickArrayRequests.map((req, index) => {
-    const { whirlpoolData, tokenAmount, aToB, amountSpecifiedIsInput } = req;
+    const { poolData, tokenAmount, aToB, amountSpecifiedIsInput } = req;
     return {
-      whirlpoolData,
+      poolData,
       tokenAmount,
       aToB,
       amountSpecifiedIsInput,

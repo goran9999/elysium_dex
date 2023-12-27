@@ -83,7 +83,7 @@ export class ElysiumPoolTestFixture {
           await initRewardAndSetEmissions(
             this.ctx,
             configKeypairs.rewardEmissionsSuperAuthorityKeypair,
-            poolInitInfo.whirlpoolPda.publicKey,
+            poolInitInfo.poolPda.publicKey,
             i,
             rewards[i].vaultAmount,
             rewards[i].emissionsPerSecondX64
@@ -125,17 +125,17 @@ async function initTickArrays(
 
   return Promise.all(
     Array.from(startTickSet).map((startTick) =>
-      initTickArray(ctx, poolInitInfo.whirlpoolPda.publicKey, startTick)
+      initTickArray(ctx, poolInitInfo.poolPda.publicKey, startTick)
     )
   );
 }
 
 const defaultPoolInitInfo: InitPoolParams = {
   initSqrtPrice: ZERO_BN,
-  whirlpoolsConfig: PublicKey.default,
+  poolsConfig: PublicKey.default,
   tokenMintA: PublicKey.default,
   tokenMintB: PublicKey.default,
-  whirlpoolPda: { publicKey: PublicKey.default, bump: 0 },
+  poolPda: { publicKey: PublicKey.default, bump: 0 },
   tokenVaultAKeypair: Keypair.generate(),
   tokenVaultBKeypair: Keypair.generate(),
   tickSpacing: TickSpacing.Standard,
@@ -144,7 +144,7 @@ const defaultPoolInitInfo: InitPoolParams = {
 };
 
 const defaultConfigInitInfo = {
-  whirlpoolsConfigKeypair: Keypair.generate(),
+  poolsConfigKeypair: Keypair.generate(),
   feeAuthority: PublicKey.default,
   collectProtocolFeesAuthority: PublicKey.default,
   rewardEmissionsSuperAuthority: PublicKey.default,

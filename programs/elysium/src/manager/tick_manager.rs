@@ -204,7 +204,7 @@ mod tick_manager_tests {
 
     use super::next_reward_growths_inside;
 
-    fn create_test_whirlpool_reward_info(
+    fn create_test_pool_reward_info(
         emissions_per_second_x64: u128,
         growth_global_x64: u128,
         initialized: bool,
@@ -353,9 +353,9 @@ mod tick_manager_tests {
                 tick_upper_index: 100,
                 tick_current_index: -200,
                 reward_infos: [
-                    create_test_whirlpool_reward_info(1, 500, true),
-                    create_test_whirlpool_reward_info(1, 1000, true),
-                    create_test_whirlpool_reward_info(1, 70000, true),
+                    create_test_pool_reward_info(1, 500, true),
+                    create_test_pool_reward_info(1, 1000, true),
+                    create_test_pool_reward_info(1, 70000, true),
                 ],
                 expected_reward_growths_inside: [0, 0, 0],
             },
@@ -375,9 +375,9 @@ mod tick_manager_tests {
                 tick_upper_index: 100,
                 tick_current_index: 10,
                 reward_infos: [
-                    create_test_whirlpool_reward_info(1, 1000, true),
-                    create_test_whirlpool_reward_info(1, 2000, true),
-                    create_test_whirlpool_reward_info(1, 80000, true),
+                    create_test_pool_reward_info(1, 1000, true),
+                    create_test_pool_reward_info(1, 2000, true),
+                    create_test_pool_reward_info(1, 80000, true),
                 ],
                 expected_reward_growths_inside: [700, 1200, 10100],
             },
@@ -397,9 +397,9 @@ mod tick_manager_tests {
                 tick_upper_index: 100,
                 tick_current_index: 250,
                 reward_infos: [
-                    create_test_whirlpool_reward_info(1, 1000, true),
-                    create_test_whirlpool_reward_info(1, 2000, true),
-                    create_test_whirlpool_reward_info(1, 80000, true),
+                    create_test_pool_reward_info(1, 1000, true),
+                    create_test_pool_reward_info(1, 2000, true),
+                    create_test_pool_reward_info(1, 80000, true),
                 ],
                 expected_reward_growths_inside: [700, 1200, 10100],
             },
@@ -419,9 +419,9 @@ mod tick_manager_tests {
                 tick_upper_index: 100,
                 tick_current_index: 250,
                 reward_infos: [
-                    create_test_whirlpool_reward_info(1, 1000, true),
-                    create_test_whirlpool_reward_info(1, 2000, false),
-                    create_test_whirlpool_reward_info(1, 80000, false),
+                    create_test_pool_reward_info(1, 1000, true),
+                    create_test_pool_reward_info(1, 2000, false),
+                    create_test_pool_reward_info(1, 80000, false),
                 ],
                 expected_reward_growths_inside: [700, 0, 0],
             },

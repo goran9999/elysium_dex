@@ -6,9 +6,9 @@ use crate::state::ElysiumPool;
 #[instruction(reward_index: u8)]
 pub struct SetRewardAuthority<'info> {
     #[account(mut)]
-    pub whirlpool: Account<'info, ElysiumPool>,
+    pub pool: Account<'info, ElysiumPool>,
 
-    #[account(address = whirlpool.reward_infos[reward_index as usize].authority)]
+    #[account(address = pool.reward_infos[reward_index as usize].authority)]
     pub reward_authority: Signer<'info>,
 
     /// CHECK: safe, the account that will be new authority can be arbitrary
@@ -16,7 +16,7 @@ pub struct SetRewardAuthority<'info> {
 }
 
 pub fn handler(ctx: Context<SetRewardAuthority>, reward_index: u8) -> Result<()> {
-    Ok(ctx.accounts.whirlpool.update_reward_authority(
+    Ok(ctx.accounts.pool.update_reward_authority(
         reward_index as usize,
         ctx.accounts.new_reward_authority.key(),
     )?)

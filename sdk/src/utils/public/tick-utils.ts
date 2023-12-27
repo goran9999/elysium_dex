@@ -226,10 +226,10 @@ export class TickArrayUtil {
   /**
    * Return a sequence of tick array pdas based on the sequence start index.
    * @param tick - A tick in the first tick-array of your sequence
-   * @param tickSpacing - Tick spacing for the whirlpool
+   * @param tickSpacing - Tick spacing for the pool
    * @param numOfTickArrays - The number of TickArray PDAs to generate
-   * @param programId - Program Id of the whirlpool for these tick-arrays
-   * @param whirlpoolAddress - Address for the ElysiumPool for these tick-arrays
+   * @param programId - Program Id of the pool for these tick-arrays
+   * @param poolAddress - Address for the ElysiumPool for these tick-arrays
    * @returns TickArray PDAs for the sequence`
    */
   public static getTickArrayPDAs(
@@ -237,7 +237,7 @@ export class TickArrayUtil {
     tickSpacing: number,
     numOfTickArrays: number,
     programId: PublicKey,
-    whirlpoolAddress: PublicKey,
+    poolAddress: PublicKey,
     aToB: boolean
   ): PDA[] {
     let arrayIndexList = [...Array(numOfTickArrays).keys()];
@@ -246,7 +246,7 @@ export class TickArrayUtil {
     }
     return arrayIndexList.map((value) => {
       const startTick = TickUtil.getStartTickIndex(tick, tickSpacing, value);
-      return PDAUtil.getTickArray(programId, whirlpoolAddress, startTick);
+      return PDAUtil.getTickArray(programId, poolAddress, startTick);
     });
   }
 
@@ -285,7 +285,7 @@ export class TickArrayUtil {
   public static async getUninitializedArraysPDAs(
     ticks: number[],
     programId: PublicKey,
-    whirlpoolAddress: PublicKey,
+    poolAddress: PublicKey,
     tickSpacing: number,
     fetcher: ElysiumPoolAccountFetcherInterface,
     opts: ElysiumPoolAccountFetchOptions
@@ -293,7 +293,7 @@ export class TickArrayUtil {
     const startTicks = ticks.map((tick) => TickUtil.getStartTickIndex(tick, tickSpacing));
     const removeDupeTicks = [...new Set(startTicks)];
     const tickArrayPDAs = removeDupeTicks.map((tick) =>
-      PDAUtil.getTickArray(programId, whirlpoolAddress, tick)
+      PDAUtil.getTickArray(programId, poolAddress, tick)
     );
     const fetchedArrays = await fetcher.getTickArrays(
       tickArrayPDAs.map((pda) => pda.publicKey),

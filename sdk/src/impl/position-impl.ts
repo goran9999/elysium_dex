@@ -32,24 +32,24 @@ import {
   TokenMintTypes,
   getTokenMintsFromElysiumPools,
   resolveAtaForMints,
-} from "../utils/whirlpool-ata-utils";
-import { Position } from "../whirlpool-client";
+} from "../utils/pool-ata-utils";
+import { Position } from "../pool-client";
 
 export class PositionImpl implements Position {
   private data: PositionData;
-  private whirlpoolData: ElysiumPoolData;
+  private poolData: ElysiumPoolData;
   private lowerTickArrayData: TickArrayData;
   private upperTickArrayData: TickArrayData;
   constructor(
     readonly ctx: ElysiumPoolContext,
     readonly address: PublicKey,
     data: PositionData,
-    whirlpoolData: ElysiumPoolData,
+    poolData: ElysiumPoolData,
     lowerTickArrayData: TickArrayData,
     upperTickArrayData: TickArrayData
   ) {
     this.data = data;
-    this.whirlpoolData = whirlpoolData;
+    this.poolData = poolData;
     this.lowerTickArrayData = lowerTickArrayData;
     this.upperTickArrayData = upperTickArrayData;
   }
@@ -63,14 +63,14 @@ export class PositionImpl implements Position {
   }
 
   getElysiumPoolData(): ElysiumPoolData {
-    return this.whirlpoolData;
+    return this.poolData;
   }
 
   getLowerTickData(): TickData {
     return TickArrayUtil.getTickFromArray(
       this.lowerTickArrayData,
       this.data.tickLowerIndex,
-      this.whirlpoolData.tickSpacing
+      this.poolData.tickSpacing
     );
   }
 
@@ -78,7 +78,7 @@ export class PositionImpl implements Position {
     return TickArrayUtil.getTickFromArray(
       this.upperTickArrayData,
       this.data.tickUpperIndex,
-      this.whirlpoolData.tickSpacing
+      this.poolData.tickSpacing
     );
   }
 
@@ -102,9 +102,9 @@ export class PositionImpl implements Position {
       : this.ctx.wallet.publicKey;
     const ataPayerKey = ataPayer ? AddressUtil.toPubKey(ataPayer) : this.ctx.wallet.publicKey;
 
-    const whirlpool = await this.ctx.fetcher.getPool(this.data.whirlpool, IGNORE_CACHE);
-    if (!whirlpool) {
-      throw new Error("Unable to fetch whirlpool for this position.");
+    const pool = await this.ctx.fetcher.getPool(this.data.pool, IGNORE_CACHE);
+    if (!pool) {
+      throw new Error("Unable to fetch pool for this position.");
     }
 
     const txBuilder = new TransactionBuilder(
@@ -121,8 +121,8 @@ export class PositionImpl implements Position {
         this.ctx.connection,
         sourceWalletKey,
         [
-          { tokenMint: whirlpool.tokenMintA, wrappedSolAmountIn: liquidityInput.tokenMaxA },
-          { tokenMint: whirlpool.tokenMintB, wrappedSolAmountIn: liquidityInput.tokenMaxB },
+          { tokenMint: pool.tokenMintA, wrappedSolAmountIn: liquidityInput.tokenMaxA },
+          { tokenMint: pool.tokenMintB, wrappedSolAmountIn: liquidityInput.tokenMaxB },
         ],
         () => this.ctx.fetcher.getAccountRentExempt(),
         ataPayerKey,
@@ -138,12 +138,12 @@ export class PositionImpl implements Position {
       txBuilder.addInstruction(tokenOwnerAccountBIx);
     } else {
       tokenOwnerAccountA = getAssociatedTokenAddressSync(
-        whirlpool.tokenMintA,
+        pool.tokenMintA,
         sourceWalletKey,
         this.ctx.accountResolverOpts.allowPDAOwnerAddress
       );
       tokenOwnerAccountB = getAssociatedTokenAddressSync(
-        whirlpool.tokenMintB,
+        pool.tokenMintB,
         sourceWalletKey,
         this.ctx.accountResolverOpts.allowPDAOwnerAddress
       );
@@ -156,22 +156,22 @@ export class PositionImpl implements Position {
 
     const increaseIx = increaseLiquidityIx(this.ctx.program, {
       ...liquidityInput,
-      whirlpool: this.data.whirlpool,
+      pool: this.data.pool,
       position: this.address,
       positionTokenAccount,
       tokenOwnerAccountA,
       tokenOwnerAccountB,
-      tokenVaultA: whirlpool.tokenVaultA,
-      tokenVaultB: whirlpool.tokenVaultB,
+      tokenVaultA: pool.tokenVaultA,
+      tokenVaultB: pool.tokenVaultB,
       tickArrayLower: PDAUtil.getTickArray(
         this.ctx.program.programId,
-        this.data.whirlpool,
-        TickUtil.getStartTickIndex(this.data.tickLowerIndex, whirlpool.tickSpacing)
+        this.data.pool,
+        TickUtil.getStartTickIndex(this.data.tickLowerIndex, pool.tickSpacing)
       ).publicKey,
       tickArrayUpper: PDAUtil.getTickArray(
         this.ctx.program.programId,
-        this.data.whirlpool,
-        TickUtil.getStartTickIndex(this.data.tickUpperIndex, whirlpool.tickSpacing)
+        this.data.pool,
+        TickUtil.getStartTickIndex(this.data.tickUpperIndex, pool.tickSpacing)
       ).publicKey,
       positionAuthority: positionWalletKey,
     });
@@ -193,10 +193,10 @@ export class PositionImpl implements Position {
       ? AddressUtil.toPubKey(positionWallet)
       : this.ctx.wallet.publicKey;
     const ataPayerKey = ataPayer ? AddressUtil.toPubKey(ataPayer) : this.ctx.wallet.publicKey;
-    const whirlpool = await this.ctx.fetcher.getPool(this.data.whirlpool, IGNORE_CACHE);
+    const pool = await this.ctx.fetcher.getPool(this.data.pool, IGNORE_CACHE);
 
-    if (!whirlpool) {
-      throw new Error("Unable to fetch whirlpool for this position.");
+    if (!pool) {
+      throw new Error("Unable to fetch pool for this position.");
     }
 
     const txBuilder = new TransactionBuilder(
@@ -211,7 +211,7 @@ export class PositionImpl implements Position {
       const [ataA, ataB] = await resolveOrCreateATAs(
         this.ctx.connection,
         sourceWalletKey,
-        [{ tokenMint: whirlpool.tokenMintA }, { tokenMint: whirlpool.tokenMintB }],
+        [{ tokenMint: pool.tokenMintA }, { tokenMint: pool.tokenMintB }],
         () => this.ctx.fetcher.getAccountRentExempt(),
         ataPayerKey,
         undefined, // use default
@@ -226,12 +226,12 @@ export class PositionImpl implements Position {
       txBuilder.addInstruction(tokenOwnerAccountBIx);
     } else {
       tokenOwnerAccountA = getAssociatedTokenAddressSync(
-        whirlpool.tokenMintA,
+        pool.tokenMintA,
         sourceWalletKey,
         this.ctx.accountResolverOpts.allowPDAOwnerAddress
       );
       tokenOwnerAccountB = getAssociatedTokenAddressSync(
-        whirlpool.tokenMintB,
+        pool.tokenMintB,
         sourceWalletKey,
         this.ctx.accountResolverOpts.allowPDAOwnerAddress
       );
@@ -239,7 +239,7 @@ export class PositionImpl implements Position {
 
     const decreaseIx = decreaseLiquidityIx(this.ctx.program, {
       ...liquidityInput,
-      whirlpool: this.data.whirlpool,
+      pool: this.data.pool,
       position: this.address,
       positionTokenAccount: getAssociatedTokenAddressSync(
         this.data.positionMint,
@@ -248,17 +248,17 @@ export class PositionImpl implements Position {
       ),
       tokenOwnerAccountA,
       tokenOwnerAccountB,
-      tokenVaultA: whirlpool.tokenVaultA,
-      tokenVaultB: whirlpool.tokenVaultB,
+      tokenVaultA: pool.tokenVaultA,
+      tokenVaultB: pool.tokenVaultB,
       tickArrayLower: PDAUtil.getTickArray(
         this.ctx.program.programId,
-        this.data.whirlpool,
-        TickUtil.getStartTickIndex(this.data.tickLowerIndex, whirlpool.tickSpacing)
+        this.data.pool,
+        TickUtil.getStartTickIndex(this.data.tickLowerIndex, pool.tickSpacing)
       ).publicKey,
       tickArrayUpper: PDAUtil.getTickArray(
         this.ctx.program.programId,
-        this.data.whirlpool,
-        TickUtil.getStartTickIndex(this.data.tickUpperIndex, whirlpool.tickSpacing)
+        this.data.pool,
+        TickUtil.getStartTickIndex(this.data.tickUpperIndex, pool.tickSpacing)
       ).publicKey,
       positionAuthority: positionWalletKey,
     });
@@ -280,10 +280,10 @@ export class PositionImpl implements Position {
       ataPayer ?? this.ctx.wallet.publicKey,
     ]);
 
-    const whirlpool = await this.ctx.fetcher.getPool(this.data.whirlpool, opts);
-    if (!whirlpool) {
+    const pool = await this.ctx.fetcher.getPool(this.data.pool, opts);
+    if (!pool) {
       throw new Error(
-        `Unable to fetch whirlpool (${this.data.whirlpool}) for this position (${this.address}).`
+        `Unable to fetch pool (${this.data.pool}) for this position (${this.address}).`
       );
     }
 
@@ -298,7 +298,7 @@ export class PositionImpl implements Position {
     let ataMap = { ...ownerTokenAccountMap };
 
     if (!ownerTokenAccountMap) {
-      const affliatedMints = getTokenMintsFromElysiumPools([whirlpool], TokenMintTypes.POOL_ONLY);
+      const affliatedMints = getTokenMintsFromElysiumPools([pool], TokenMintTypes.POOL_ONLY);
       const { ataTokenAddresses: affliatedTokenAtaMap, resolveAtaIxs } = await resolveAtaForMints(
         this.ctx,
         {
@@ -328,15 +328,15 @@ export class PositionImpl implements Position {
       ataMap = { ...affliatedTokenAtaMap };
     }
 
-    const tokenOwnerAccountA = ataMap[whirlpool.tokenMintA.toBase58()];
+    const tokenOwnerAccountA = ataMap[pool.tokenMintA.toBase58()];
     invariant(
       !!tokenOwnerAccountA,
-      `No owner token account provided for wallet ${destinationWalletKey.toBase58()} for token A ${whirlpool.tokenMintA.toBase58()} `
+      `No owner token account provided for wallet ${destinationWalletKey.toBase58()} for token A ${pool.tokenMintA.toBase58()} `
     );
-    const tokenOwnerAccountB = ataMap[whirlpool.tokenMintB.toBase58()];
+    const tokenOwnerAccountB = ataMap[pool.tokenMintB.toBase58()];
     invariant(
       !!tokenOwnerAccountB,
-      `No owner token account provided for wallet ${destinationWalletKey.toBase58()} for token B ${whirlpool.tokenMintB.toBase58()} `
+      `No owner token account provided for wallet ${destinationWalletKey.toBase58()} for token B ${pool.tokenMintB.toBase58()} `
     );
 
     const positionTokenAccount = getAssociatedTokenAddressSync(
@@ -351,13 +351,13 @@ export class PositionImpl implements Position {
     }
 
     const ix = collectFeesIx(this.ctx.program, {
-      whirlpool: this.data.whirlpool,
+      pool: this.data.pool,
       position: this.address,
       positionTokenAccount,
       tokenOwnerAccountA: AddressUtil.toPubKey(tokenOwnerAccountA),
       tokenOwnerAccountB: AddressUtil.toPubKey(tokenOwnerAccountB),
-      tokenVaultA: whirlpool.tokenVaultA,
-      tokenVaultB: whirlpool.tokenVaultB,
+      tokenVaultA: pool.tokenVaultA,
+      tokenVaultB: pool.tokenVaultB,
       positionAuthority: positionWalletKey,
     });
 
@@ -381,14 +381,14 @@ export class PositionImpl implements Position {
       ataPayer ?? this.ctx.wallet.publicKey,
     ]);
 
-    const whirlpool = await this.ctx.fetcher.getPool(this.data.whirlpool, opts);
-    if (!whirlpool) {
+    const pool = await this.ctx.fetcher.getPool(this.data.pool, opts);
+    if (!pool) {
       throw new Error(
-        `Unable to fetch whirlpool(${this.data.whirlpool}) for this position(${this.address}).`
+        `Unable to fetch pool(${this.data.pool}) for this position(${this.address}).`
       );
     }
 
-    const initializedRewards = whirlpool.rewardInfos.filter((info) =>
+    const initializedRewards = pool.rewardInfos.filter((info) =>
       PoolUtil.isRewardInitialized(info)
     );
 
@@ -402,7 +402,7 @@ export class PositionImpl implements Position {
 
     let ataMap = { ...ownerTokenAccountMap };
     if (!ownerTokenAccountMap) {
-      const rewardMints = getTokenMintsFromElysiumPools([whirlpool], TokenMintTypes.REWARD_ONLY);
+      const rewardMints = getTokenMintsFromElysiumPools([pool], TokenMintTypes.REWARD_ONLY);
       const { ataTokenAddresses: affliatedTokenAtaMap, resolveAtaIxs } = await resolveAtaForMints(
         this.ctx,
         {
@@ -459,7 +459,7 @@ export class PositionImpl implements Position {
       );
 
       const ix = collectRewardIx(this.ctx.program, {
-        whirlpool: this.data.whirlpool,
+        pool: this.data.pool,
         position: this.address,
         positionTokenAccount,
         rewardIndex: index,
@@ -479,15 +479,15 @@ export class PositionImpl implements Position {
     if (!!positionAccount) {
       this.data = positionAccount;
     }
-    const whirlpoolAccount = await this.ctx.fetcher.getPool(this.data.whirlpool, IGNORE_CACHE);
-    if (!!whirlpoolAccount) {
-      this.whirlpoolData = whirlpoolAccount;
+    const poolAccount = await this.ctx.fetcher.getPool(this.data.pool, IGNORE_CACHE);
+    if (!!poolAccount) {
+      this.poolData = poolAccount;
     }
 
     const [lowerTickArray, upperTickArray] = await getTickArrayDataForPosition(
       this.ctx,
       this.data,
-      this.whirlpoolData,
+      this.poolData,
       IGNORE_CACHE
     );
     if (lowerTickArray) {
@@ -499,10 +499,10 @@ export class PositionImpl implements Position {
   }
 
   private async updateFeesAndRewards(): Promise<Instruction> {
-    const whirlpool = await this.ctx.fetcher.getPool(this.data.whirlpool);
-    if (!whirlpool) {
+    const pool = await this.ctx.fetcher.getPool(this.data.pool);
+    if (!pool) {
       throw new Error(
-        `Unable to fetch whirlpool(${this.data.whirlpool}) for this position(${this.address}).`
+        `Unable to fetch pool(${this.data.pool}) for this position(${this.address}).`
       );
     }
 
@@ -512,14 +512,14 @@ export class PositionImpl implements Position {
     ].map((tickIndex) =>
       PDAUtil.getTickArrayFromTickIndex(
         tickIndex,
-        whirlpool.tickSpacing,
-        this.data.whirlpool,
+        pool.tickSpacing,
+        this.data.pool,
         this.ctx.program.programId
       )
     );
 
     const updateIx = updateFeesAndRewardsIx(this.ctx.program, {
-      whirlpool: this.data.whirlpool,
+      pool: this.data.pool,
       position: this.address,
       tickArrayLower: tickArrayLowerPda.publicKey,
       tickArrayUpper: tickArrayUpperPda.publicKey,

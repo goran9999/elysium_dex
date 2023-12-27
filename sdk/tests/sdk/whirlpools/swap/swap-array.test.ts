@@ -38,7 +38,7 @@ describe("swap arrays test", () => {
    */
   it("3 sequential arrays, 2nd array not initialized, use tickArray0 only, a->b", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 1, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -55,11 +55,11 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const tradeAmount = new BN(10000);
     const quote = await swapQuoteByInputToken(
-      whirlpool,
-      whirlpoolData.tokenMintA,
+      pool,
+      poolData.tokenMintA,
       tradeAmount,
       slippageTolerance,
       ctx.program.programId,
@@ -80,7 +80,7 @@ describe("swap arrays test", () => {
       adjustForSlippage(quote.estimatedAmountOut, slippageTolerance, false).toString()
     );
     assert.equal(quote.estimatedAmountIn.toString(), tradeAmount);
-    assert.doesNotThrow(async () => await (await whirlpool.swap(quote)).buildAndExecute());
+    assert.doesNotThrow(async () => await (await pool.swap(quote)).buildAndExecute());
   });
 
   /**
@@ -88,7 +88,7 @@ describe("swap arrays test", () => {
    */
   it("3 sequential arrays, 2nd array not initialized, a->b", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 1, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -106,12 +106,12 @@ describe("swap arrays test", () => {
     });
 
     // estimatedEndTickIndex is 4091 (arrayIndex: 0 (not initialized))
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const expectedError = "Swap input value traversed too many arrays.";
     await assert.rejects(
       swapQuoteByInputToken(
-        whirlpool,
-        whirlpoolData.tokenMintA,
+        pool,
+        poolData.tokenMintA,
         new BN(40_000_000),
         slippageTolerance,
         ctx.program.programId,
@@ -127,7 +127,7 @@ describe("swap arrays test", () => {
    */
   it("3 sequential arrays, 2nd array not initialized, use tickArray0 only, b->a", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -1, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -144,11 +144,11 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const tradeAmount = new BN(10000);
     const quote = await swapQuoteByInputToken(
-      whirlpool,
-      whirlpoolData.tokenMintB,
+      pool,
+      poolData.tokenMintB,
       tradeAmount,
       slippageTolerance,
       ctx.program.programId,
@@ -169,7 +169,7 @@ describe("swap arrays test", () => {
       adjustForSlippage(quote.estimatedAmountOut, slippageTolerance, false).toString()
     );
     assert.equal(quote.estimatedAmountIn.toString(), tradeAmount);
-    assert.doesNotThrow(async () => await (await whirlpool.swap(quote)).buildAndExecute());
+    assert.doesNotThrow(async () => await (await pool.swap(quote)).buildAndExecute());
   });
 
   /**
@@ -177,7 +177,7 @@ describe("swap arrays test", () => {
    */
   it("3 sequential arrays, 2nd array not initialized, b->a", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -1, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -195,12 +195,12 @@ describe("swap arrays test", () => {
     });
 
     // estimatedEndTickIndex is 556 (arrayIndex: 0 (not initialized))
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const expectedError = "Swap input value traversed too many arrays.";
     await assert.rejects(
       swapQuoteByInputToken(
-        whirlpool,
-        whirlpoolData.tokenMintB,
+        pool,
+        poolData.tokenMintB,
         new BN(40_000_000),
         slippageTolerance,
         ctx.program.programId,
@@ -216,7 +216,7 @@ describe("swap arrays test", () => {
    */
   it("3 sequential arrays, 2nd array and 3rd array not initialized, use tickArray0 only, a->b", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 1, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -233,11 +233,11 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const tradeAmount = new BN(10000);
     const quote = await swapQuoteByInputToken(
-      whirlpool,
-      whirlpoolData.tokenMintA,
+      pool,
+      poolData.tokenMintA,
       tradeAmount,
       slippageTolerance,
       ctx.program.programId,
@@ -258,7 +258,7 @@ describe("swap arrays test", () => {
       adjustForSlippage(quote.estimatedAmountOut, slippageTolerance, false).toString()
     );
     assert.equal(quote.estimatedAmountIn.toString(), tradeAmount);
-    assert.doesNotThrow(async () => await (await whirlpool.swap(quote)).buildAndExecute());
+    assert.doesNotThrow(async () => await (await pool.swap(quote)).buildAndExecute());
   });
 
   /**
@@ -266,7 +266,7 @@ describe("swap arrays test", () => {
    */
   it("3 sequential arrays, 2nd array and 3rd array not initialized, use tickArray0 only, b->a", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -1, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -283,11 +283,11 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const tradeAmount = new BN(10000);
     const quote = await swapQuoteByInputToken(
-      whirlpool,
-      whirlpoolData.tokenMintB,
+      pool,
+      poolData.tokenMintB,
       tradeAmount,
       slippageTolerance,
       ctx.program.programId,
@@ -308,7 +308,7 @@ describe("swap arrays test", () => {
       adjustForSlippage(quote.estimatedAmountOut, slippageTolerance, false).toString()
     );
     assert.equal(quote.estimatedAmountIn.toString(), tradeAmount);
-    assert.doesNotThrow(async () => await (await whirlpool.swap(quote)).buildAndExecute());
+    assert.doesNotThrow(async () => await (await pool.swap(quote)).buildAndExecute());
   });
 
   /**
@@ -316,7 +316,7 @@ describe("swap arrays test", () => {
    */
   it("3 sequential arrays does not contain curr_tick_index, a->b", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -2, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -333,14 +333,14 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const aToB = true;
     const tickArrays = await SwapUtils.getTickArrays(
       arrayTickIndexToTickIndex({ arrayIndex: 0, offsetIndex: 10 }, tickSpacing),
       tickSpacing,
       aToB,
       ctx.program.programId,
-      whirlpool.getAddress(),
+      pool.getAddress(),
       fetcher,
       IGNORE_CACHE
     );
@@ -351,7 +351,7 @@ describe("swap arrays test", () => {
             aToB,
             amountSpecifiedIsInput: true,
             tokenAmount: new BN("10000"),
-            whirlpoolData,
+            poolData,
             tickArrays,
             sqrtPriceLimit: SwapUtils.getDefaultSqrtPriceLimit(aToB),
             otherAmountThreshold: ZERO,
@@ -367,7 +367,7 @@ describe("swap arrays test", () => {
    */
   it("3 sequential arrays does not contain curr_tick_index, b->a", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 2, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -384,14 +384,14 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.getData();
+    const poolData = await pool.getData();
     const aToB = false;
     const tickArrays = await SwapUtils.getTickArrays(
       arrayTickIndexToTickIndex({ arrayIndex: 0, offsetIndex: 10 }, tickSpacing),
       tickSpacing,
       aToB,
       ctx.program.programId,
-      whirlpool.getAddress(),
+      pool.getAddress(),
       fetcher,
       IGNORE_CACHE
     );
@@ -402,7 +402,7 @@ describe("swap arrays test", () => {
             aToB,
             amountSpecifiedIsInput: true,
             tokenAmount: new BN("10000"),
-            whirlpoolData,
+            poolData,
             tickArrays,
             sqrtPriceLimit: SwapUtils.getDefaultSqrtPriceLimit(aToB),
             otherAmountThreshold: ZERO,
@@ -418,7 +418,7 @@ describe("swap arrays test", () => {
    */
   it("3 sequential arrays, 2nd array contains curr_tick_index, a->b", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 0, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -434,14 +434,14 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const aToB = true;
     const tickArrays = await SwapUtils.getTickArrays(
       arrayTickIndexToTickIndex({ arrayIndex: 1, offsetIndex: 10 }, tickSpacing),
       tickSpacing,
       aToB,
       ctx.program.programId,
-      whirlpool.getAddress(),
+      pool.getAddress(),
       fetcher,
       IGNORE_CACHE
     );
@@ -452,7 +452,7 @@ describe("swap arrays test", () => {
             aToB,
             amountSpecifiedIsInput: true,
             tokenAmount: new BN("10000"),
-            whirlpoolData,
+            poolData,
             tickArrays,
             sqrtPriceLimit: SwapUtils.getDefaultSqrtPriceLimit(aToB),
             otherAmountThreshold: ZERO,
@@ -468,7 +468,7 @@ describe("swap arrays test", () => {
    */
   it("3 sequential arrays, 2nd array contains curr_tick_index, b->a", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 0, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -484,14 +484,14 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const aToB = false;
     const tickArrays = await SwapUtils.getTickArrays(
       arrayTickIndexToTickIndex({ arrayIndex: 1, offsetIndex: 10 }, tickSpacing),
       tickSpacing,
       aToB,
       ctx.program.programId,
-      whirlpool.getAddress(),
+      pool.getAddress(),
       fetcher,
       IGNORE_CACHE
     );
@@ -503,7 +503,7 @@ describe("swap arrays test", () => {
             aToB,
             amountSpecifiedIsInput: true,
             tokenAmount: new BN("10000"),
-            whirlpoolData,
+            poolData,
             tickArrays,
             sqrtPriceLimit: SwapUtils.getDefaultSqrtPriceLimit(aToB),
             otherAmountThreshold: ZERO,
@@ -519,7 +519,7 @@ describe("swap arrays test", () => {
    */
   it("on first array, 2nd array is not sequential, a->b", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 2, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -535,12 +535,12 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const aToB = true;
     const tickArrays = await getTickArrays(
       [11264, 0, 5632],
       ctx,
-      AddressUtil.toPubKey(whirlpool.getAddress()),
+      AddressUtil.toPubKey(pool.getAddress()),
       fetcher
     );
     assert.throws(
@@ -550,7 +550,7 @@ describe("swap arrays test", () => {
             aToB,
             amountSpecifiedIsInput: true,
             tokenAmount: new BN("10000"),
-            whirlpoolData,
+            poolData,
             tickArrays,
             sqrtPriceLimit: SwapUtils.getDefaultSqrtPriceLimit(aToB),
             otherAmountThreshold: ZERO,
@@ -571,7 +571,7 @@ describe("swap arrays test", () => {
    */
   it("on first array, 2nd array is not sequential, b->a", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -2, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -587,12 +587,12 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const aToB = false;
     const tickArrays = await getTickArrays(
       [-11264, 0, -5632],
       ctx,
-      AddressUtil.toPubKey(whirlpool.getAddress()),
+      AddressUtil.toPubKey(pool.getAddress()),
       fetcher
     );
     assert.throws(
@@ -602,7 +602,7 @@ describe("swap arrays test", () => {
             aToB,
             amountSpecifiedIsInput: true,
             tokenAmount: new BN("10000"),
-            whirlpoolData,
+            poolData,
             tickArrays,
             sqrtPriceLimit: SwapUtils.getDefaultSqrtPriceLimit(aToB),
             otherAmountThreshold: ZERO,
@@ -626,7 +626,7 @@ describe("swap arrays test", () => {
       { arrayIndex: 1, offsetIndex: TICK_ARRAY_SIZE - 4 },
       tickSpacing
     );
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -642,12 +642,12 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const aToB = true;
     const tickArrays = await getTickArrays(
       [5632, 5632, 5632],
       ctx,
-      AddressUtil.toPubKey(whirlpool.getAddress()),
+      AddressUtil.toPubKey(pool.getAddress()),
       fetcher
     );
     const tradeAmount = new BN("33588");
@@ -656,7 +656,7 @@ describe("swap arrays test", () => {
         aToB,
         amountSpecifiedIsInput: true,
         tokenAmount: tradeAmount,
-        whirlpoolData,
+        poolData,
         tickArrays,
         sqrtPriceLimit: SwapUtils.getDefaultSqrtPriceLimit(aToB),
         otherAmountThreshold: ZERO,
@@ -676,7 +676,7 @@ describe("swap arrays test", () => {
       adjustForSlippage(quote.estimatedAmountOut, slippageTolerance, false).toString()
     );
     assert.equal(quote.estimatedAmountIn.toString(), tradeAmount);
-    assert.doesNotThrow(async () => await (await whirlpool.swap(quote)).buildAndExecute());
+    assert.doesNotThrow(async () => await (await pool.swap(quote)).buildAndExecute());
   });
 
   /**
@@ -684,7 +684,7 @@ describe("swap arrays test", () => {
    */
   it("3 identical arrays, 1st contains curr_tick_index, b->a", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 1, offsetIndex: 4 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -700,12 +700,12 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const aToB = false;
     const tickArrays = await getTickArrays(
       [5632, 5632, 5632],
       ctx,
-      AddressUtil.toPubKey(whirlpool.getAddress()),
+      AddressUtil.toPubKey(pool.getAddress()),
       fetcher
     );
     const tradeAmount = new BN("33588");
@@ -714,7 +714,7 @@ describe("swap arrays test", () => {
         aToB,
         amountSpecifiedIsInput: true,
         tokenAmount: tradeAmount,
-        whirlpoolData,
+        poolData,
         tickArrays,
         sqrtPriceLimit: SwapUtils.getDefaultSqrtPriceLimit(aToB),
         otherAmountThreshold: ZERO,
@@ -734,7 +734,7 @@ describe("swap arrays test", () => {
       adjustForSlippage(quote.estimatedAmountOut, slippageTolerance, false).toString()
     );
     assert.equal(quote.estimatedAmountIn.toString(), tradeAmount);
-    assert.doesNotThrow(async () => await (await whirlpool.swap(quote)).buildAndExecute());
+    assert.doesNotThrow(async () => await (await pool.swap(quote)).buildAndExecute());
   });
 
   /**
@@ -742,7 +742,7 @@ describe("swap arrays test", () => {
    */
   it("ElysiumPool.swap with uninitialized TickArrays, a->b", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 1, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -759,19 +759,19 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const tradeAmount = new BN(10000);
     const aToB = true;
     const tickArrays = SwapUtils.getTickArrayPublicKeys(
-      whirlpoolData.tickCurrentIndex,
-      whirlpoolData.tickSpacing,
+      poolData.tickCurrentIndex,
+      poolData.tickSpacing,
       aToB,
       ctx.program.programId,
-      whirlpool.getAddress()
+      pool.getAddress()
     );
 
     await assert.rejects(
-      whirlpool.swap({
+      pool.swap({
         amount: tradeAmount,
         amountSpecifiedIsInput: true,
         aToB,
@@ -797,7 +797,7 @@ describe("swap arrays test", () => {
    */
   it("ElysiumPool.swap with uninitialized TickArrays, b->a", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -1, offsetIndex: 44 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -814,19 +814,19 @@ describe("swap arrays test", () => {
       ],
     });
 
-    const whirlpoolData = await whirlpool.refreshData();
+    const poolData = await pool.refreshData();
     const tradeAmount = new BN(10000);
     const aToB = false;
     const tickArrays = SwapUtils.getTickArrayPublicKeys(
-      whirlpoolData.tickCurrentIndex,
-      whirlpoolData.tickSpacing,
+      poolData.tickCurrentIndex,
+      poolData.tickSpacing,
       aToB,
       ctx.program.programId,
-      whirlpool.getAddress()
+      pool.getAddress()
     );
 
     await assert.rejects(
-      whirlpool.swap({
+      pool.swap({
         amount: tradeAmount,
         amountSpecifiedIsInput: true,
         aToB,

@@ -83,7 +83,7 @@ describe("get_pool_prices", () => {
       quoteTokens: [poolInitInfo.tokenMintB],
       tickSpacings: [TickSpacing.Standard],
       programId: program.programId,
-      whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
+      poolsConfig: configInitInfo.poolsConfigKeypair.publicKey,
     };
 
     const thresholdConfig = getDefaultThresholdConfig();
@@ -141,7 +141,7 @@ describe("get_pool_prices", () => {
       quoteTokens: [mintKeys[1]],
       tickSpacings: [TickSpacing.Standard],
       programId: program.programId,
-      whirlpoolsConfig: configParams.configInitInfo.whirlpoolsConfigKeypair.publicKey,
+      poolsConfig: configParams.configInitInfo.poolsConfigKeypair.publicKey,
     };
 
     const thresholdConfig = getDefaultThresholdConfig();
@@ -215,7 +215,7 @@ describe("get_pool_prices", () => {
       quoteTokens: [mintKeys[1]],
       tickSpacings: [TickSpacing.Standard, TickSpacing.SixtyFour],
       programId: program.programId,
-      whirlpoolsConfig: configParams.configInitInfo.whirlpoolsConfigKeypair.publicKey,
+      poolsConfig: configParams.configInitInfo.poolsConfigKeypair.publicKey,
     };
 
     const thresholdConfig = getDefaultThresholdConfig();
@@ -266,7 +266,7 @@ describe("get_pool_prices", () => {
       quoteTokens: [mintKeys[2], mintKeys[1]],
       tickSpacings: [TickSpacing.Standard],
       programId: program.programId,
-      whirlpoolsConfig: configParams.configInitInfo.whirlpoolsConfigKeypair.publicKey,
+      poolsConfig: configParams.configInitInfo.poolsConfigKeypair.publicKey,
     };
 
     const thresholdConfig = getDefaultThresholdConfig();

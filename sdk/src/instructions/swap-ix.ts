@@ -3,23 +3,23 @@ import { Instruction } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 /**
  * Raw parameters and accounts to swap on a ElysiumPool
  *
  * @category Instruction Types
  * @param swapInput - Parameters in {@link SwapInput}
- * @param whirlpool - PublicKey for the whirlpool that the swap will occur on
+ * @param pool - PublicKey for the pool that the swap will occur on
  * @param tokenOwnerAccountA - PublicKey for the associated token account for tokenA in the collection wallet
  * @param tokenOwnerAccountB - PublicKey for the associated token account for tokenB in the collection wallet
- * @param tokenVaultA - PublicKey for the tokenA vault for this whirlpool.
- * @param tokenVaultB - PublicKey for the tokenB vault for this whirlpool.
+ * @param tokenVaultA - PublicKey for the tokenA vault for this pool.
+ * @param tokenVaultB - PublicKey for the tokenB vault for this pool.
  * @param oracle - PublicKey for the oracle account for this ElysiumPool.
  * @param tokenAuthority - authority to withdraw tokens from the input token account
  */
 export type SwapParams = SwapInput & {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   tokenOwnerAccountA: PublicKey;
   tokenOwnerAccountB: PublicKey;
   tokenVaultA: PublicKey;
@@ -90,7 +90,7 @@ export function swapIx(program: Program<ElysiumPool>, params: SwapParams): Instr
     sqrtPriceLimit,
     amountSpecifiedIsInput,
     aToB,
-    whirlpool,
+    pool,
     tokenAuthority,
     tokenOwnerAccountA,
     tokenVaultA,
@@ -112,7 +112,7 @@ export function swapIx(program: Program<ElysiumPool>, params: SwapParams): Instr
       accounts: {
         tokenProgram: TOKEN_PROGRAM_ID,
         tokenAuthority: tokenAuthority,
-        whirlpool,
+        pool,
         tokenOwnerAccountA,
         tokenVaultA,
         tokenOwnerAccountB,

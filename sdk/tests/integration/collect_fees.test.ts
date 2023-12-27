@@ -47,24 +47,18 @@ describe("collect_fees", () => {
       ],
     });
     const {
-      poolInitInfo: {
-        whirlpoolPda,
-        tokenVaultAKeypair,
-        tokenVaultBKeypair,
-        tokenMintA,
-        tokenMintB,
-      },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair, tokenMintA, tokenMintB },
       tokenAccountA,
       tokenAccountB,
       positions,
     } = fixture.getInfos();
 
-    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, whirlpoolPda.publicKey, 22528);
+    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, poolPda.publicKey, 22528);
     const positionBeforeSwap = (await fetcher.getPosition(positions[0].publicKey)) as PositionData;
     assert.ok(positionBeforeSwap.feeOwedA.eq(ZERO_BN));
     assert.ok(positionBeforeSwap.feeOwedB.eq(ZERO_BN));
 
-    const oraclePda = PDAUtil.getOracle(ctx.program.programId, whirlpoolPda.publicKey);
+    const oraclePda = PDAUtil.getOracle(ctx.program.programId, poolPda.publicKey);
 
     // Accrue fees in token A
     await toTx(
@@ -75,7 +69,7 @@ describe("collect_fees", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
         amountSpecifiedIsInput: true,
         aToB: true,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -97,7 +91,7 @@ describe("collect_fees", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
         amountSpecifiedIsInput: true,
         aToB: false,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -113,7 +107,7 @@ describe("collect_fees", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         position: positions[0].publicKey,
         tickArrayLower: tickArrayPda.publicKey,
         tickArrayUpper: tickArrayPda.publicKey,
@@ -131,12 +125,12 @@ describe("collect_fees", () => {
     const feeAccountB = await createTokenAccount(provider, tokenMintB, provider.wallet.publicKey);
 
     // Generate collect fees expectation
-    const whirlpoolData = (await fetcher.getPool(whirlpoolPda.publicKey)) as ElysiumPoolData;
+    const poolData = (await fetcher.getPool(poolPda.publicKey)) as ElysiumPoolData;
     const tickArrayData = (await fetcher.getTickArray(tickArrayPda.publicKey)) as TickArrayData;
     const lowerTick = TickArrayUtil.getTickFromArray(tickArrayData, tickLowerIndex, tickSpacing);
     const upperTick = TickArrayUtil.getTickFromArray(tickArrayData, tickUpperIndex, tickSpacing);
     const expectation = collectFeesQuote({
-      whirlpool: whirlpoolData,
+      pool: poolData,
       position: positionBeforeCollect,
       tickLower: lowerTick,
       tickUpper: upperTick,
@@ -146,7 +140,7 @@ describe("collect_fees", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.collectFeesIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         positionAuthority: provider.wallet.publicKey,
         position: positions[0].publicKey,
         positionTokenAccount: positions[0].tokenAccount,
@@ -172,7 +166,7 @@ describe("collect_fees", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         position: positions[1].publicKey,
         tickArrayLower: positions[1].tickArrayLower,
         tickArrayUpper: positions[1].tickArrayUpper,
@@ -192,7 +186,7 @@ describe("collect_fees", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       positions,
       tokenAccountA,
       tokenAccountB,
@@ -205,7 +199,7 @@ describe("collect_fees", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.collectFeesIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         positionAuthority: delegate.publicKey,
         position: position.publicKey,
         positionTokenAccount: position.tokenAccount,
@@ -228,7 +222,7 @@ describe("collect_fees", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       positions,
       tokenAccountA,
       tokenAccountB,
@@ -241,7 +235,7 @@ describe("collect_fees", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.collectFeesIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         positionAuthority: provider.wallet.publicKey,
         position: position.publicKey,
         positionTokenAccount: position.tokenAccount,
@@ -262,7 +256,7 @@ describe("collect_fees", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       positions,
       tokenAccountA,
       tokenAccountB,
@@ -281,7 +275,7 @@ describe("collect_fees", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.collectFeesIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         positionAuthority: newOwner.publicKey,
         position: position.publicKey,
         positionTokenAccount: newOwnerPositionTokenAccount,
@@ -295,7 +289,7 @@ describe("collect_fees", () => {
       .buildAndExecute();
   });
 
-  it("fails when position does not match whirlpool", async () => {
+  it("fails when position does not match pool", async () => {
     // In same tick array - start index 22528
     const tickLowerIndex = 29440;
     const tickUpperIndex = 33536;
@@ -312,14 +306,14 @@ describe("collect_fees", () => {
     } = fixture.getInfos();
 
     const {
-      poolInitInfo: { whirlpoolPda: whirlpoolPda2 },
+      poolInitInfo: { poolPda: poolPda2 },
     } = await initTestPool(ctx, tickSpacing);
 
     await assert.rejects(
       toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: whirlpoolPda2.publicKey,
+          pool: poolPda2.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -343,7 +337,7 @@ describe("collect_fees", () => {
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(10_000_000) }],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       tokenAccountA,
       tokenAccountB,
       positions,
@@ -359,7 +353,7 @@ describe("collect_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positionTokenAccount2,
@@ -378,7 +372,7 @@ describe("collect_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -402,7 +396,7 @@ describe("collect_fees", () => {
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(10_000_000) }],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       tokenAccountA,
       tokenAccountB,
       positions,
@@ -414,7 +408,7 @@ describe("collect_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: delegate.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -440,7 +434,7 @@ describe("collect_fees", () => {
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(10_000_000) }],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       tokenAccountA,
       tokenAccountB,
       positions,
@@ -453,7 +447,7 @@ describe("collect_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: delegate.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -479,7 +473,7 @@ describe("collect_fees", () => {
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(10_000_000) }],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       tokenAccountA,
       tokenAccountB,
       positions,
@@ -492,7 +486,7 @@ describe("collect_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: delegate.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -516,7 +510,7 @@ describe("collect_fees", () => {
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(10_000_000) }],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair, tokenMintA },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair, tokenMintA },
       tokenAccountA,
       tokenAccountB,
       positions,
@@ -532,7 +526,7 @@ describe("collect_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: fakePositionTokenAccount,
@@ -546,7 +540,7 @@ describe("collect_fees", () => {
     );
   });
 
-  it("fails when token vault does not match whirlpool token vault", async () => {
+  it("fails when token vault does not match pool token vault", async () => {
     // In same tick array - start index 22528
     const tickLowerIndex = 29440;
     const tickUpperIndex = 33536;
@@ -556,13 +550,7 @@ describe("collect_fees", () => {
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(10_000_000) }],
     });
     const {
-      poolInitInfo: {
-        whirlpoolPda,
-        tokenVaultAKeypair,
-        tokenVaultBKeypair,
-        tokenMintA,
-        tokenMintB,
-      },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair, tokenMintA, tokenMintB },
       tokenAccountA,
       tokenAccountB,
       positions,
@@ -575,7 +563,7 @@ describe("collect_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -592,7 +580,7 @@ describe("collect_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -606,7 +594,7 @@ describe("collect_fees", () => {
     );
   });
 
-  it("fails when owner token account mint does not match whirlpool token mint", async () => {
+  it("fails when owner token account mint does not match pool token mint", async () => {
     // In same tick array - start index 22528
     const tickLowerIndex = 29440;
     const tickUpperIndex = 33536;
@@ -616,13 +604,7 @@ describe("collect_fees", () => {
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(10_000_000) }],
     });
     const {
-      poolInitInfo: {
-        whirlpoolPda,
-        tokenVaultAKeypair,
-        tokenVaultBKeypair,
-        tokenMintA,
-        tokenMintB,
-      },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair, tokenMintA, tokenMintB },
       tokenAccountA,
       tokenAccountB,
       positions,
@@ -643,7 +625,7 @@ describe("collect_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -660,7 +642,7 @@ describe("collect_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectFeesIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,

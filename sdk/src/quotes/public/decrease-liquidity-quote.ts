@@ -10,7 +10,7 @@ import {
   PositionUtil,
 } from "../../utils/position-util";
 import { PriceMath, TickUtil } from "../../utils/public";
-import { Position, ElysiumPool } from "../../whirlpool-client";
+import { Position, ElysiumPool } from "../../pool-client";
 
 /**
  * @category Quotes
@@ -43,17 +43,17 @@ export type DecreaseLiquidityQuote = DecreaseLiquidityInput & { tokenEstA: BN; t
  * @param liquidity - The desired liquidity to withdraw from the ElysiumPool
  * @param slippageTolerance - The maximum slippage allowed when calculating the minimum tokens received.
  * @param position - A Position helper class to help interact with the Position account.
- * @param whirlpool - A ElysiumPool helper class to help interact with the ElysiumPool account.
+ * @param pool - A ElysiumPool helper class to help interact with the ElysiumPool account.
  * @returns An DecreaseLiquidityQuote object detailing the tokenMin & liquidity values to use when calling decrease-liquidity-ix.
  */
 export function decreaseLiquidityQuoteByLiquidity(
   liquidity: BN,
   slippageTolerance: Percentage,
   position: Position,
-  whirlpool: ElysiumPool
+  pool: ElysiumPool
 ) {
   const positionData = position.getData();
-  const whirlpoolData = whirlpool.getData();
+  const poolData = pool.getData();
 
   invariant(
     liquidity.lte(positionData.liquidity),
@@ -65,8 +65,8 @@ export function decreaseLiquidityQuoteByLiquidity(
     slippageTolerance,
     tickLowerIndex: positionData.tickLowerIndex,
     tickUpperIndex: positionData.tickUpperIndex,
-    sqrtPrice: whirlpoolData.sqrtPrice,
-    tickCurrentIndex: whirlpoolData.tickCurrentIndex,
+    sqrtPrice: poolData.sqrtPrice,
+    tickCurrentIndex: poolData.tickCurrentIndex,
   });
 }
 

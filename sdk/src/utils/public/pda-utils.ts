@@ -5,7 +5,7 @@ import { METADATA_PROGRAM_ADDRESS } from "../../types/public";
 import { PriceMath } from "./price-math";
 import { TickUtil } from "./tick-utils";
 
-const PDA_WHIRLPOOL_SEED = "whirlpool";
+const PDA_WHIRLPOOL_SEED = "pool";
 const PDA_POSITION_SEED = "position";
 const PDA_METADATA_SEED = "metadata";
 const PDA_TICK_ARRAY_SEED = "tick_array";
@@ -21,7 +21,7 @@ export class PDAUtil {
   /**
    *
    * @param programId
-   * @param whirlpoolsConfigKey
+   * @param poolsConfigKey
    * @param tokenMintAKey
    * @param tokenMintBKey
    * @param tickSpacing
@@ -29,7 +29,7 @@ export class PDAUtil {
    */
   public static getElysiumPool(
     programId: PublicKey,
-    whirlpoolsConfigKey: PublicKey,
+    poolsConfigKey: PublicKey,
     tokenMintAKey: PublicKey,
     tokenMintBKey: PublicKey,
     tickSpacing: number
@@ -37,7 +37,7 @@ export class PDAUtil {
     return AddressUtil.findProgramAddress(
       [
         Buffer.from(PDA_WHIRLPOOL_SEED),
-        whirlpoolsConfigKey.toBuffer(),
+        poolsConfigKey.toBuffer(),
         tokenMintAKey.toBuffer(),
         tokenMintBKey.toBuffer(),
         new BN(tickSpacing).toArrayLike(Buffer, "le", 2),
@@ -78,17 +78,13 @@ export class PDAUtil {
   /**
    * @category Program Derived Addresses
    * @param programId
-   * @param whirlpoolAddress
+   * @param poolAddress
    * @param startTick
    * @returns
    */
-  public static getTickArray(programId: PublicKey, whirlpoolAddress: PublicKey, startTick: number) {
+  public static getTickArray(programId: PublicKey, poolAddress: PublicKey, startTick: number) {
     return AddressUtil.findProgramAddress(
-      [
-        Buffer.from(PDA_TICK_ARRAY_SEED),
-        whirlpoolAddress.toBuffer(),
-        Buffer.from(startTick.toString()),
-      ],
+      [Buffer.from(PDA_TICK_ARRAY_SEED), poolAddress.toBuffer(), Buffer.from(startTick.toString())],
       programId
     );
   }
@@ -99,7 +95,7 @@ export class PDAUtil {
    *
    * @param tickIndex
    * @param tickSpacing
-   * @param whirlpool
+   * @param pool
    * @param programId
    * @param tickArrayOffset
    * @returns
@@ -107,14 +103,14 @@ export class PDAUtil {
   public static getTickArrayFromTickIndex(
     tickIndex: number,
     tickSpacing: number,
-    whirlpool: PublicKey,
+    pool: PublicKey,
     programId: PublicKey,
     tickArrayOffset = 0
   ) {
     const startIndex = TickUtil.getStartTickIndex(tickIndex, tickSpacing, tickArrayOffset);
     return PDAUtil.getTickArray(
       AddressUtil.toPubKey(programId),
-      AddressUtil.toPubKey(whirlpool),
+      AddressUtil.toPubKey(pool),
       startIndex
     );
   }
@@ -122,7 +118,7 @@ export class PDAUtil {
   public static getTickArrayFromSqrtPrice(
     sqrtPriceX64: BN,
     tickSpacing: number,
-    whirlpool: PublicKey,
+    pool: PublicKey,
     programId: PublicKey,
     tickArrayOffset = 0
   ) {
@@ -130,7 +126,7 @@ export class PDAUtil {
     return PDAUtil.getTickArrayFromTickIndex(
       tickIndex,
       tickSpacing,
-      whirlpool,
+      pool,
       programId,
       tickArrayOffset
     );
@@ -139,19 +135,19 @@ export class PDAUtil {
   /**
    * @category Program Derived Addresses
    * @param programId
-   * @param whirlpoolsConfigAddress
+   * @param poolsConfigAddress
    * @param tickSpacing
    * @returns
    */
   public static getFeeTier(
     programId: PublicKey,
-    whirlpoolsConfigAddress: PublicKey,
+    poolsConfigAddress: PublicKey,
     tickSpacing: number
   ) {
     return AddressUtil.findProgramAddress(
       [
         Buffer.from(PDA_FEE_TIER_SEED),
-        whirlpoolsConfigAddress.toBuffer(),
+        poolsConfigAddress.toBuffer(),
         new BN(tickSpacing).toArrayLike(Buffer, "le", 2),
       ],
       programId
@@ -161,12 +157,12 @@ export class PDAUtil {
   /**
    * @category Program Derived Addresses
    * @param programId
-   * @param whirlpoolAddress
+   * @param poolAddress
    * @returns
    */
-  public static getOracle(programId: PublicKey, whirlpoolAddress: PublicKey) {
+  public static getOracle(programId: PublicKey, poolAddress: PublicKey) {
     return AddressUtil.findProgramAddress(
-      [Buffer.from(PDA_ORACLE_SEED), whirlpoolAddress.toBuffer()],
+      [Buffer.from(PDA_ORACLE_SEED), poolAddress.toBuffer()],
       programId
     );
   }

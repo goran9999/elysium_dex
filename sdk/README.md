@@ -1,7 +1,7 @@
 # ElysiumPools
 
 Whirpools is an open-source concentrated liquidity AMM contract on the Solana blockchain.
-The ElysiumPools Typescript SDK (`@orca-so/whirlpools-sdk`) allows for easy interaction with a deployed ElysiumPools program.
+The ElysiumPools Typescript SDK (`@orca-so/pools-sdk`) allows for easy interaction with a deployed ElysiumPools program.
 
 The contract has been audited by Kudelski and Neodyme.
 
@@ -14,7 +14,7 @@ Use the SDK to interact with a deployed ElysiumPools program via Typescript.
 In your package, run:
 
 ```
-yarn add `@orca-so/whirlpools-sdk`
+yarn add `@orca-so/pools-sdk`
 yarn add "@coral-xyz/anchor"
 yarn add "decimal.js"
 ```

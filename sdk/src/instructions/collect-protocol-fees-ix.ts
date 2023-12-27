@@ -2,23 +2,23 @@ import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 /**
  * Parameters to collect protocol fees for a ElysiumPool
  *
  * @category Instruction Types
- * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
- * @param whirlpool - PublicKey for the whirlpool that the position will be opened for.
- * @param tokenVaultA - PublicKey for the tokenA vault for this whirlpool.
- * @param tokenVaultB - PublicKey for the tokenB vault for this whirlpool.
+ * @param poolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
+ * @param pool - PublicKey for the pool that the position will be opened for.
+ * @param tokenVaultA - PublicKey for the tokenA vault for this pool.
+ * @param tokenVaultB - PublicKey for the tokenB vault for this pool.
  * @param tokenOwnerAccountA - PublicKey for the associated token account for tokenA in the collection wallet
  * @param tokenOwnerAccountB - PublicKey for the associated token account for tokenA in the collection wallet
  * @param collectProtocolFeesAuthority - assigned authority in the ElysiumPoolsConfig that can collect protocol fees
  */
 export type CollectProtocolFeesParams = {
-  whirlpoolsConfig: PublicKey;
-  whirlpool: PublicKey;
+  poolsConfig: PublicKey;
+  pool: PublicKey;
   tokenVaultA: PublicKey;
   tokenVaultB: PublicKey;
   tokenOwnerAccountA: PublicKey;
@@ -39,8 +39,8 @@ export function collectProtocolFeesIx(
   params: CollectProtocolFeesParams
 ): Instruction {
   const {
-    whirlpoolsConfig,
-    whirlpool,
+    poolsConfig,
+    pool,
     collectProtocolFeesAuthority,
     tokenVaultA,
     tokenVaultB,
@@ -50,8 +50,8 @@ export function collectProtocolFeesIx(
 
   const ix = program.instruction.collectProtocolFees({
     accounts: {
-      whirlpoolsConfig,
-      whirlpool,
+      poolsConfig,
+      pool,
       collectProtocolFeesAuthority,
       tokenVaultA,
       tokenVaultB,

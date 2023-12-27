@@ -20,8 +20,8 @@ import { ElysiumPoolTestFixture } from "../../utils/fixture";
 interface SharedTestContext {
   provider: anchor.AnchorProvider;
   program: ElysiumPool;
-  whirlpoolCtx: ElysiumPoolContext;
-  whirlpoolClient: ElysiumPoolClient;
+  poolCtx: ElysiumPoolContext;
+  poolClient: ElysiumPoolClient;
 }
 
 describe("PositionImpl#collectRewards()", () => {
@@ -36,20 +36,20 @@ describe("PositionImpl#collectRewards()", () => {
     const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
     anchor.setProvider(provider);
     const program = anchor.workspace.ElysiumPool;
-    const whirlpoolCtx = ElysiumPoolContext.fromWorkspace(provider, program);
-    const whirlpoolClient = buildElysiumPoolClient(whirlpoolCtx);
+    const poolCtx = ElysiumPoolContext.fromWorkspace(provider, program);
+    const poolClient = buildElysiumPoolClient(poolCtx);
 
     testCtx = {
       provider,
       program,
-      whirlpoolCtx,
-      whirlpoolClient,
+      poolCtx,
+      poolClient,
     };
   });
 
-  context("when the whirlpool is SPL-only", () => {
+  context("when the pool is SPL-only", () => {
     it("should collect rewards", async () => {
-      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.poolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -72,14 +72,8 @@ describe("PositionImpl#collectRewards()", () => {
 
       const { positions, poolInitInfo, rewards } = fixture.getInfos();
 
-      const pool = await testCtx.whirlpoolClient.getPool(
-        poolInitInfo.whirlpoolPda.publicKey,
-        IGNORE_CACHE
-      );
-      const position = await testCtx.whirlpoolClient.getPosition(
-        positions[0].publicKey,
-        IGNORE_CACHE
-      );
+      const pool = await testCtx.poolClient.getPool(poolInitInfo.poolPda.publicKey, IGNORE_CACHE);
+      const position = await testCtx.poolClient.getPosition(positions[0].publicKey, IGNORE_CACHE);
 
       const otherWallet = anchor.web3.Keypair.generate();
       const preCollectPoolData = pool.getData();
@@ -102,7 +96,7 @@ describe("PositionImpl#collectRewards()", () => {
       // Verify the results fetched is the same as SDK estimate if the timestamp is the same
       const postCollectPoolData = await pool.refreshData();
       const quote = collectRewardsQuote({
-        whirlpool: preCollectPoolData,
+        pool: preCollectPoolData,
         position: position.getData(),
         tickLower: position.getLowerTickData(),
         tickUpper: position.getUpperTickData(),
@@ -119,7 +113,7 @@ describe("PositionImpl#collectRewards()", () => {
           rewards[i].rewardMint,
           otherWallet.publicKey
         );
-        const rewardTokenAccount = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(
+        const rewardTokenAccount = await testCtx.poolCtx.fetcher.getTokenInfo(
           rewardATA,
           IGNORE_CACHE
         );
@@ -128,9 +122,9 @@ describe("PositionImpl#collectRewards()", () => {
     });
   });
 
-  context("when the whirlpool is SOL-SPL", () => {
+  context("when the pool is SOL-SPL", () => {
     it("should collect rewards", async () => {
-      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.poolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -154,14 +148,8 @@ describe("PositionImpl#collectRewards()", () => {
 
       const { positions, poolInitInfo, rewards } = fixture.getInfos();
 
-      const pool = await testCtx.whirlpoolClient.getPool(
-        poolInitInfo.whirlpoolPda.publicKey,
-        IGNORE_CACHE
-      );
-      const position = await testCtx.whirlpoolClient.getPosition(
-        positions[0].publicKey,
-        IGNORE_CACHE
-      );
+      const pool = await testCtx.poolClient.getPool(poolInitInfo.poolPda.publicKey, IGNORE_CACHE);
+      const position = await testCtx.poolClient.getPosition(positions[0].publicKey, IGNORE_CACHE);
       const otherWallet = anchor.web3.Keypair.generate();
       const preCollectPoolData = pool.getData();
 
@@ -183,7 +171,7 @@ describe("PositionImpl#collectRewards()", () => {
       // Verify the results fetched is the same as SDK estimate if the timestamp is the same
       const postCollectPoolData = await pool.refreshData();
       const quote = collectRewardsQuote({
-        whirlpool: preCollectPoolData,
+        pool: preCollectPoolData,
         position: position.getData(),
         tickLower: position.getLowerTickData(),
         tickUpper: position.getUpperTickData(),
@@ -200,7 +188,7 @@ describe("PositionImpl#collectRewards()", () => {
           rewards[i].rewardMint,
           otherWallet.publicKey
         );
-        const rewardTokenAccount = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(
+        const rewardTokenAccount = await testCtx.poolCtx.fetcher.getTokenInfo(
           rewardATA,
           IGNORE_CACHE
         );

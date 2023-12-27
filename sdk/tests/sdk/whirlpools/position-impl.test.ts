@@ -40,7 +40,7 @@ describe("position-impl", () => {
       10_500_000_000
     );
 
-    const pool = await client.getPool(poolInitInfo.whirlpoolPda.publicKey);
+    const pool = await client.getPool(poolInitInfo.poolPda.publicKey);
     const lowerTick = PriceMath.priceToTickIndex(
       new Decimal(89),
       pool.getTokenAInfo().decimals,
@@ -124,7 +124,7 @@ describe("position-impl", () => {
       10_500_000_000
     );
 
-    const pool = await client.getPool(poolInitInfo.whirlpoolPda.publicKey);
+    const pool = await client.getPool(poolInitInfo.poolPda.publicKey);
     const lowerTick = PriceMath.priceToTickIndex(
       new Decimal(89),
       pool.getTokenAInfo().decimals,

@@ -2,7 +2,7 @@ import * as assert from "assert";
 import { AccountName, getAccountSize } from "../../../src";
 
 describe("anchor-types", () => {
-  it("all whirlpool account names exist in IDL", async () => {
+  it("all pool account names exist in IDL", async () => {
     type ExpectedSize = { [a in AccountName]: number };
     const expectedSizes: ExpectedSize = {
       [AccountName.ElysiumPoolsConfig]: 108,

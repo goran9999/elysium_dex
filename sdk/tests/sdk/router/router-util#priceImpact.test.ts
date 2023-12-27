@@ -234,7 +234,7 @@ describe("RouterUtil - Price Impact tests", () => {
               return {
                 amountIn: hopParam.amountIn,
                 amountOut: hopParam.amountOut,
-                whirlpool: PublicKey.default,
+                pool: PublicKey.default,
                 inputMint: PublicKey.default,
                 outputMint: PublicKey.default,
                 mintA: PublicKey.default,

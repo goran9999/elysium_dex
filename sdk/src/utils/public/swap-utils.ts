@@ -16,7 +16,7 @@ import {
   TickArray,
   ElysiumPoolData,
 } from "../../types/public";
-import { ElysiumPool } from "../../whirlpool-client";
+import { ElysiumPool } from "../../pool-client";
 import { adjustForSlippage } from "../math/token-math";
 import { PDAUtil } from "./pda-utils";
 import { PoolUtil } from "./pool-utils";
@@ -28,7 +28,7 @@ import { SwapDirection, TokenType } from "./types";
  * @category ElysiumPool Utils
  */
 export interface TickArrayRequest {
-  whirlpoolAddress: PublicKey;
+  poolAddress: PublicKey;
   aToB: boolean;
   tickCurrentIndex: number;
   tickSpacing: number;
@@ -87,7 +87,7 @@ export class SwapUtils {
    * @param tickSpacing - The tickSpacing for the ElysiumPool.
    * @param aToB - The direction of the trade.
    * @param programId - The ElysiumPool programId which the ElysiumPool lives on.
-   * @param whirlpoolAddress - PublicKey of the whirlpool to swap on.
+   * @param poolAddress - PublicKey of the pool to swap on.
    * @returns An array of PublicKey[] for the tickArray accounts that this swap may traverse across.
    */
   public static getTickArrayPublicKeys(
@@ -95,7 +95,7 @@ export class SwapUtils {
     tickSpacing: number,
     aToB: boolean,
     programId: PublicKey,
-    whirlpoolAddress: PublicKey
+    poolAddress: PublicKey
   ) {
     const shift = aToB ? 0 : tickSpacing;
 
@@ -109,7 +109,7 @@ export class SwapUtils {
         return tickArrayAddresses;
       }
 
-      const pda = PDAUtil.getTickArray(programId, whirlpoolAddress, startIndex);
+      const pda = PDAUtil.getTickArray(programId, poolAddress, startIndex);
       tickArrayAddresses.push(pda.publicKey);
       offset = aToB ? offset - 1 : offset + 1;
     }
@@ -125,7 +125,7 @@ export class SwapUtils {
    * @param tickSpacing - The tickSpacing for the ElysiumPool.
    * @param aToB - The direction of the trade.
    * @param programId - The ElysiumPool programId which the ElysiumPool lives on.
-   * @param whirlpoolAddress - PublicKey of the whirlpool to swap on.
+   * @param poolAddress - PublicKey of the pool to swap on.
    * @param cache - ElysiumPoolAccountCacheInterface object to fetch solana accounts
    * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
    * @returns An array of PublicKey[] for the tickArray accounts that this swap may traverse across.
@@ -135,14 +135,14 @@ export class SwapUtils {
     tickSpacing: number,
     aToB: boolean,
     programId: PublicKey,
-    whirlpoolAddress: PublicKey,
+    poolAddress: PublicKey,
     fetcher: ElysiumPoolAccountFetcherInterface,
     opts?: ElysiumPoolAccountFetchOptions
   ): Promise<TickArray[]> {
     const data = await this.getBatchTickArrays(
       programId,
       fetcher,
-      [{ tickCurrentIndex, tickSpacing, aToB, whirlpoolAddress }],
+      [{ tickCurrentIndex, tickSpacing, aToB, poolAddress }],
       opts
     );
     return data[0];
@@ -168,13 +168,13 @@ export class SwapUtils {
     // Each individual tick array request may correspond to more than one tick array
     // so we map each request to a slice of the batch request
     for (let i = 0; i < tickArrayRequests.length; i++) {
-      const { tickCurrentIndex, tickSpacing, aToB, whirlpoolAddress } = tickArrayRequests[i];
+      const { tickCurrentIndex, tickSpacing, aToB, poolAddress } = tickArrayRequests[i];
       const requestAddresses = SwapUtils.getTickArrayPublicKeys(
         tickCurrentIndex,
         tickSpacing,
         aToB,
         programId,
-        whirlpoolAddress
+        poolAddress
       );
       requestToIndices.push([addresses.length, addresses.length + requestAddresses.length]);
       addresses.push(...requestAddresses);
@@ -229,7 +229,7 @@ export class SwapUtils {
    *
    * @param quote - A {@link SwapQuote} type generated from {@link swapQuoteWithParams}
    * @param ctx - {@link ElysiumPoolContext}
-   * @param whirlpool - A {@link ElysiumPool} object from ElysiumPoolClient
+   * @param pool - A {@link ElysiumPool} object from ElysiumPoolClient
    * @param inputTokenAssociatedAddress - The public key for the ATA of the input token in the swap
    * @param outputTokenAssociatedAddress - The public key for the ATA of the input token in the swap
    * @param wallet - The token authority for this swap
@@ -238,16 +238,16 @@ export class SwapUtils {
   public static getSwapParamsFromQuote(
     quote: SwapInput,
     ctx: ElysiumPoolContext,
-    whirlpool: ElysiumPool,
+    pool: ElysiumPool,
     inputTokenAssociatedAddress: Address,
     outputTokenAssociatedAddress: Address,
     wallet: PublicKey
   ) {
-    const data = whirlpool.getData();
+    const data = pool.getData();
     return this.getSwapParamsFromQuoteKeys(
       quote,
       ctx,
-      whirlpool.getAddress(),
+      pool.getAddress(),
       data.tokenVaultA,
       data.tokenVaultB,
       inputTokenAssociatedAddress,
@@ -259,7 +259,7 @@ export class SwapUtils {
   public static getSwapParamsFromQuoteKeys(
     quote: SwapInput,
     ctx: ElysiumPoolContext,
-    whirlpool: PublicKey,
+    pool: PublicKey,
     tokenVaultA: PublicKey,
     tokenVaultB: PublicKey,
     inputTokenAssociatedAddress: Address,
@@ -271,9 +271,9 @@ export class SwapUtils {
       inputTokenAssociatedAddress,
       outputTokenAssociatedAddress,
     ]);
-    const oraclePda = PDAUtil.getOracle(ctx.program.programId, whirlpool);
+    const oraclePda = PDAUtil.getOracle(ctx.program.programId, pool);
     const params: SwapParams = {
-      whirlpool,
+      pool,
       tokenOwnerAccountA: aToB ? inputTokenATA : outputTokenATA,
       tokenOwnerAccountB: aToB ? outputTokenATA : inputTokenATA,
       tokenVaultA,

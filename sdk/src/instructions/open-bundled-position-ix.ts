@@ -2,13 +2,13 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Instruction, PDA } from "@orca-so/common-sdk";
 import { PublicKey, SystemProgram } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 /**
  * Parameters to open a bundled position in a ElysiumPool.
  *
  * @category Instruction Types
- * @param whirlpool - PublicKey for the whirlpool that the bundled position will be opened for.
+ * @param pool - PublicKey for the pool that the bundled position will be opened for.
  * @param bundledPositionPda - PDA for the derived bundled position address.
  * @param positionBundle - PublicKey for the position bundle.
  * @param positionBundleTokenAccount - The associated token address for the position bundle token in the owners wallet.
@@ -19,7 +19,7 @@ import { ElysiumPool } from "../artifacts/whirlpool";
  * @param funder - The account that would fund the creation of this account
  */
 export type OpenBundledPositionParams = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   bundledPositionPda: PDA;
   positionBundle: PublicKey;
   positionBundleTokenAccount: PublicKey;
@@ -49,7 +49,7 @@ export function openBundledPositionIx(
   params: OpenBundledPositionParams
 ): Instruction {
   const {
-    whirlpool,
+    pool,
     bundledPositionPda,
     positionBundle,
     positionBundleTokenAccount,
@@ -66,7 +66,7 @@ export function openBundledPositionIx(
       positionBundle,
       positionBundleTokenAccount,
       positionBundleAuthority,
-      whirlpool,
+      pool,
       funder,
       systemProgram: SystemProgram.programId,
       rent: anchor.web3.SYSVAR_RENT_PUBKEY,

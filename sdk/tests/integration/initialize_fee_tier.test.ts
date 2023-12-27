@@ -34,7 +34,7 @@ describe("initialize_fee_tier", () => {
 
     const generatedPda = PDAUtil.getFeeTier(
       ctx.program.programId,
-      configInitInfo.whirlpoolsConfigKeypair.publicKey,
+      configInitInfo.poolsConfigKeypair.publicKey,
       testTickSpacing
     );
 
@@ -141,7 +141,7 @@ describe("initialize_fee_tier", () => {
           ctx.program,
           generateDefaultInitFeeTierParams(
             ctx,
-            configInitInfo.whirlpoolsConfigKeypair.publicKey,
+            configInitInfo.poolsConfigKeypair.publicKey,
             configInitInfo.feeAuthority,
             TickSpacing.Stable,
             3000
@@ -167,7 +167,7 @@ describe("initialize_fee_tier", () => {
           ctx.program,
           generateDefaultInitFeeTierParams(
             ctx,
-            configInitInfo.whirlpoolsConfigKeypair.publicKey,
+            configInitInfo.poolsConfigKeypair.publicKey,
             fakeFeeAuthorityKeypair.publicKey,
             TickSpacing.Stable,
             3000

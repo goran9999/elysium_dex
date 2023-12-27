@@ -1,20 +1,20 @@
 import { BN, Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 /**
  * Parameters to set rewards emissions for a reward in a ElysiumPool
  *
  * @category Instruction Types
- * @param whirlpool - PublicKey for the whirlpool which the reward resides in.
+ * @param pool - PublicKey for the pool which the reward resides in.
  * @param rewardIndex - The reward index that we'd like to initialize. (0 <= index <= NUM_REWARDS).
  * @param rewardVaultKey - PublicKey of the vault for this reward index.
  * @param rewardAuthority - Assigned authority by the reward_super_authority for the specified reward-index in this ElysiumPool
  * @param emissionsPerSecondX64 - The new emissions per second to set for this reward.
  */
 export type SetRewardEmissionsParams = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   rewardIndex: number;
   rewardVaultKey: PublicKey;
   rewardAuthority: PublicKey;
@@ -41,7 +41,7 @@ export function setRewardEmissionsIx(
 ): Instruction {
   const {
     rewardAuthority,
-    whirlpool,
+    pool,
     rewardIndex,
     rewardVaultKey: rewardVault,
     emissionsPerSecondX64,
@@ -50,7 +50,7 @@ export function setRewardEmissionsIx(
   const ix = program.instruction.setRewardEmissions(rewardIndex, emissionsPerSecondX64, {
     accounts: {
       rewardAuthority,
-      whirlpool,
+      pool,
       rewardVault,
     },
   });

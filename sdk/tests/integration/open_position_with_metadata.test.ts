@@ -44,16 +44,16 @@ describe("open_position_with_metadata", () => {
   const tickLowerIndex = 0;
   const tickUpperIndex = 128;
   let poolInitInfo: InitPoolParams;
-  let whirlpoolPda: PDA;
+  let poolPda: PDA;
   const funderKeypair = anchor.web3.Keypair.generate();
 
   before(async () => {
     poolInitInfo = (await initTestPool(ctx, TickSpacing.Standard)).poolInitInfo;
-    whirlpoolPda = poolInitInfo.whirlpoolPda;
+    poolPda = poolInitInfo.poolPda;
 
     const { params, mint } = await generateDefaultOpenPositionParams(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       0,
       128,
       provider.wallet.publicKey
@@ -80,7 +80,7 @@ describe("open_position_with_metadata", () => {
   it("successfully opens position and verify position address contents", async () => {
     const positionInitInfo = await openPositionWithMetadata(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       tickLowerIndex,
       tickUpperIndex
     );
@@ -89,7 +89,7 @@ describe("open_position_with_metadata", () => {
 
     assert.strictEqual(position.tickLowerIndex, tickLowerIndex);
     assert.strictEqual(position.tickUpperIndex, tickUpperIndex);
-    assert.ok(position.whirlpool.equals(poolInitInfo.whirlpoolPda.publicKey));
+    assert.ok(position.pool.equals(poolInitInfo.poolPda.publicKey));
     assert.ok(position.positionMint.equals(positionMintAddress));
     assert.ok(position.liquidity.eq(ZERO_BN));
     assert.ok(position.feeGrowthCheckpointA.eq(ZERO_BN));
@@ -104,7 +104,7 @@ describe("open_position_with_metadata", () => {
   it("succeeds when funder is different than account paying for transaction fee", async () => {
     const { params } = await openPositionWithMetadata(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       tickLowerIndex,
       tickUpperIndex,
       provider.wallet.publicKey,
@@ -119,7 +119,7 @@ describe("open_position_with_metadata", () => {
 
     const positionInitInfo = await openPositionWithMetadata(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       tickLowerIndex,
       tickUpperIndex,
       newOwner.publicKey
@@ -168,7 +168,7 @@ describe("open_position_with_metadata", () => {
       await assert.rejects(
         openPositionWithMetadata(
           ctx,
-          whirlpoolPda.publicKey,
+          poolPda.publicKey,
           lowerTick,
           upperTick,
           provider.wallet.publicKey,
@@ -233,7 +233,7 @@ describe("open_position_with_metadata", () => {
           metadataPda,
           positionMintAddress: positionMintKeypair.publicKey,
           positionTokenAccount: positionTokenAccountAddress,
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           tickLowerIndex,
           tickUpperIndex,
         })

@@ -104,19 +104,19 @@ function populateQuoteMap(
     const path = quoteMap[splitPercent][pathIndex];
     try {
       const quote = swapQuoteWithParams(swapParam, Percentage.fromFraction(0, 1000));
-      const { whirlpoolData, tokenAmount, aToB, amountSpecifiedIsInput } = swapParam;
+      const { poolData, tokenAmount, aToB, amountSpecifiedIsInput } = swapParam;
       const [mintA, mintB, vaultA, vaultB] = [
-        whirlpoolData.tokenMintA.toBase58(),
-        whirlpoolData.tokenMintB.toBase58(),
-        whirlpoolData.tokenVaultA.toBase58(),
-        whirlpoolData.tokenVaultB.toBase58(),
+        poolData.tokenMintA.toBase58(),
+        poolData.tokenMintB.toBase58(),
+        poolData.tokenVaultA.toBase58(),
+        poolData.tokenVaultB.toBase58(),
       ];
       const [inputMint, outputMint] = aToB ? [mintA, mintB] : [mintB, mintA];
       path.calculatedEdgeQuotes[edgeIndex] = {
         success: true,
         amountIn: amountSpecifiedIsInput ? tokenAmount : quote.estimatedAmountIn,
         amountOut: amountSpecifiedIsInput ? quote.estimatedAmountOut : tokenAmount,
-        whirlpool: request.whirlpool,
+        pool: request.pool,
         inputMint,
         outputMint,
         mintA,
@@ -126,8 +126,8 @@ function populateQuoteMap(
         quote,
         snapshot: {
           aToB: swapParam.aToB,
-          sqrtPrice: whirlpoolData.sqrtPrice,
-          feeRate: PoolUtil.getFeeRate(whirlpoolData.feeRate),
+          sqrtPrice: poolData.sqrtPrice,
+          feeRate: PoolUtil.getFeeRate(poolData.feeRate),
         },
       };
     } catch (e: any) {
@@ -229,7 +229,7 @@ function buildQuoteUpdateRequests(
         edgeIndex: hop,
         quoteIndex: quoteUpdates.length,
         request: {
-          whirlpool: poolAddr,
+          pool: poolAddr,
           tradeTokenMint: tradeToken,
           tokenAmount,
           amountSpecifiedIsInput,

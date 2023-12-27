@@ -17,12 +17,12 @@ describe("position management tests", () => {
   it("successfully closes and opens a position in one transaction", async () => {
     const { poolInitInfo } = await initTestPool(ctx, TickSpacing.Standard);
 
-    const { params } = await openPosition(ctx, poolInitInfo.whirlpoolPda.publicKey, 0, 128);
+    const { params } = await openPosition(ctx, poolInitInfo.poolPda.publicKey, 0, 128);
     const receiverKeypair = anchor.web3.Keypair.generate();
 
     const { params: newParams, mint } = await generateDefaultOpenPositionParams(
       ctx,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       0,
       128,
       ctx.wallet.publicKey,

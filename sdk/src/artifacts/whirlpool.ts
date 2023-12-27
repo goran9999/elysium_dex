@@ -1,6 +1,6 @@
 export type ElysiumPool = {
   version: "0.2.0";
-  name: "whirlpool";
+  name: "pool";
   instructions: [
     {
       name: "initializeConfig";
@@ -67,7 +67,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpoolsConfig";
+          name: "poolsConfig";
           isMut: false;
           isSigner: false;
         },
@@ -87,7 +87,7 @@ export type ElysiumPool = {
           isSigner: true;
         },
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -154,7 +154,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: false;
           isSigner: false;
         },
@@ -264,7 +264,7 @@ export type ElysiumPool = {
           isSigner: true;
         },
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -324,7 +324,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -391,7 +391,7 @@ export type ElysiumPool = {
           isSigner: false;
         },
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: false;
           isSigner: false;
         },
@@ -483,7 +483,7 @@ export type ElysiumPool = {
           isSigner: false;
         },
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: false;
           isSigner: false;
         },
@@ -555,7 +555,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -645,7 +645,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -726,7 +726,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -758,7 +758,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: false;
           isSigner: false;
         },
@@ -815,7 +815,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: false;
           isSigner: false;
         },
@@ -867,12 +867,12 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpoolsConfig";
+          name: "poolsConfig";
           isMut: false;
           isSigner: false;
         },
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -946,7 +946,7 @@ export type ElysiumPool = {
           isSigner: true;
         },
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -1077,7 +1077,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpoolsConfig";
+          name: "poolsConfig";
           isMut: false;
           isSigner: false;
         },
@@ -1117,7 +1117,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpoolsConfig";
+          name: "poolsConfig";
           isMut: true;
           isSigner: false;
         },
@@ -1152,12 +1152,12 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpoolsConfig";
+          name: "poolsConfig";
           isMut: false;
           isSigner: false;
         },
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -1192,12 +1192,12 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpoolsConfig";
+          name: "poolsConfig";
           isMut: false;
           isSigner: false;
         },
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -1227,7 +1227,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpoolsConfig";
+          name: "poolsConfig";
           isMut: true;
           isSigner: false;
         },
@@ -1255,7 +1255,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpoolsConfig";
+          name: "poolsConfig";
           isMut: true;
           isSigner: false;
         },
@@ -1275,7 +1275,7 @@ export type ElysiumPool = {
     {
       name: "setRewardAuthority";
       docs: [
-        "Set the whirlpool reward authority at the provided `reward_index`.",
+        "Set the pool reward authority at the provided `reward_index`.",
         "Only the current reward authority for this reward index has permission to invoke this instruction.",
         "",
         "### Authority",
@@ -1288,7 +1288,7 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -1313,7 +1313,7 @@ export type ElysiumPool = {
     {
       name: "setRewardAuthorityBySuperAuthority";
       docs: [
-        "Set the whirlpool reward authority at the provided `reward_index`.",
+        "Set the pool reward authority at the provided `reward_index`.",
         "Only the current reward super authority has permission to invoke this instruction.",
         "",
         "### Authority",
@@ -1326,12 +1326,12 @@ export type ElysiumPool = {
       ];
       accounts: [
         {
-          name: "whirlpoolsConfig";
+          name: "poolsConfig";
           isMut: false;
           isSigner: false;
         },
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: true;
           isSigner: false;
         },
@@ -1356,16 +1356,16 @@ export type ElysiumPool = {
     {
       name: "setRewardEmissionsSuperAuthority";
       docs: [
-        "Set the whirlpool reward super authority for a ElysiumPoolConfig",
+        "Set the pool reward super authority for a ElysiumPoolConfig",
         "Only the current reward super authority has permission to invoke this instruction.",
-        "This instruction will not change the authority on any `ElysiumPoolRewardInfo` whirlpool rewards.",
+        "This instruction will not change the authority on any `ElysiumPoolRewardInfo` pool rewards.",
         "",
         "### Authority",
         '- "reward_emissions_super_authority" - Set authority that can control reward authorities for all pools in this config space.'
       ];
       accounts: [
         {
-          name: "whirlpoolsConfig";
+          name: "poolsConfig";
           isMut: true;
           isSigner: false;
         },
@@ -1409,7 +1409,7 @@ export type ElysiumPool = {
         "- `LiquidityOverflow` - Liquidity value overflowed 128bits during tick crossing.",
         "- `InvalidTickSpacing` - The swap pool was initialized with tick-spacing of 0.",
         "- `InvalidIntermediaryMint` - Error if the intermediary mint between hop one and two do not equal.",
-        "- `DuplicateTwoHopPool` - Error if whirlpool one & two are the same pool."
+        "- `DuplicateTwoHopPool` - Error if pool one & two are the same pool."
       ];
       accounts: [
         {
@@ -1423,12 +1423,12 @@ export type ElysiumPool = {
           isSigner: true;
         },
         {
-          name: "whirlpoolOne";
+          name: "poolOne";
           isMut: true;
           isSigner: false;
         },
         {
-          name: "whirlpoolTwo";
+          name: "poolTwo";
           isMut: true;
           isSigner: false;
         },
@@ -1760,7 +1760,7 @@ export type ElysiumPool = {
           isSigner: true;
         },
         {
-          name: "whirlpool";
+          name: "pool";
           isMut: false;
           isSigner: false;
         },
@@ -1847,7 +1847,7 @@ export type ElysiumPool = {
   ];
   accounts: [
     {
-      name: "whirlpoolsConfig";
+      name: "poolsConfig";
       type: {
         kind: "struct";
         fields: [
@@ -1876,7 +1876,7 @@ export type ElysiumPool = {
         kind: "struct";
         fields: [
           {
-            name: "whirlpoolsConfig";
+            name: "poolsConfig";
             type: "publicKey";
           },
           {
@@ -1914,7 +1914,7 @@ export type ElysiumPool = {
         kind: "struct";
         fields: [
           {
-            name: "whirlpool";
+            name: "pool";
             type: "publicKey";
           },
           {
@@ -1984,23 +1984,23 @@ export type ElysiumPool = {
             };
           },
           {
-            name: "whirlpool";
+            name: "pool";
             type: "publicKey";
           }
         ];
       };
     },
     {
-      name: "whirlpool";
+      name: "pool";
       type: {
         kind: "struct";
         fields: [
           {
-            name: "whirlpoolsConfig";
+            name: "poolsConfig";
             type: "publicKey";
           },
           {
-            name: "whirlpoolBump";
+            name: "poolBump";
             type: {
               array: ["u8", 1];
             };
@@ -2217,7 +2217,7 @@ export type ElysiumPool = {
         kind: "struct";
         fields: [
           {
-            name: "whirlpoolBump";
+            name: "poolBump";
             type: "u8";
           }
         ];
@@ -2283,7 +2283,7 @@ export type ElysiumPool = {
     {
       code: 6002;
       name: "TickArrayExistInPool";
-      msg: "Tick-array already exists in this whirlpool";
+      msg: "Tick-array already exists in this pool";
     },
     {
       code: 6003;
@@ -2510,7 +2510,7 @@ export type ElysiumPool = {
 
 export const IDL: ElysiumPool = {
   version: "0.2.0",
-  name: "whirlpool",
+  name: "pool",
   instructions: [
     {
       name: "initializeConfig",
@@ -2577,7 +2577,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpoolsConfig",
+          name: "poolsConfig",
           isMut: false,
           isSigner: false,
         },
@@ -2597,7 +2597,7 @@ export const IDL: ElysiumPool = {
           isSigner: true,
         },
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -2664,7 +2664,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: false,
           isSigner: false,
         },
@@ -2774,7 +2774,7 @@ export const IDL: ElysiumPool = {
           isSigner: true,
         },
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -2834,7 +2834,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -2901,7 +2901,7 @@ export const IDL: ElysiumPool = {
           isSigner: false,
         },
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: false,
           isSigner: false,
         },
@@ -2993,7 +2993,7 @@ export const IDL: ElysiumPool = {
           isSigner: false,
         },
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: false,
           isSigner: false,
         },
@@ -3065,7 +3065,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -3155,7 +3155,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -3236,7 +3236,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -3268,7 +3268,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: false,
           isSigner: false,
         },
@@ -3325,7 +3325,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: false,
           isSigner: false,
         },
@@ -3377,12 +3377,12 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpoolsConfig",
+          name: "poolsConfig",
           isMut: false,
           isSigner: false,
         },
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -3456,7 +3456,7 @@ export const IDL: ElysiumPool = {
           isSigner: true,
         },
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -3587,7 +3587,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpoolsConfig",
+          name: "poolsConfig",
           isMut: false,
           isSigner: false,
         },
@@ -3627,7 +3627,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpoolsConfig",
+          name: "poolsConfig",
           isMut: true,
           isSigner: false,
         },
@@ -3662,12 +3662,12 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpoolsConfig",
+          name: "poolsConfig",
           isMut: false,
           isSigner: false,
         },
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -3702,12 +3702,12 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpoolsConfig",
+          name: "poolsConfig",
           isMut: false,
           isSigner: false,
         },
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -3737,7 +3737,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpoolsConfig",
+          name: "poolsConfig",
           isMut: true,
           isSigner: false,
         },
@@ -3765,7 +3765,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpoolsConfig",
+          name: "poolsConfig",
           isMut: true,
           isSigner: false,
         },
@@ -3785,7 +3785,7 @@ export const IDL: ElysiumPool = {
     {
       name: "setRewardAuthority",
       docs: [
-        "Set the whirlpool reward authority at the provided `reward_index`.",
+        "Set the pool reward authority at the provided `reward_index`.",
         "Only the current reward authority for this reward index has permission to invoke this instruction.",
         "",
         "### Authority",
@@ -3798,7 +3798,7 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -3823,7 +3823,7 @@ export const IDL: ElysiumPool = {
     {
       name: "setRewardAuthorityBySuperAuthority",
       docs: [
-        "Set the whirlpool reward authority at the provided `reward_index`.",
+        "Set the pool reward authority at the provided `reward_index`.",
         "Only the current reward super authority has permission to invoke this instruction.",
         "",
         "### Authority",
@@ -3836,12 +3836,12 @@ export const IDL: ElysiumPool = {
       ],
       accounts: [
         {
-          name: "whirlpoolsConfig",
+          name: "poolsConfig",
           isMut: false,
           isSigner: false,
         },
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: true,
           isSigner: false,
         },
@@ -3866,16 +3866,16 @@ export const IDL: ElysiumPool = {
     {
       name: "setRewardEmissionsSuperAuthority",
       docs: [
-        "Set the whirlpool reward super authority for a ElysiumPoolConfig",
+        "Set the pool reward super authority for a ElysiumPoolConfig",
         "Only the current reward super authority has permission to invoke this instruction.",
-        "This instruction will not change the authority on any `ElysiumPoolRewardInfo` whirlpool rewards.",
+        "This instruction will not change the authority on any `ElysiumPoolRewardInfo` pool rewards.",
         "",
         "### Authority",
         '- "reward_emissions_super_authority" - Set authority that can control reward authorities for all pools in this config space.',
       ],
       accounts: [
         {
-          name: "whirlpoolsConfig",
+          name: "poolsConfig",
           isMut: true,
           isSigner: false,
         },
@@ -3919,7 +3919,7 @@ export const IDL: ElysiumPool = {
         "- `LiquidityOverflow` - Liquidity value overflowed 128bits during tick crossing.",
         "- `InvalidTickSpacing` - The swap pool was initialized with tick-spacing of 0.",
         "- `InvalidIntermediaryMint` - Error if the intermediary mint between hop one and two do not equal.",
-        "- `DuplicateTwoHopPool` - Error if whirlpool one & two are the same pool.",
+        "- `DuplicateTwoHopPool` - Error if pool one & two are the same pool.",
       ],
       accounts: [
         {
@@ -3933,12 +3933,12 @@ export const IDL: ElysiumPool = {
           isSigner: true,
         },
         {
-          name: "whirlpoolOne",
+          name: "poolOne",
           isMut: true,
           isSigner: false,
         },
         {
-          name: "whirlpoolTwo",
+          name: "poolTwo",
           isMut: true,
           isSigner: false,
         },
@@ -4270,7 +4270,7 @@ export const IDL: ElysiumPool = {
           isSigner: true,
         },
         {
-          name: "whirlpool",
+          name: "pool",
           isMut: false,
           isSigner: false,
         },
@@ -4357,7 +4357,7 @@ export const IDL: ElysiumPool = {
   ],
   accounts: [
     {
-      name: "whirlpoolsConfig",
+      name: "poolsConfig",
       type: {
         kind: "struct",
         fields: [
@@ -4386,7 +4386,7 @@ export const IDL: ElysiumPool = {
         kind: "struct",
         fields: [
           {
-            name: "whirlpoolsConfig",
+            name: "poolsConfig",
             type: "publicKey",
           },
           {
@@ -4424,7 +4424,7 @@ export const IDL: ElysiumPool = {
         kind: "struct",
         fields: [
           {
-            name: "whirlpool",
+            name: "pool",
             type: "publicKey",
           },
           {
@@ -4494,23 +4494,23 @@ export const IDL: ElysiumPool = {
             },
           },
           {
-            name: "whirlpool",
+            name: "pool",
             type: "publicKey",
           },
         ],
       },
     },
     {
-      name: "whirlpool",
+      name: "pool",
       type: {
         kind: "struct",
         fields: [
           {
-            name: "whirlpoolsConfig",
+            name: "poolsConfig",
             type: "publicKey",
           },
           {
-            name: "whirlpoolBump",
+            name: "poolBump",
             type: {
               array: ["u8", 1],
             },
@@ -4727,7 +4727,7 @@ export const IDL: ElysiumPool = {
         kind: "struct",
         fields: [
           {
-            name: "whirlpoolBump",
+            name: "poolBump",
             type: "u8",
           },
         ],
@@ -4793,7 +4793,7 @@ export const IDL: ElysiumPool = {
     {
       code: 6002,
       name: "TickArrayExistInPool",
-      msg: "Tick-array already exists in this whirlpool",
+      msg: "Tick-array already exists in this pool",
     },
     {
       code: 6003,

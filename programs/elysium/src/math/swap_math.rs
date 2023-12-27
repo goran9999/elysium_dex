@@ -356,42 +356,42 @@ mod unit_tests {
 
             #[test]
             fn swap_a_to_b_input() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_input_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_output() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_output_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_input() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_input_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_output() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_output_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
         }
 
@@ -401,42 +401,42 @@ mod unit_tests {
 
             #[test]
             fn swap_a_to_b_input() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_input_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_output() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_output_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_input() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_input_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_output() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_output_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
         }
 
@@ -446,42 +446,42 @@ mod unit_tests {
 
             #[test]
             fn swap_a_to_b_input() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_input_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_output() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_output_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_input() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_input_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_output() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_output_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
         }
 
@@ -491,42 +491,42 @@ mod unit_tests {
 
             #[test]
             fn swap_a_to_b_input() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_input_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_output() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_a_to_b_output_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_input() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_input_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_output() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn swap_b_to_a_output_partial() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
         }
 
@@ -535,20 +535,20 @@ mod unit_tests {
 
             #[test]
             fn protocol_rate() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
 
             #[test]
             fn protocol_rate_zero() {
-                validate_tick_whirlpool();
+                validate_tick_pool();
             }
         }
 
-        fn validate_tick_whirlpool() {
+        fn validate_tick_pool() {
             // Validate tick values
             // Fee, reward growths
             //
-            // Validate whirlpool values
+            // Validate pool values
             // liquidity, tick, sqrt_price, fee_growth, reward, protocol fee, token amounts
         }
     }

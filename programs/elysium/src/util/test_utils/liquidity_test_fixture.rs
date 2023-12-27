@@ -1,10 +1,10 @@
 use crate::manager::liquidity_manager::ModifyLiquidityUpdate;
+use crate::manager::pool_manager::*;
 use crate::manager::tick_manager::next_tick_cross_update;
-use crate::manager::whirlpool_manager::*;
 use crate::math::{add_liquidity_delta, Q64_RESOLUTION};
 use crate::state::position_builder::PositionBuilder;
 use crate::state::{
-    tick::*, tick_builder::TickBuilder, whirlpool_builder::ElysiumPoolBuilder, ElysiumPool,
+    pool_builder::ElysiumPoolBuilder, tick::*, tick_builder::TickBuilder, ElysiumPool,
 };
 use crate::state::{
     ElysiumPoolRewardInfo, Position, PositionRewardInfo, PositionUpdate, NUM_REWARDS,
@@ -30,9 +30,9 @@ pub enum Direction {
     Right,
 }
 
-// State for testing modifying liquidity in a single whirlpool position
+// State for testing modifying liquidity in a single pool position
 pub struct LiquidityTestFixture {
-    pub whirlpool: ElysiumPool,
+    pub pool: ElysiumPool,
     pub position: Position,
     pub tick_lower: Tick,
     pub tick_upper: Tick,
@@ -40,7 +40,7 @@ pub struct LiquidityTestFixture {
 
 pub struct LiquidityTestFixtureInfo {
     pub curr_index_loc: CurrIndex,
-    pub whirlpool_liquidity: u128,
+    pub pool_liquidity: u128,
     pub position_liquidity: u128,
     pub tick_lower_liquidity_gross: u128,
     pub tick_upper_liquidity_gross: u128,
@@ -64,9 +64,9 @@ impl LiquidityTestFixture {
             CurrIndex::Above => ABOVE_UPPER_TICK_INDEX,
         };
 
-        let whirlpool = ElysiumPoolBuilder::new()
+        let pool = ElysiumPoolBuilder::new()
             .tick_current_index(curr_index)
-            .liquidity(info.whirlpool_liquidity)
+            .liquidity(info.pool_liquidity)
             .reward_infos(info.reward_infos)
             .fee_growth_global_a(info.fee_growth_global_a)
             .fee_growth_global_b(info.fee_growth_global_b)
@@ -76,7 +76,7 @@ impl LiquidityTestFixture {
         let tick_upper_initialized = info.tick_upper_liquidity_gross > 0;
 
         LiquidityTestFixture {
-            whirlpool,
+            pool,
             position: PositionBuilder::new(-100, 100)
                 .liquidity(info.position_liquidity)
                 .build(),
@@ -93,26 +93,25 @@ impl LiquidityTestFixture {
         }
     }
 
-    pub fn increment_whirlpool_fee_growths(
+    pub fn increment_pool_fee_growths(
         &mut self,
         fee_growth_delta_a: u128,
         fee_growth_delta_b: u128,
     ) {
-        self.whirlpool.fee_growth_global_a = self
-            .whirlpool
+        self.pool.fee_growth_global_a = self
+            .pool
             .fee_growth_global_a
             .wrapping_add(fee_growth_delta_a);
-        self.whirlpool.fee_growth_global_b = self
-            .whirlpool
+        self.pool.fee_growth_global_b = self
+            .pool
             .fee_growth_global_b
             .wrapping_add(fee_growth_delta_b);
     }
 
-    pub fn increment_whirlpool_reward_growths_by_time(&mut self, seconds: u64) {
-        let next_timestamp = self.whirlpool.reward_last_updated_timestamp + seconds;
-        self.whirlpool.reward_infos =
-            next_whirlpool_reward_infos(&self.whirlpool, next_timestamp).unwrap();
-        self.whirlpool.reward_last_updated_timestamp = next_timestamp;
+    pub fn increment_pool_reward_growths_by_time(&mut self, seconds: u64) {
+        let next_timestamp = self.pool.reward_last_updated_timestamp + seconds;
+        self.pool.reward_infos = next_pool_reward_infos(&self.pool, next_timestamp).unwrap();
+        self.pool.reward_last_updated_timestamp = next_timestamp;
     }
 
     /// Simulates crossing a tick within the test fixture.
@@ -123,16 +122,16 @@ impl LiquidityTestFixture {
         };
         let update = next_tick_cross_update(
             tick,
-            self.whirlpool.fee_growth_global_a,
-            self.whirlpool.fee_growth_global_b,
-            &self.whirlpool.reward_infos,
+            self.pool.fee_growth_global_a,
+            self.pool.fee_growth_global_b,
+            &self.pool.reward_infos,
         )
         .unwrap();
 
         tick.update(&update);
 
-        self.whirlpool.liquidity = add_liquidity_delta(
-            self.whirlpool.liquidity,
+        self.pool.liquidity = add_liquidity_delta(
+            self.pool.liquidity,
             match direction {
                 Direction::Left => -tick.liquidity_net,
                 Direction::Right => tick.liquidity_net,
@@ -142,12 +141,12 @@ impl LiquidityTestFixture {
 
         match tick_label {
             TickLabel::Lower => match direction {
-                Direction::Right => self.whirlpool.tick_current_index = 0,
-                Direction::Left => self.whirlpool.tick_current_index = BELOW_LOWER_TICK_INDEX,
+                Direction::Right => self.pool.tick_current_index = 0,
+                Direction::Left => self.pool.tick_current_index = BELOW_LOWER_TICK_INDEX,
             },
             TickLabel::Upper => match direction {
-                Direction::Left => self.whirlpool.tick_current_index = 0,
-                Direction::Right => self.whirlpool.tick_current_index = ABOVE_UPPER_TICK_INDEX,
+                Direction::Left => self.pool.tick_current_index = 0,
+                Direction::Right => self.pool.tick_current_index = ABOVE_UPPER_TICK_INDEX,
             },
         }
     }
@@ -157,17 +156,17 @@ impl LiquidityTestFixture {
         update: &ModifyLiquidityUpdate,
         reward_last_updated_timestamp: u64,
     ) {
-        assert!(reward_last_updated_timestamp >= self.whirlpool.reward_last_updated_timestamp);
-        self.whirlpool.reward_last_updated_timestamp = reward_last_updated_timestamp;
-        self.whirlpool.liquidity = update.whirlpool_liquidity;
-        self.whirlpool.reward_infos = update.reward_infos;
+        assert!(reward_last_updated_timestamp >= self.pool.reward_last_updated_timestamp);
+        self.pool.reward_last_updated_timestamp = reward_last_updated_timestamp;
+        self.pool.liquidity = update.pool_liquidity;
+        self.pool.reward_infos = update.reward_infos;
         self.tick_lower.update(&update.tick_lower_update);
         self.tick_upper.update(&update.tick_upper_update);
         self.position.update(&update.position_update);
     }
 }
 
-pub fn create_whirlpool_reward_infos(
+pub fn create_pool_reward_infos(
     emissions_per_second_x64: u128,
     growth_global_x64: u128,
 ) -> [ElysiumPoolRewardInfo; NUM_REWARDS] {
@@ -221,7 +220,7 @@ pub fn to_x64(n: u128) -> u128 {
     n << Q64_RESOLUTION
 }
 
-pub fn assert_whirlpool_reward_growths(
+pub fn assert_pool_reward_growths(
     reward_infos: &[ElysiumPoolRewardInfo; NUM_REWARDS],
     expected_growth: u128,
 ) {
@@ -232,8 +231,8 @@ pub fn assert_whirlpool_reward_growths(
 }
 
 pub struct ModifyLiquidityExpectation {
-    pub whirlpool_liquidity: u128,
-    pub whirlpool_reward_growths: [u128; NUM_REWARDS],
+    pub pool_liquidity: u128,
+    pub pool_reward_growths: [u128; NUM_REWARDS],
     pub position_update: PositionUpdate,
     pub tick_lower_update: TickUpdate,
     pub tick_upper_update: TickUpdate,
@@ -243,10 +242,10 @@ pub fn assert_modify_liquidity(
     update: &ModifyLiquidityUpdate,
     expect: &ModifyLiquidityExpectation,
 ) {
-    assert_eq!(update.whirlpool_liquidity, expect.whirlpool_liquidity);
+    assert_eq!(update.pool_liquidity, expect.pool_liquidity);
     assert_eq!(
         ElysiumPoolRewardInfo::to_reward_growths(&update.reward_infos),
-        expect.whirlpool_reward_growths
+        expect.pool_reward_growths
     );
     assert_eq!(update.tick_lower_update, expect.tick_lower_update);
     assert_eq!(update.tick_upper_update, expect.tick_upper_update);

@@ -4,7 +4,7 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
 use crate::{state::*, util::mint_position_token_with_metadata_and_remove_authority};
 
-use crate::constants::nft::whirlpool_nft_update_auth::ID as WP_NFT_UPDATE_AUTH;
+use crate::constants::nft::pool_nft_update_auth::ID as WP_NFT_UPDATE_AUTH;
 
 #[derive(Accounts)]
 #[instruction(bumps: OpenPositionWithMetadataBumps)]
@@ -25,7 +25,7 @@ pub struct OpenPositionWithMetadata<'info> {
 
     #[account(init,
         payer = funder,
-        mint::authority = whirlpool,
+        mint::authority = pool,
         mint::decimals = 0,
     )]
     pub position_mint: Account<'info, Mint>,
@@ -42,7 +42,7 @@ pub struct OpenPositionWithMetadata<'info> {
     )]
     pub position_token_account: Box<Account<'info, TokenAccount>>,
 
-    pub whirlpool: Box<Account<'info, ElysiumPool>>,
+    pub pool: Box<Account<'info, ElysiumPool>>,
 
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
@@ -68,19 +68,19 @@ pub fn handler(
     tick_lower_index: i32,
     tick_upper_index: i32,
 ) -> Result<()> {
-    let whirlpool = &ctx.accounts.whirlpool;
+    let pool = &ctx.accounts.pool;
     let position_mint = &ctx.accounts.position_mint;
     let position = &mut ctx.accounts.position;
 
     position.open_position(
-        whirlpool,
+        pool,
         position_mint.key(),
         tick_lower_index,
         tick_upper_index,
     )?;
 
     mint_position_token_with_metadata_and_remove_authority(
-        whirlpool,
+        pool,
         position_mint,
         &ctx.accounts.position_token_account,
         &ctx.accounts.position_metadata_account,

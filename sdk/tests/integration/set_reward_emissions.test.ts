@@ -28,7 +28,7 @@ describe("set_reward_emissions", () => {
     } = await initializeReward(
       ctx,
       configKeypairs.rewardEmissionsSuperAuthorityKeypair,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       rewardIndex
     );
 
@@ -38,7 +38,7 @@ describe("set_reward_emissions", () => {
       ctx,
       ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
         rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
-        whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+        pool: poolInitInfo.poolPda.publicKey,
         rewardIndex,
         rewardVaultKey: rewardVaultKeypair.publicKey,
         emissionsPerSecondX64,
@@ -47,18 +47,18 @@ describe("set_reward_emissions", () => {
       .addSigner(configKeypairs.rewardEmissionsSuperAuthorityKeypair)
       .buildAndExecute();
 
-    let whirlpool = (await fetcher.getPool(
-      poolInitInfo.whirlpoolPda.publicKey,
+    let pool = (await fetcher.getPool(
+      poolInitInfo.poolPda.publicKey,
       IGNORE_CACHE
     )) as ElysiumPoolData;
-    assert.ok(whirlpool.rewardInfos[0].emissionsPerSecondX64.eq(emissionsPerSecondX64));
+    assert.ok(pool.rewardInfos[0].emissionsPerSecondX64.eq(emissionsPerSecondX64));
 
     // Successfuly set emissions back to zero
     await toTx(
       ctx,
       ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
         rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
-        whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+        pool: poolInitInfo.poolPda.publicKey,
         rewardIndex,
         rewardVaultKey: rewardVaultKeypair.publicKey,
         emissionsPerSecondX64: ZERO_BN,
@@ -67,11 +67,8 @@ describe("set_reward_emissions", () => {
       .addSigner(configKeypairs.rewardEmissionsSuperAuthorityKeypair)
       .buildAndExecute();
 
-    whirlpool = (await fetcher.getPool(
-      poolInitInfo.whirlpoolPda.publicKey,
-      IGNORE_CACHE
-    )) as ElysiumPoolData;
-    assert.ok(whirlpool.rewardInfos[0].emissionsPerSecondX64.eq(ZERO_BN));
+    pool = (await fetcher.getPool(poolInitInfo.poolPda.publicKey, IGNORE_CACHE)) as ElysiumPoolData;
+    assert.ok(pool.rewardInfos[0].emissionsPerSecondX64.eq(ZERO_BN));
   });
 
   it("fails when token vault does not contain at least 1 day of emission runway", async () => {
@@ -87,7 +84,7 @@ describe("set_reward_emissions", () => {
     } = await initializeReward(
       ctx,
       configKeypairs.rewardEmissionsSuperAuthorityKeypair,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       rewardIndex
     );
 
@@ -96,7 +93,7 @@ describe("set_reward_emissions", () => {
         ctx,
         ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
           rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
-          whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+          pool: poolInitInfo.poolPda.publicKey,
           rewardIndex,
           rewardVaultKey: rewardVaultKeypair.publicKey,
           emissionsPerSecondX64,
@@ -108,7 +105,7 @@ describe("set_reward_emissions", () => {
     );
   });
 
-  it("fails if provided reward vault does not match whirlpool reward vault", async () => {
+  it("fails if provided reward vault does not match pool reward vault", async () => {
     const { poolInitInfo, configInitInfo, configKeypairs } = await initTestPool(
       ctx,
       TickSpacing.Standard
@@ -120,7 +117,7 @@ describe("set_reward_emissions", () => {
     } = await initializeReward(
       ctx,
       configKeypairs.rewardEmissionsSuperAuthorityKeypair,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       rewardIndex
     );
 
@@ -130,7 +127,7 @@ describe("set_reward_emissions", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
-          whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+          pool: poolInitInfo.poolPda.publicKey,
           rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
           rewardVaultKey: fakeVault,
           rewardIndex,
@@ -155,7 +152,7 @@ describe("set_reward_emissions", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
-          whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+          pool: poolInitInfo.poolPda.publicKey,
           rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
           rewardVaultKey: anchor.web3.PublicKey.default,
           rewardIndex: rewardIndex,
@@ -179,7 +176,7 @@ describe("set_reward_emissions", () => {
     await initializeReward(
       ctx,
       configKeypairs.rewardEmissionsSuperAuthorityKeypair,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       rewardIndex
     );
 
@@ -188,7 +185,7 @@ describe("set_reward_emissions", () => {
         ctx,
         ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
           rewardAuthority: configInitInfo.rewardEmissionsSuperAuthority,
-          whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+          pool: poolInitInfo.poolPda.publicKey,
           rewardIndex,
           rewardVaultKey: provider.wallet.publicKey, // TODO fix
           emissionsPerSecondX64,

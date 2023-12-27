@@ -3,30 +3,30 @@ import { Instruction } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 /**
  * Parameters to execute a two-hop swap on a ElysiumPool.
  *
  * @category Instruction Types
- * @param whirlpoolOne - PublicKey for the whirlpool that the swap-one will occur on
- * @param whirlpoolTwo - PublicKey for the whirlpool that the swap-two will occur on
- * @param tokenOwnerAccountOneA - PublicKey for the associated token account for tokenA in whirlpoolOne in the collection wallet
- * @param tokenOwnerAccountOneB - PublicKey for the associated token account for tokenB in whirlpoolOne in the collection wallet
- * @param tokenOwnerAccountTwoA - PublicKey for the associated token account for tokenA in whirlpoolTwo in the collection wallet
- * @param tokenOwnerAccountTwoB - PublicKey for the associated token account for tokenB in whirlpoolTwo in the collection wallet
- * @param tokenVaultOneA - PublicKey for the tokenA vault for whirlpoolOne.
- * @param tokenVaultOneB - PublicKey for the tokenB vault for whirlpoolOne.
- * @param tokenVaultTwoA - PublicKey for the tokenA vault for whirlpoolTwo.
- * @param tokenVaultTwoB - PublicKey for the tokenB vault for whirlpoolTwo.
- * @param oracleOne - PublicKey for the oracle account for this whirlpoolOne.
- * @param oracleTwo - PublicKey for the oracle account for this whirlpoolTwo.
+ * @param poolOne - PublicKey for the pool that the swap-one will occur on
+ * @param poolTwo - PublicKey for the pool that the swap-two will occur on
+ * @param tokenOwnerAccountOneA - PublicKey for the associated token account for tokenA in poolOne in the collection wallet
+ * @param tokenOwnerAccountOneB - PublicKey for the associated token account for tokenB in poolOne in the collection wallet
+ * @param tokenOwnerAccountTwoA - PublicKey for the associated token account for tokenA in poolTwo in the collection wallet
+ * @param tokenOwnerAccountTwoB - PublicKey for the associated token account for tokenB in poolTwo in the collection wallet
+ * @param tokenVaultOneA - PublicKey for the tokenA vault for poolOne.
+ * @param tokenVaultOneB - PublicKey for the tokenB vault for poolOne.
+ * @param tokenVaultTwoA - PublicKey for the tokenA vault for poolTwo.
+ * @param tokenVaultTwoB - PublicKey for the tokenB vault for poolTwo.
+ * @param oracleOne - PublicKey for the oracle account for this poolOne.
+ * @param oracleTwo - PublicKey for the oracle account for this poolTwo.
  * @param tokenAuthority - authority to withdraw tokens from the input token account
  * @param swapInput - Parameters in {@link TwoHopSwapInput}
  */
 export type TwoHopSwapParams = TwoHopSwapInput & {
-  whirlpoolOne: PublicKey;
-  whirlpoolTwo: PublicKey;
+  poolOne: PublicKey;
+  poolTwo: PublicKey;
   tokenOwnerAccountOneA: PublicKey;
   tokenOwnerAccountOneB: PublicKey;
   tokenOwnerAccountTwoA: PublicKey;
@@ -88,7 +88,7 @@ export type TwoHopSwapInput = {
  * - `LiquidityOverflow` - Liquidity value overflowed 128bits during tick crossing.
  * - `InvalidTickSpacing` - The swap pool was initialized with tick-spacing of 0.
  * - `InvalidIntermediaryMint` - Error if the intermediary mint between hop one and two do not equal.
- * - `DuplicateTwoHopPool` - Error if whirlpool one & two are the same pool.
+ * - `DuplicateTwoHopPool` - Error if pool one & two are the same pool.
  *
  * ### Parameters
  * @category Instructions
@@ -105,8 +105,8 @@ export function twoHopSwapIx(program: Program<ElysiumPool>, params: TwoHopSwapPa
     aToBTwo,
     sqrtPriceLimitOne,
     sqrtPriceLimitTwo,
-    whirlpoolOne,
-    whirlpoolTwo,
+    poolOne,
+    poolTwo,
     tokenAuthority,
     tokenOwnerAccountOneA,
     tokenVaultOneA,
@@ -138,8 +138,8 @@ export function twoHopSwapIx(program: Program<ElysiumPool>, params: TwoHopSwapPa
       accounts: {
         tokenProgram: TOKEN_PROGRAM_ID,
         tokenAuthority,
-        whirlpoolOne,
-        whirlpoolTwo,
+        poolOne,
+        poolTwo,
         tokenOwnerAccountOneA,
         tokenVaultOneA,
         tokenOwnerAccountOneB,

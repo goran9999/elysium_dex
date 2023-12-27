@@ -38,12 +38,12 @@ describe("open_bundled_position", () => {
   const tickLowerIndex = 0;
   const tickUpperIndex = 128;
   let poolInitInfo: InitPoolParams;
-  let whirlpoolPda: PDA;
+  let poolPda: PDA;
   const funderKeypair = anchor.web3.Keypair.generate();
 
   before(async () => {
     poolInitInfo = (await initTestPool(ctx, TickSpacing.Standard)).poolInitInfo;
-    whirlpoolPda = poolInitInfo.whirlpoolPda;
+    poolPda = poolInitInfo.poolPda;
     await systemTransferTx(provider, funderKeypair.publicKey, ONE_SOL).buildAndExecute();
   });
 
@@ -71,7 +71,7 @@ describe("open_bundled_position", () => {
       positionBundle,
       positionBundleTokenAccount,
       positionBundleAuthority: ctx.wallet.publicKey,
-      whirlpool: whirlpoolPda.publicKey,
+      pool: poolPda.publicKey,
       funder: ctx.wallet.publicKey,
       systemProgram: SystemProgram.programId,
       rent: anchor.web3.SYSVAR_RENT_PUBKEY,
@@ -99,7 +99,7 @@ describe("open_bundled_position", () => {
   function checkPositionAccountContents(position: PositionData, mint: PublicKey) {
     assert.strictEqual(position.tickLowerIndex, tickLowerIndex);
     assert.strictEqual(position.tickUpperIndex, tickUpperIndex);
-    assert.ok(position.whirlpool.equals(poolInitInfo.whirlpoolPda.publicKey));
+    assert.ok(position.pool.equals(poolInitInfo.poolPda.publicKey));
     assert.ok(position.positionMint.equals(mint));
     assert.ok(position.liquidity.eq(ZERO_BN));
     assert.ok(position.feeGrowthCheckpointA.eq(ZERO_BN));
@@ -148,7 +148,7 @@ describe("open_bundled_position", () => {
     const bundleIndex = 0;
     const positionInitInfo = await openBundledPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       positionBundleInfo.positionBundleMintKeypair.publicKey,
       bundleIndex,
       tickLowerIndex,
@@ -174,7 +174,7 @@ describe("open_bundled_position", () => {
     const bundleIndex = POSITION_BUNDLE_SIZE - 1;
     const positionInitInfo = await openBundledPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       positionBundleInfo.positionBundleMintKeypair.publicKey,
       bundleIndex,
       tickLowerIndex,
@@ -206,7 +206,7 @@ describe("open_bundled_position", () => {
     for (const bundleIndex of bundleIndexes) {
       const positionInitInfo = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         bundleIndex,
         tickLowerIndex,
@@ -236,7 +236,7 @@ describe("open_bundled_position", () => {
       await assert.rejects(
         openBundledPosition(
           ctx,
-          whirlpoolPda.publicKey,
+          poolPda.publicKey,
           positionBundleInfo.positionBundleMintKeypair.publicKey,
           bundleIndex,
           tickLowerIndex,
@@ -253,7 +253,7 @@ describe("open_bundled_position", () => {
       await assert.rejects(
         openBundledPosition(
           ctx,
-          whirlpoolPda.publicKey,
+          poolPda.publicKey,
           positionBundleInfo.positionBundleMintKeypair.publicKey,
           bundleIndex,
           tickLowerIndex,
@@ -270,7 +270,7 @@ describe("open_bundled_position", () => {
       await assert.rejects(
         openBundledPosition(
           ctx,
-          whirlpoolPda.publicKey,
+          poolPda.publicKey,
           positionBundleInfo.positionBundleMintKeypair.publicKey,
           bundleIndex,
           tickLowerIndex,
@@ -288,7 +288,7 @@ describe("open_bundled_position", () => {
       await assert.rejects(
         openBundledPosition(
           ctx,
-          whirlpoolPda.publicKey,
+          poolPda.publicKey,
           positionBundleInfo.positionBundleMintKeypair.publicKey,
           bundleIndex,
           lowerTick,
@@ -331,7 +331,7 @@ describe("open_bundled_position", () => {
     const bundleIndex = 0;
     await openBundledPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       positionBundleInfo.positionBundleMintKeypair.publicKey,
       bundleIndex,
       tickLowerIndex,
@@ -347,7 +347,7 @@ describe("open_bundled_position", () => {
     await assert.rejects(
       openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         bundleIndex,
         tickLowerIndex,
@@ -481,7 +481,7 @@ describe("open_bundled_position", () => {
       );
     });
 
-    it("should be failed: invalid whirlpool", async () => {
+    it("should be failed: invalid pool", async () => {
       const positionBundleInfo = await initializePositionBundle(ctx);
 
       const tx = await createOpenBundledPositionTx(
@@ -490,7 +490,7 @@ describe("open_bundled_position", () => {
         0,
         {
           // invalid parameter
-          whirlpool: positionBundleInfo.positionBundlePda.publicKey,
+          pool: positionBundleInfo.positionBundlePda.publicKey,
         }
       );
 
@@ -676,7 +676,7 @@ describe("open_bundled_position", () => {
           positionBundleTokenAccount: funderATA,
           tickLowerIndex,
           tickUpperIndex,
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
         })
       );
       tx.addSigner(funderKeypair);

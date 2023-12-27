@@ -14,7 +14,7 @@ import { ONE_SOL, systemTransferTx, TickSpacing } from "../../utils";
 import { defaultConfirmOptions } from "../../utils/const";
 import { buildTestPoolParams } from "../../utils/init-utils";
 
-describe("whirlpool-client-impl", () => {
+describe("pool-client-impl", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
   const program = anchor.workspace.ElysiumPool;
@@ -44,7 +44,7 @@ describe("whirlpool-client-impl", () => {
     );
 
     const { poolKey: actualPubkey, tx } = await client.createPool(
-      poolInitInfo.whirlpoolsConfig,
+      poolInitInfo.poolsConfig,
       poolInitInfo.tokenMintA,
       poolInitInfo.tokenMintB,
       poolInitInfo.tickSpacing,
@@ -54,7 +54,7 @@ describe("whirlpool-client-impl", () => {
 
     const expectedPda = PDAUtil.getElysiumPool(
       ctx.program.programId,
-      poolInitInfo.whirlpoolsConfig,
+      poolInitInfo.poolsConfig,
       poolInitInfo.tokenMintA,
       poolInitInfo.tokenMintB,
       poolInitInfo.tickSpacing
@@ -69,47 +69,47 @@ describe("whirlpool-client-impl", () => {
 
     assert.ok(expectedPda.publicKey.equals(actualPubkey));
 
-    const [whirlpoolAccountBefore, tickArrayAccountBefore] = await Promise.all([
+    const [poolAccountBefore, tickArrayAccountBefore] = await Promise.all([
       ctx.fetcher.getPool(expectedPda.publicKey, IGNORE_CACHE),
       ctx.fetcher.getTickArray(startTickArrayPda.publicKey, IGNORE_CACHE),
     ]);
 
-    assert.ok(whirlpoolAccountBefore === null);
+    assert.ok(poolAccountBefore === null);
     assert.ok(tickArrayAccountBefore === null);
 
     await tx.addSigner(funderKeypair).buildAndExecute();
 
-    const [whirlpoolAccountAfter, tickArrayAccountAfter] = await Promise.all([
+    const [poolAccountAfter, tickArrayAccountAfter] = await Promise.all([
       ctx.fetcher.getPool(expectedPda.publicKey, IGNORE_CACHE),
       ctx.fetcher.getTickArray(startTickArrayPda.publicKey, IGNORE_CACHE),
     ]);
 
-    assert.ok(whirlpoolAccountAfter !== null);
+    assert.ok(poolAccountAfter !== null);
     assert.ok(tickArrayAccountAfter !== null);
 
-    assert.ok(whirlpoolAccountAfter.feeGrowthGlobalA.eqn(0));
-    assert.ok(whirlpoolAccountAfter.feeGrowthGlobalB.eqn(0));
-    assert.ok(whirlpoolAccountAfter.feeRate === 3000);
-    assert.ok(whirlpoolAccountAfter.liquidity.eqn(0));
-    assert.ok(whirlpoolAccountAfter.protocolFeeOwedA.eqn(0));
-    assert.ok(whirlpoolAccountAfter.protocolFeeOwedB.eqn(0));
-    assert.ok(whirlpoolAccountAfter.protocolFeeRate === 300);
-    assert.ok(whirlpoolAccountAfter.rewardInfos.length === 3);
-    assert.ok(whirlpoolAccountAfter.rewardLastUpdatedTimestamp.eqn(0));
-    assert.ok(whirlpoolAccountAfter.sqrtPrice.eq(PriceMath.tickIndexToSqrtPriceX64(initalTick)));
-    assert.ok(whirlpoolAccountAfter.tickCurrentIndex === initalTick);
-    assert.ok(whirlpoolAccountAfter.tickSpacing === poolInitInfo.tickSpacing);
-    assert.ok(whirlpoolAccountAfter.tokenMintA.equals(poolInitInfo.tokenMintA));
-    assert.ok(whirlpoolAccountAfter.tokenMintB.equals(poolInitInfo.tokenMintB));
-    assert.ok(whirlpoolAccountAfter.whirlpoolBump[0] === expectedPda.bump);
-    assert.ok(whirlpoolAccountAfter.whirlpoolsConfig.equals(poolInitInfo.whirlpoolsConfig));
+    assert.ok(poolAccountAfter.feeGrowthGlobalA.eqn(0));
+    assert.ok(poolAccountAfter.feeGrowthGlobalB.eqn(0));
+    assert.ok(poolAccountAfter.feeRate === 3000);
+    assert.ok(poolAccountAfter.liquidity.eqn(0));
+    assert.ok(poolAccountAfter.protocolFeeOwedA.eqn(0));
+    assert.ok(poolAccountAfter.protocolFeeOwedB.eqn(0));
+    assert.ok(poolAccountAfter.protocolFeeRate === 300);
+    assert.ok(poolAccountAfter.rewardInfos.length === 3);
+    assert.ok(poolAccountAfter.rewardLastUpdatedTimestamp.eqn(0));
+    assert.ok(poolAccountAfter.sqrtPrice.eq(PriceMath.tickIndexToSqrtPriceX64(initalTick)));
+    assert.ok(poolAccountAfter.tickCurrentIndex === initalTick);
+    assert.ok(poolAccountAfter.tickSpacing === poolInitInfo.tickSpacing);
+    assert.ok(poolAccountAfter.tokenMintA.equals(poolInitInfo.tokenMintA));
+    assert.ok(poolAccountAfter.tokenMintB.equals(poolInitInfo.tokenMintB));
+    assert.ok(poolAccountAfter.poolBump[0] === expectedPda.bump);
+    assert.ok(poolAccountAfter.poolsConfig.equals(poolInitInfo.poolsConfig));
 
     assert.ok(
       tickArrayAccountAfter.startTickIndex ===
         TickUtil.getStartTickIndex(initalTick, poolInitInfo.tickSpacing)
     );
     assert.ok(tickArrayAccountAfter.ticks.length > 0);
-    assert.ok(tickArrayAccountAfter.whirlpool.equals(expectedPda.publicKey));
+    assert.ok(tickArrayAccountAfter.pool.equals(expectedPda.publicKey));
   });
 
   it("throws an error when token order is incorrect", async () => {
@@ -122,7 +122,7 @@ describe("whirlpool-client-impl", () => {
 
     await assert.rejects(
       client.createPool(
-        poolInitInfo.whirlpoolsConfig,
+        poolInitInfo.poolsConfig,
         poolInitInfo.tokenMintB,
         poolInitInfo.tokenMintA,
         poolInitInfo.tickSpacing,

@@ -9,11 +9,11 @@ use crate::{
 #[derive(Accounts)]
 #[instruction(reward_index: u8)]
 pub struct CollectReward<'info> {
-    pub whirlpool: Box<Account<'info, ElysiumPool>>,
+    pub pool: Box<Account<'info, ElysiumPool>>,
 
     pub position_authority: Signer<'info>,
 
-    #[account(mut, has_one = whirlpool)]
+    #[account(mut, has_one = pool)]
     pub position: Box<Account<'info, Position>>,
     #[account(
         constraint = position_token_account.mint == position.position_mint,
@@ -22,11 +22,11 @@ pub struct CollectReward<'info> {
     pub position_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(mut,
-        constraint = reward_owner_account.mint == whirlpool.reward_infos[reward_index as usize].mint
+        constraint = reward_owner_account.mint == pool.reward_infos[reward_index as usize].mint
     )]
     pub reward_owner_account: Box<Account<'info, TokenAccount>>,
 
-    #[account(mut, address = whirlpool.reward_infos[reward_index as usize].vault)]
+    #[account(mut, address = pool.reward_infos[reward_index as usize].vault)]
     pub reward_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(address = token::ID)]
@@ -63,7 +63,7 @@ pub fn handler(ctx: Context<CollectReward>, reward_index: u8) -> Result<()> {
     position.update_reward_owed(index, updated_amount_owed);
 
     Ok(transfer_from_vault_to_owner(
-        &ctx.accounts.whirlpool,
+        &ctx.accounts.pool,
         &ctx.accounts.reward_vault,
         &ctx.accounts.reward_owner_account,
         &ctx.accounts.token_program,

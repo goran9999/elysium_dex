@@ -1,7 +1,7 @@
 import { Program } from "@coral-xyz/anchor";
 import { PDA } from "@orca-so/common-sdk";
 import { PublicKey, SystemProgram } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 import { Instruction } from "@orca-so/common-sdk";
 
@@ -9,7 +9,7 @@ import { Instruction } from "@orca-so/common-sdk";
  * Parameters to initialize a FeeTier account.
  *
  * @category Instruction Types
- * @param whirlpoolsConfig - PublicKey for the whirlpool config space that the fee-tier will be initialized for.
+ * @param poolsConfig - PublicKey for the pool config space that the fee-tier will be initialized for.
  * @param feeTierPda - PDA for the fee-tier account that will be initialized
  * @param tickSpacing - The tick spacing this fee tier recommends its default fee rate for.
  * @param defaultFeeRate - The default fee rate for this fee-tier. Stored as a hundredths of a basis point.
@@ -17,7 +17,7 @@ import { Instruction } from "@orca-so/common-sdk";
  * @param funder - The account that would fund the creation of this account
  */
 export type InitFeeTierParams = {
-  whirlpoolsConfig: PublicKey;
+  poolsConfig: PublicKey;
   feeTierPda: PDA;
   tickSpacing: number;
   defaultFeeRate: number;
@@ -40,12 +40,11 @@ export function initializeFeeTierIx(
   program: Program<ElysiumPool>,
   params: InitFeeTierParams
 ): Instruction {
-  const { feeTierPda, whirlpoolsConfig, tickSpacing, feeAuthority, defaultFeeRate, funder } =
-    params;
+  const { feeTierPda, poolsConfig, tickSpacing, feeAuthority, defaultFeeRate, funder } = params;
 
   const ix = program.instruction.initializeFeeTier(tickSpacing, defaultFeeRate, {
     accounts: {
-      config: whirlpoolsConfig,
+      config: poolsConfig,
       feeTier: feeTierPda.publicKey,
       feeAuthority,
       funder,

@@ -1,26 +1,26 @@
 import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 /**
  * Parameters to update the reward authority at a particular rewardIndex on a ElysiumPool.
  *
  * @category Instruction Types
- * @param whirlpool - PublicKey for the whirlpool to update.
+ * @param pool - PublicKey for the pool to update.
  * @param rewardIndex - The reward index that we'd like to update. (0 <= index <= NUM_REWARDS).
  * @param rewardAuthority - The current rewardAuthority in the ElysiumPool at the rewardIndex
  * @param newRewardAuthority - The new rewardAuthority in the ElysiumPool at the rewardIndex
  */
 export type SetRewardAuthorityParams = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   rewardIndex: number;
   rewardAuthority: PublicKey;
   newRewardAuthority: PublicKey;
 };
 
 /**
- * Set the whirlpool reward authority at the provided `reward_index`.
+ * Set the pool reward authority at the provided `reward_index`.
  * Only the current reward authority for this reward index has permission to invoke this instruction.
  *
  * #### Special Errors
@@ -36,10 +36,10 @@ export function setRewardAuthorityIx(
   program: Program<ElysiumPool>,
   params: SetRewardAuthorityParams
 ): Instruction {
-  const { whirlpool, rewardAuthority, newRewardAuthority, rewardIndex } = params;
+  const { pool, rewardAuthority, newRewardAuthority, rewardIndex } = params;
   const ix = program.instruction.setRewardAuthority(rewardIndex, {
     accounts: {
-      whirlpool,
+      pool,
       rewardAuthority,
       newRewardAuthority,
     },

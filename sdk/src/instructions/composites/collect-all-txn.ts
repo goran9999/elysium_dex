@@ -15,7 +15,7 @@ import { PREFER_CACHE, ElysiumPoolAccountFetchOptions } from "../../network/publ
 import { ElysiumPoolData } from "../../types/public";
 import { PDAUtil, PoolUtil, TickUtil } from "../../utils/public";
 import { checkMergedTransactionSizeIsValid, convertListToMap } from "../../utils/txn-utils";
-import { getTokenMintsFromElysiumPools } from "../../utils/whirlpool-ata-utils";
+import { getTokenMintsFromElysiumPools } from "../../utils/pool-ata-utils";
 import { updateFeesAndRewardsIx } from "../update-fees-and-rewards-ix";
 
 /**
@@ -113,10 +113,10 @@ export async function collectAllForPositionsTxns(
     return [];
   }
 
-  const whirlpoolAddrs = positionList.map(([, pos]) => pos.whirlpool.toBase58());
-  const whirlpools = await ctx.fetcher.getPools(whirlpoolAddrs, PREFER_CACHE);
+  const poolAddrs = positionList.map(([, pos]) => pos.pool.toBase58());
+  const pools = await ctx.fetcher.getPools(poolAddrs, PREFER_CACHE);
 
-  const allMints = getTokenMintsFromElysiumPools(Array.from(whirlpools.values()));
+  const allMints = getTokenMintsFromElysiumPools(Array.from(pools.values()));
   const accountExemption = await ctx.fetcher.getAccountRentExempt();
 
   // resolvedAtas[mint] => Instruction & { address }
@@ -162,7 +162,7 @@ export async function collectAllForPositionsTxns(
       ctx,
       new PublicKey(positionAddr),
       position,
-      whirlpools,
+      pools,
       positionOwnerKey,
       positionAuthorityKey,
       resolvedAtas,
@@ -208,7 +208,7 @@ const constructCollectIxForPosition = (
   ctx: ElysiumPoolContext,
   positionKey: PublicKey,
   position: PositionData,
-  whirlpools: ReadonlyMap<string, ElysiumPoolData | null>,
+  pools: ReadonlyMap<string, ElysiumPoolData | null>,
   positionOwner: PublicKey,
   positionAuthority: PublicKey,
   resolvedAtas: Record<string, ResolvedTokenAddressInstruction>,
@@ -216,7 +216,7 @@ const constructCollectIxForPosition = (
 ) => {
   const ixForPosition: Instruction[] = [];
   const {
-    whirlpool: whirlpoolKey,
+    pool: poolKey,
     liquidity,
     tickLowerIndex,
     tickUpperIndex,
@@ -224,15 +224,15 @@ const constructCollectIxForPosition = (
     rewardInfos: positionRewardInfos,
   } = position;
 
-  const whirlpool = whirlpools.get(whirlpoolKey.toBase58());
-  if (!whirlpool) {
+  const pool = pools.get(poolKey.toBase58());
+  if (!pool) {
     throw new Error(
-      `Unable to process positionMint ${positionMint} - unable to derive whirlpool ${whirlpoolKey.toBase58()}`
+      `Unable to process positionMint ${positionMint} - unable to derive pool ${poolKey.toBase58()}`
     );
   }
-  const { tickSpacing } = whirlpool;
-  const mintA = whirlpool.tokenMintA.toBase58();
-  const mintB = whirlpool.tokenMintB.toBase58();
+  const { tickSpacing } = pool;
+  const mintA = pool.tokenMintA.toBase58();
+  const mintB = pool.tokenMintB.toBase58();
 
   const positionTokenAccount = getAssociatedTokenAddressSync(
     positionMint,
@@ -245,15 +245,15 @@ const constructCollectIxForPosition = (
     ixForPosition.push(
       updateFeesAndRewardsIx(ctx.program, {
         position: positionKey,
-        whirlpool: whirlpoolKey,
+        pool: poolKey,
         tickArrayLower: PDAUtil.getTickArray(
           ctx.program.programId,
-          whirlpoolKey,
+          poolKey,
           TickUtil.getStartTickIndex(tickLowerIndex, tickSpacing)
         ).publicKey,
         tickArrayUpper: PDAUtil.getTickArray(
           ctx.program.programId,
-          whirlpoolKey,
+          poolKey,
           TickUtil.getStartTickIndex(tickUpperIndex, tickSpacing)
         ).publicKey,
       })
@@ -271,21 +271,21 @@ const constructCollectIxForPosition = (
   }
   ixForPosition.push(
     ElysiumPoolIx.collectFeesIx(ctx.program, {
-      whirlpool: whirlpoolKey,
+      pool: poolKey,
       position: positionKey,
       positionAuthority,
       positionTokenAccount,
       tokenOwnerAccountA: resolvedAtas[mintA].address,
       tokenOwnerAccountB: resolvedAtas[mintB].address,
-      tokenVaultA: whirlpool.tokenVaultA,
-      tokenVaultB: whirlpool.tokenVaultB,
+      tokenVaultA: pool.tokenVaultA,
+      tokenVaultB: pool.tokenVaultB,
     })
   );
 
   // Collect Rewards
   // TODO: handle empty vault values?
   positionRewardInfos.forEach((_, index) => {
-    const rewardInfo = whirlpool.rewardInfos[index];
+    const rewardInfo = pool.rewardInfos[index];
     if (PoolUtil.isRewardInitialized(rewardInfo)) {
       const mintReward = rewardInfo.mint.toBase58();
       if (!touchedMints.has(mintReward)) {
@@ -294,7 +294,7 @@ const constructCollectIxForPosition = (
       }
       ixForPosition.push(
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolKey,
+          pool: poolKey,
           position: positionKey,
           positionAuthority,
           positionTokenAccount,

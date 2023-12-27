@@ -66,7 +66,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -77,7 +77,7 @@ describe("collect_reward", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         position: positions[0].publicKey,
         tickArrayLower: positions[0].tickArrayLower,
         tickArrayUpper: positions[0].tickArrayUpper,
@@ -85,12 +85,12 @@ describe("collect_reward", () => {
     ).buildAndExecute();
 
     // Generate collect reward expectation
-    const pool = await client.getPool(whirlpoolPda.publicKey, IGNORE_CACHE);
+    const pool = await client.getPool(poolPda.publicKey, IGNORE_CACHE);
     const positionPreCollect = await client.getPosition(positions[0].publicKey, IGNORE_CACHE);
 
     // Lock the collectRewards quote to the last time we called updateFeesAndRewards
     const expectation = collectRewardsQuote({
-      whirlpool: pool.getData(),
+      pool: pool.getData(),
       position: positionPreCollect.getData(),
       tickLower: positionPreCollect.getLowerTickData(),
       tickUpper: positionPreCollect.getUpperTickData(),
@@ -113,7 +113,7 @@ describe("collect_reward", () => {
       await toTx(
         ctx,
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -151,7 +151,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -168,7 +168,7 @@ describe("collect_reward", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         position: positions[0].publicKey,
         tickArrayLower: positions[0].tickArrayLower,
         tickArrayUpper: positions[0].tickArrayUpper,
@@ -181,7 +181,7 @@ describe("collect_reward", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.collectRewardIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         positionAuthority: delegate.publicKey,
         position: positions[0].publicKey,
         positionTokenAccount: positions[0].tokenAccount,
@@ -210,7 +210,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -235,7 +235,7 @@ describe("collect_reward", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         position: positions[0].publicKey,
         tickArrayLower: positions[0].tickArrayLower,
         tickArrayUpper: positions[0].tickArrayUpper,
@@ -245,7 +245,7 @@ describe("collect_reward", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.collectRewardIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         positionAuthority: delegate.publicKey,
         position: positions[0].publicKey,
         positionTokenAccount: delegatePositionAccount,
@@ -274,7 +274,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -291,7 +291,7 @@ describe("collect_reward", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.updateFeesAndRewardsIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         position: positions[0].publicKey,
         tickArrayLower: positions[0].tickArrayLower,
         tickArrayUpper: positions[0].tickArrayUpper,
@@ -304,7 +304,7 @@ describe("collect_reward", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.collectRewardIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         positionAuthority: provider.wallet.publicKey,
         position: positions[0].publicKey,
         positionTokenAccount: positions[0].tokenAccount,
@@ -324,7 +324,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
     } = fixture.getInfos();
 
@@ -342,7 +342,7 @@ describe("collect_reward", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -355,7 +355,7 @@ describe("collect_reward", () => {
     );
   });
 
-  it("fails when position does not match whirlpool", async () => {
+  it("fails when position does not match pool", async () => {
     const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
@@ -372,7 +372,7 @@ describe("collect_reward", () => {
     await sleep(1200);
 
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
     } = await initTestPool(ctx, TickSpacing.Standard);
     const rewardOwnerAccount = await createTokenAccount(
       provider,
@@ -383,7 +383,7 @@ describe("collect_reward", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -408,7 +408,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -431,7 +431,7 @@ describe("collect_reward", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -456,7 +456,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenMintA },
+      poolInitInfo: { poolPda, tokenMintA },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -475,7 +475,7 @@ describe("collect_reward", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: fakePositionTokenAccount,
@@ -500,7 +500,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -518,7 +518,7 @@ describe("collect_reward", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: delegate.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -545,7 +545,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -564,7 +564,7 @@ describe("collect_reward", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: delegate.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -591,7 +591,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -610,7 +610,7 @@ describe("collect_reward", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: delegate.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -623,7 +623,7 @@ describe("collect_reward", () => {
     );
   });
 
-  it("fails when reward vault does not match whirlpool reward vault", async () => {
+  it("fails when reward vault does not match pool reward vault", async () => {
     const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
@@ -635,7 +635,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda },
+      poolInitInfo: { poolPda },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -652,7 +652,7 @@ describe("collect_reward", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -665,7 +665,7 @@ describe("collect_reward", () => {
     );
   });
 
-  it("fails when reward owner account mint does not match whirlpool reward mint", async () => {
+  it("fails when reward owner account mint does not match pool reward mint", async () => {
     const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing: TickSpacing.Standard,
       initialSqrtPrice: MathUtil.toX64(new Decimal(1)),
@@ -677,7 +677,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenMintA },
+      poolInitInfo: { poolPda, tokenMintA },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -694,7 +694,7 @@ describe("collect_reward", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,
@@ -719,7 +719,7 @@ describe("collect_reward", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenMintA },
+      poolInitInfo: { poolPda, tokenMintA },
       positions,
       rewards,
     } = fixture.getInfos();
@@ -736,7 +736,7 @@ describe("collect_reward", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectRewardIx(ctx.program, {
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           positionAuthority: provider.wallet.publicKey,
           position: positions[0].publicKey,
           positionTokenAccount: positions[0].tokenAccount,

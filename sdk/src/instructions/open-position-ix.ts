@@ -2,7 +2,7 @@ import { Program } from "@coral-xyz/anchor";
 import { Instruction, PDA } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
 import { METADATA_PROGRAM_ADDRESS, WHIRLPOOL_NFT_UPDATE_AUTH } from "..";
-import { ElysiumPool } from ".././artifacts/whirlpool";
+import { ElysiumPool } from ".././artifacts/pool";
 import {
   OpenPositionBumpsData,
   OpenPositionWithMetadataBumpsData,
@@ -13,7 +13,7 @@ import { openPositionAccounts } from "../utils/instructions-util";
  * Parameters to open a position in a ElysiumPool.
  *
  * @category Instruction Types
- * @param whirlpool - PublicKey for the whirlpool that the position will be opened for.
+ * @param pool - PublicKey for the pool that the position will be opened for.
  * @param ownerKey - PublicKey for the wallet that will host the minted position token.
  * @param positionPda - PDA for the derived position address.
  * @param positionMintAddress - PublicKey for the mint token for the Position token.
@@ -23,7 +23,7 @@ import { openPositionAccounts } from "../utils/instructions-util";
  * @param funder - The account that would fund the creation of this account
  */
 export type OpenPositionParams = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   owner: PublicKey;
   positionPda: PDA;
   positionMintAddress: PublicKey;

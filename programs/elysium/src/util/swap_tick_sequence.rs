@@ -29,7 +29,7 @@ impl<'info> SwapTickSequence<'info> {
     /// # Parameters
     /// - `array_index` - the array index that the tick of this given tick-index would be stored in
     /// - `tick_index` - the tick index the desired Tick object is stored in
-    /// - `tick_spacing` - A u8 integer of the tick spacing for this whirlpool
+    /// - `tick_spacing` - A u8 integer of the tick spacing for this pool
     ///
     /// # Returns
     /// - `&Tick`: A reference to the desired Tick object
@@ -53,7 +53,7 @@ impl<'info> SwapTickSequence<'info> {
     /// # Parameters
     /// - `array_index` - the array index that the tick of this given tick-index would be stored in
     /// - `tick_index` - the tick index the desired Tick object is stored in
-    /// - `tick_spacing` - A u8 integer of the tick spacing for this whirlpool
+    /// - `tick_spacing` - A u8 integer of the tick spacing for this pool
     /// - `update` - A reference to a TickUpdate object to update the Tick object at the given index
     ///
     /// # Errors
@@ -93,7 +93,7 @@ impl<'info> SwapTickSequence<'info> {
     ///
     /// # Parameters
     /// - `tick_index` - the tick index to start searching from
-    /// - `tick_spacing` - A u8 integer of the tick spacing for this whirlpool
+    /// - `tick_spacing` - A u8 integer of the tick spacing for this pool
     /// - `a_to_b` - If the trade is from a_to_b, the search will move to the left and the starting search tick is inclusive.
     ///              If the trade is from b_to_a, the search will move to the right and the starting search tick is not inclusive.
     /// - `start_array_index` -

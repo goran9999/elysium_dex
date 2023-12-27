@@ -40,15 +40,15 @@ describe("close_bundled_position", () => {
   const tickLowerIndex = 0;
   const tickUpperIndex = 128;
   let poolInitInfo: InitPoolParams;
-  let whirlpoolPda: PDA;
+  let poolPda: PDA;
   const funderKeypair = anchor.web3.Keypair.generate();
 
   before(async () => {
     poolInitInfo = (await initTestPool(ctx, TickSpacing.Standard)).poolInitInfo;
-    whirlpoolPda = poolInitInfo.whirlpoolPda;
+    poolPda = poolInitInfo.poolPda;
     await systemTransferTx(provider, funderKeypair.publicKey, ONE_SOL).buildAndExecute();
 
-    const pool = await client.getPool(whirlpoolPda.publicKey);
+    const pool = await client.getPool(poolPda.publicKey);
     await (await pool.initTickArrayForTicks([0]))?.buildAndExecute();
   });
 
@@ -86,7 +86,7 @@ describe("close_bundled_position", () => {
     const bundleIndex = 0;
     const positionInitInfo = await openBundledPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       positionBundleInfo.positionBundleMintKeypair.publicKey,
       bundleIndex,
       tickLowerIndex,
@@ -133,7 +133,7 @@ describe("close_bundled_position", () => {
     const bundleIndex = 0;
     const positionInitInfo = await openBundledPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       positionBundleInfo.positionBundleMintKeypair.publicKey,
       bundleIndex,
       tickLowerIndex,
@@ -164,7 +164,7 @@ describe("close_bundled_position", () => {
     const bundleIndex = 0;
     const positionInitInfo = await openBundledPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       positionBundleInfo.positionBundleMintKeypair.publicKey,
       bundleIndex,
       tickLowerIndex,
@@ -199,7 +199,7 @@ describe("close_bundled_position", () => {
     const bundleIndex = 0;
     const positionInitInfo = await openBundledPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       positionBundleInfo.positionBundleMintKeypair.publicKey,
       bundleIndex,
       tickLowerIndex,
@@ -208,7 +208,7 @@ describe("close_bundled_position", () => {
     const { bundledPositionPda } = positionInitInfo.params;
 
     // deposit
-    const pool = await client.getPool(poolInitInfo.whirlpoolPda.publicKey, IGNORE_CACHE);
+    const pool = await client.getPool(poolInitInfo.poolPda.publicKey, IGNORE_CACHE);
     const quote = increaseLiquidityQuoteByInputTokenWithParams({
       tokenMintA: poolInitInfo.tokenMintA,
       tokenMintB: poolInitInfo.tokenMintB,
@@ -258,7 +258,7 @@ describe("close_bundled_position", () => {
 
       const positionInitInfo0 = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         0,
         tickLowerIndex,
@@ -267,7 +267,7 @@ describe("close_bundled_position", () => {
 
       const positionInitInfo1 = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         1,
         tickLowerIndex,
@@ -297,7 +297,7 @@ describe("close_bundled_position", () => {
       const bundleIndex = 0;
       const positionInitInfo = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo0.positionBundleMintKeypair.publicKey,
         bundleIndex,
         tickLowerIndex,
@@ -326,7 +326,7 @@ describe("close_bundled_position", () => {
       const bundleIndex = 0;
       const positionInitInfo = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         bundleIndex,
         tickLowerIndex,
@@ -364,7 +364,7 @@ describe("close_bundled_position", () => {
       const bundleIndex = 0;
       const positionInitInfo = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo0.positionBundleMintKeypair.publicKey,
         bundleIndex,
         tickLowerIndex,
@@ -394,7 +394,7 @@ describe("close_bundled_position", () => {
       const bundleIndex = 0;
       const positionInitInfo = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         bundleIndex,
         tickLowerIndex,
@@ -427,7 +427,7 @@ describe("close_bundled_position", () => {
       const bundleIndex = 0;
       const positionInitInfo = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         bundleIndex,
         tickLowerIndex,
@@ -473,7 +473,7 @@ describe("close_bundled_position", () => {
       const bundleIndex = 0;
       const positionInitInfo = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         bundleIndex,
         tickLowerIndex,
@@ -515,7 +515,7 @@ describe("close_bundled_position", () => {
       const bundleIndex = 0;
       const positionInitInfo = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         bundleIndex,
         tickLowerIndex,
@@ -561,7 +561,7 @@ describe("close_bundled_position", () => {
       const bundleIndex = 0;
       const positionInitInfo = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         bundleIndex,
         tickLowerIndex,
@@ -610,7 +610,7 @@ describe("close_bundled_position", () => {
 
       const positionInitInfo = await openBundledPosition(
         ctx,
-        whirlpoolPda.publicKey,
+        poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         bundleIndex,
         tickLowerIndex,
@@ -618,7 +618,7 @@ describe("close_bundled_position", () => {
       );
 
       // open NON-bundled position
-      const { params } = await openPosition(ctx, poolInitInfo.whirlpoolPda.publicKey, 0, 128);
+      const { params } = await openPosition(ctx, poolInitInfo.poolPda.publicKey, 0, 128);
 
       const tx = toTx(
         ctx,

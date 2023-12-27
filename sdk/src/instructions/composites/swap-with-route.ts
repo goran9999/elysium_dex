@@ -164,14 +164,14 @@ export async function getSwapFromRoute(
   for (let i = 0; i < slippageAdjustedQuotes.length; i++) {
     const routeFragment = slippageAdjustedQuotes[i];
     if (routeFragment.hopQuotes.length == 1) {
-      const { quote, whirlpool, mintA, mintB, vaultA, vaultB } = routeFragment.hopQuotes[0];
-      const [wp, tokenVaultA, tokenVaultB] = AddressUtil.toPubKeys([whirlpool, vaultA, vaultB]);
+      const { quote, pool, mintA, mintB, vaultA, vaultB } = routeFragment.hopQuotes[0];
+      const [wp, tokenVaultA, tokenVaultB] = AddressUtil.toPubKeys([pool, vaultA, vaultB]);
       const accA = ataInstructionMap[mintA.toString()].address;
       const accB = ataInstructionMap[mintB.toString()].address;
       const oraclePda = PDAUtil.getOracle(ctx.program.programId, wp);
       txBuilder.addInstruction(
         swapIx(ctx.program, {
-          whirlpool: wp,
+          pool: wp,
           tokenOwnerAccountA: accA,
           tokenOwnerAccountB: accB,
           tokenVaultA,
@@ -184,7 +184,7 @@ export async function getSwapFromRoute(
     } else if (routeFragment.hopQuotes.length == 2) {
       const {
         quote: quoteOne,
-        whirlpool: whirlpoolOne,
+        pool: poolOne,
         mintA: mintOneA,
         mintB: mintOneB,
         vaultA: vaultOneA,
@@ -192,7 +192,7 @@ export async function getSwapFromRoute(
       } = routeFragment.hopQuotes[0];
       const {
         quote: quoteTwo,
-        whirlpool: whirlpoolTwo,
+        pool: poolTwo,
         mintA: mintTwoA,
         mintB: mintTwoB,
         vaultA: vaultTwoA,
@@ -200,14 +200,7 @@ export async function getSwapFromRoute(
       } = routeFragment.hopQuotes[1];
 
       const [wpOne, wpTwo, tokenVaultOneA, tokenVaultOneB, tokenVaultTwoA, tokenVaultTwoB] =
-        AddressUtil.toPubKeys([
-          whirlpoolOne,
-          whirlpoolTwo,
-          vaultOneA,
-          vaultOneB,
-          vaultTwoA,
-          vaultTwoB,
-        ]);
+        AddressUtil.toPubKeys([poolOne, poolTwo, vaultOneA, vaultOneB, vaultTwoA, vaultTwoB]);
       const twoHopQuote = twoHopSwapQuoteFromSwapQuotes(quoteOne, quoteTwo);
 
       const oracleOne = PDAUtil.getOracle(ctx.program.programId, wpOne).publicKey;
@@ -220,8 +213,8 @@ export async function getSwapFromRoute(
       txBuilder.addInstruction(
         twoHopSwapIx(ctx.program, {
           ...twoHopQuote,
-          whirlpoolOne: wpOne,
-          whirlpoolTwo: wpTwo,
+          poolOne: wpOne,
+          poolTwo: wpTwo,
           tokenOwnerAccountOneA,
           tokenOwnerAccountOneB,
           tokenOwnerAccountTwoA,

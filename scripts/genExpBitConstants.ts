@@ -17,9 +17,7 @@ const b = new Decimal("1.0001");
 const n = 64;
 
 console.log(
-  `Printing bit constants for whirlpool exponent of base ${b.toDecimalPlaces(
-    4
-  )}`
+  `Printing bit constants for pool exponent of base ${b.toDecimalPlaces(4)}`
 );
 console.log(``);
 console.log(`1.0001 x64 const - ${b.mul(x64).toFixed(0, 1)}`);

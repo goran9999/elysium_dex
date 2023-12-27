@@ -39,12 +39,12 @@ describe("delete_position_bundle", () => {
   const tickLowerIndex = 0;
   const tickUpperIndex = 128;
   let poolInitInfo: InitPoolParams;
-  let whirlpoolPda: PDA;
+  let poolPda: PDA;
   const funderKeypair = anchor.web3.Keypair.generate();
 
   before(async () => {
     poolInitInfo = (await initTestPool(ctx, TickSpacing.Standard)).poolInitInfo;
-    whirlpoolPda = poolInitInfo.whirlpoolPda;
+    poolPda = poolInitInfo.poolPda;
     await systemTransferTx(provider, funderKeypair.publicKey, ONE_SOL).buildAndExecute();
   });
 
@@ -270,7 +270,7 @@ describe("delete_position_bundle", () => {
     const bundleIndex = 0;
     const positionInitInfo = await openBundledPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       positionBundleInfo.positionBundleMintKeypair.publicKey,
       bundleIndex,
       tickLowerIndex,
@@ -336,7 +336,7 @@ describe("delete_position_bundle", () => {
     const bundleIndex = POSITION_BUNDLE_SIZE - 1;
     const positionInitInfo = await openBundledPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       positionBundleInfo.positionBundleMintKeypair.publicKey,
       bundleIndex,
       tickLowerIndex,

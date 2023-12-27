@@ -31,12 +31,12 @@ export interface SwapTestSwapParams {
 }
 
 export interface SwapTestSetup {
-  whirlpool: ElysiumPool;
+  pool: ElysiumPool;
   tickArrayAddresses: PublicKey[];
 }
 
 export async function setupSwapTest(setup: SwapTestPoolParams, tokenAIsNative = false) {
-  const { whirlpoolPda } = await initTestPoolWithTokens(
+  const { poolPda } = await initTestPoolWithTokens(
     setup.ctx,
     setup.tickSpacing,
     setup.initSqrtPrice,
@@ -44,13 +44,13 @@ export async function setupSwapTest(setup: SwapTestPoolParams, tokenAIsNative = 
     tokenAIsNative ? NATIVE_MINT : undefined
   );
 
-  const whirlpool = await setup.client.getPool(whirlpoolPda.publicKey, IGNORE_CACHE);
+  const pool = await setup.client.getPool(poolPda.publicKey, IGNORE_CACHE);
 
-  await (await whirlpool.initTickArrayForTicks(setup.initArrayStartTicks))?.buildAndExecute();
+  await (await pool.initTickArrayForTicks(setup.initArrayStartTicks))?.buildAndExecute();
 
-  await fundPositionsWithClient(setup.client, whirlpoolPda.publicKey, setup.fundedPositions);
+  await fundPositionsWithClient(setup.client, poolPda.publicKey, setup.fundedPositions);
 
-  return whirlpool;
+  return pool;
 }
 
 export interface ArrayTickIndex {

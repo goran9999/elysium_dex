@@ -40,16 +40,16 @@ describe("open_position", () => {
   const tickLowerIndex = 0;
   const tickUpperIndex = 128;
   let poolInitInfo: InitPoolParams;
-  let whirlpoolPda: PDA;
+  let poolPda: PDA;
   const funderKeypair = anchor.web3.Keypair.generate();
 
   before(async () => {
     poolInitInfo = (await initTestPool(ctx, TickSpacing.Standard)).poolInitInfo;
-    whirlpoolPda = poolInitInfo.whirlpoolPda;
+    poolPda = poolInitInfo.poolPda;
 
     const { params, mint } = await generateDefaultOpenPositionParams(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       0,
       128,
       provider.wallet.publicKey
@@ -62,7 +62,7 @@ describe("open_position", () => {
   it("successfully opens position and verify position address contents", async () => {
     const positionInitInfo = await openPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       tickLowerIndex,
       tickUpperIndex
     );
@@ -72,7 +72,7 @@ describe("open_position", () => {
 
     assert.strictEqual(position.tickLowerIndex, tickLowerIndex);
     assert.strictEqual(position.tickUpperIndex, tickUpperIndex);
-    assert.ok(position.whirlpool.equals(poolInitInfo.whirlpoolPda.publicKey));
+    assert.ok(position.pool.equals(poolInitInfo.poolPda.publicKey));
     assert.ok(position.positionMint.equals(positionMintAddress));
     assert.ok(position.liquidity.eq(ZERO_BN));
     assert.ok(position.feeGrowthCheckpointA.eq(ZERO_BN));
@@ -86,7 +86,7 @@ describe("open_position", () => {
   it("succeeds when funder is different than account paying for transaction fee", async () => {
     await openPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       tickLowerIndex,
       tickUpperIndex,
       provider.wallet.publicKey,
@@ -99,7 +99,7 @@ describe("open_position", () => {
 
     const positionInitInfo = await openPosition(
       ctx,
-      whirlpoolPda.publicKey,
+      poolPda.publicKey,
       tickLowerIndex,
       tickUpperIndex,
       newOwner.publicKey
@@ -143,7 +143,7 @@ describe("open_position", () => {
       await assert.rejects(
         openPosition(
           ctx,
-          whirlpoolPda.publicKey,
+          poolPda.publicKey,
           lowerTick,
           upperTick,
           provider.wallet.publicKey,
@@ -207,7 +207,7 @@ describe("open_position", () => {
           positionPda,
           positionMintAddress: positionMintKeypair.publicKey,
           positionTokenAccount: positionTokenAccountAddress,
-          whirlpool: whirlpoolPda.publicKey,
+          pool: poolPda.publicKey,
           tickLowerIndex: 0,
           tickUpperIndex: 128,
         })

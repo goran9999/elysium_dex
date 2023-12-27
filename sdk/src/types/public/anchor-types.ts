@@ -1,6 +1,6 @@
 import { BN, BorshAccountsCoder, Idl } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import ElysiumPoolIDL from "../../artifacts/whirlpool.json";
+import ElysiumPoolIDL from "../../artifacts/pool.json";
 
 /**
  * This file contains the types that has the same structure as the types anchor functions returns.
@@ -92,15 +92,15 @@ export type ElysiumPoolRewardInfoData = {
  * @category Solana Accounts
  */
 export type ElysiumPoolBumpsData = {
-  whirlpoolBump: number;
+  poolBump: number;
 };
 
 /**
  * @category Solana Accounts
  */
 export type ElysiumPoolData = {
-  whirlpoolsConfig: PublicKey;
-  whirlpoolBump: number[];
+  poolsConfig: PublicKey;
+  poolBump: number[];
   feeRate: number;
   protocolFeeRate: number;
   liquidity: BN;
@@ -123,7 +123,7 @@ export type ElysiumPoolData = {
  * @category Solana Accounts
  */
 export type TickArrayData = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   startTickIndex: number;
   ticks: TickData[];
 };
@@ -167,7 +167,7 @@ export type OpenPositionWithMetadataBumpsData = {
  * @category Solana Accounts
  */
 export type PositionData = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   positionMint: PublicKey;
   liquidity: BN;
   tickLowerIndex: number;
@@ -183,7 +183,7 @@ export type PositionData = {
  * @category Solana Accounts
  */
 export type FeeTierData = {
-  whirlpoolsConfig: PublicKey;
+  poolsConfig: PublicKey;
   tickSpacing: number;
   defaultFeeRate: number;
 };

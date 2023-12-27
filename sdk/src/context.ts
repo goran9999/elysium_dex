@@ -7,8 +7,8 @@ import {
   WrappedSolAccountCreateMethod,
 } from "@orca-so/common-sdk";
 import { Commitment, Connection, PublicKey, SendOptions } from "@solana/web3.js";
-import { ElysiumPool } from "./artifacts/whirlpool";
-import ElysiumPoolIDL from "./artifacts/whirlpool.json";
+import { ElysiumPool } from "./artifacts/pool";
+import ElysiumPoolIDL from "./artifacts/pool.json";
 import { ElysiumPoolAccountFetcherInterface, buildDefaultAccountFetcher } from "./network/public/";
 import { contextOptionsToBuilderOptions } from "./utils/txn-utils";
 

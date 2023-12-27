@@ -19,23 +19,23 @@ describe("initialize_reward", () => {
     const { params } = await initializeReward(
       ctx,
       configKeypairs.rewardEmissionsSuperAuthorityKeypair,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       0
     );
 
-    const whirlpool = (await fetcher.getPool(
-      poolInitInfo.whirlpoolPda.publicKey,
+    const pool = (await fetcher.getPool(
+      poolInitInfo.poolPda.publicKey,
       IGNORE_CACHE
     )) as ElysiumPoolData;
 
-    assert.ok(whirlpool.rewardInfos[0].mint.equals(params.rewardMint));
-    assert.ok(whirlpool.rewardInfos[0].vault.equals(params.rewardVaultKeypair.publicKey));
+    assert.ok(pool.rewardInfos[0].mint.equals(params.rewardMint));
+    assert.ok(pool.rewardInfos[0].vault.equals(params.rewardVaultKeypair.publicKey));
 
     await assert.rejects(
       initializeReward(
         ctx,
         configKeypairs.rewardEmissionsSuperAuthorityKeypair,
-        poolInitInfo.whirlpoolPda.publicKey,
+        poolInitInfo.poolPda.publicKey,
         0
       ),
       /custom program error: 0x178a/ // InvalidRewardIndex
@@ -44,21 +44,21 @@ describe("initialize_reward", () => {
     const { params: params2 } = await initializeReward(
       ctx,
       configKeypairs.rewardEmissionsSuperAuthorityKeypair,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       1
     );
 
-    const whirlpool2 = (await fetcher.getPool(
-      poolInitInfo.whirlpoolPda.publicKey,
+    const pool2 = (await fetcher.getPool(
+      poolInitInfo.poolPda.publicKey,
       IGNORE_CACHE
     )) as ElysiumPoolData;
 
-    assert.ok(whirlpool2.rewardInfos[0].mint.equals(params.rewardMint));
-    assert.ok(whirlpool2.rewardInfos[0].vault.equals(params.rewardVaultKeypair.publicKey));
-    assert.ok(whirlpool2.rewardInfos[1].mint.equals(params2.rewardMint));
-    assert.ok(whirlpool2.rewardInfos[1].vault.equals(params2.rewardVaultKeypair.publicKey));
-    assert.ok(whirlpool2.rewardInfos[2].mint.equals(anchor.web3.PublicKey.default));
-    assert.ok(whirlpool2.rewardInfos[2].vault.equals(anchor.web3.PublicKey.default));
+    assert.ok(pool2.rewardInfos[0].mint.equals(params.rewardMint));
+    assert.ok(pool2.rewardInfos[0].vault.equals(params.rewardVaultKeypair.publicKey));
+    assert.ok(pool2.rewardInfos[1].mint.equals(params2.rewardMint));
+    assert.ok(pool2.rewardInfos[1].vault.equals(params2.rewardVaultKeypair.publicKey));
+    assert.ok(pool2.rewardInfos[2].mint.equals(anchor.web3.PublicKey.default));
+    assert.ok(pool2.rewardInfos[2].vault.equals(anchor.web3.PublicKey.default));
   });
 
   it("succeeds when funder is different than account paying for transaction fee", async () => {
@@ -68,7 +68,7 @@ describe("initialize_reward", () => {
     await initializeReward(
       ctx,
       configKeypairs.rewardEmissionsSuperAuthorityKeypair,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       0,
       funderKeypair
     );
@@ -81,7 +81,7 @@ describe("initialize_reward", () => {
       initializeReward(
         ctx,
         configKeypairs.rewardEmissionsSuperAuthorityKeypair,
-        poolInitInfo.whirlpoolPda.publicKey,
+        poolInitInfo.poolPda.publicKey,
         1
       ),
       /custom program error: 0x178a/ // InvalidRewardIndex
@@ -95,7 +95,7 @@ describe("initialize_reward", () => {
       initializeReward(
         ctx,
         configKeypairs.rewardEmissionsSuperAuthorityKeypair,
-        poolInitInfo.whirlpoolPda.publicKey,
+        poolInitInfo.poolPda.publicKey,
         3
       )
     );
@@ -110,7 +110,7 @@ describe("initialize_reward", () => {
         ElysiumPoolIx.initializeRewardIx(ctx.program, {
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           funder: provider.wallet.publicKey,
-          whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+          pool: poolInitInfo.poolPda.publicKey,
           rewardMint: await createMint(provider),
           rewardVaultKeypair: anchor.web3.Keypair.generate(),
           rewardIndex: 0,

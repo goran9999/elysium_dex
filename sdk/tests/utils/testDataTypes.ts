@@ -16,8 +16,8 @@ import {
 import { IGNORE_CACHE, ElysiumPoolAccountFetcherInterface } from "../../src/network/public/fetcher";
 
 export const testElysiumPoolData = {
-  whirlpoolsConfig: Keypair.generate().publicKey,
-  whirlpoolBump: [],
+  poolsConfig: Keypair.generate().publicKey,
+  poolBump: [],
   feeRate: 300,
   protocolFeeRate: 1800,
   liquidity: new BN("32523523532"),
@@ -57,7 +57,7 @@ export const testUninitializedTickData: TickData = {
 export const testTickArrayData: TickArrayData = {
   startTickIndex: 0,
   ticks: Array(TICK_ARRAY_SIZE).fill(testUninitializedTickData),
-  whirlpool: PublicKey.default,
+  pool: PublicKey.default,
 };
 
 export const testEmptyTickArrray: TickArray = {
@@ -68,7 +68,7 @@ export const testEmptyTickArrray: TickArray = {
 export const buildTickArrayData = (startTick: number, initializedOffsets: number[]): TickArray => {
   const result = {
     ticks: Array(TICK_ARRAY_SIZE).fill(testUninitializedTickData),
-    whirlpool: PublicKey.default,
+    pool: PublicKey.default,
     startTickIndex: startTick,
   };
 
@@ -85,11 +85,11 @@ export const buildTickArrayData = (startTick: number, initializedOffsets: number
 export async function getTickArrays(
   startIndices: number[],
   ctx: ElysiumPoolContext,
-  whirlpoolKey: PublicKey,
+  poolKey: PublicKey,
   fetcher: ElysiumPoolAccountFetcherInterface
 ) {
   const tickArrayPdas = await startIndices.map((value) =>
-    PDAUtil.getTickArray(ctx.program.programId, whirlpoolKey, value)
+    PDAUtil.getTickArray(ctx.program.programId, poolKey, value)
   );
   const tickArrayAddresses = tickArrayPdas.map((pda) => pda.publicKey);
   const tickArrays = await fetcher.getTickArrays(tickArrayAddresses, IGNORE_CACHE);

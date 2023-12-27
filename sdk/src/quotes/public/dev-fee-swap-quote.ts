@@ -6,7 +6,7 @@ import {
   ElysiumPoolAccountFetchOptions,
   ElysiumPoolAccountFetcherInterface,
 } from "../../network/public/fetcher";
-import { ElysiumPool } from "../../whirlpool-client";
+import { ElysiumPool } from "../../pool-client";
 import { NormalSwapQuote, swapQuoteByInputToken } from "./swap-quote";
 
 /**
@@ -34,7 +34,7 @@ export type DevFeeSwapQuote = NormalSwapQuote & {
  * Get an estimated swap quote using input token amount while collecting dev fees.
  *
  * @category Quotes
- * @param whirlpool - ElysiumPool to perform the swap on
+ * @param pool - ElysiumPool to perform the swap on
  * @param inputTokenMint - PublicKey for the input token mint to swap with
  * @param tokenAmount - The amount of input token to swap from
  * @param slippageTolerance - The amount of slippage to account for in this quote
@@ -42,10 +42,10 @@ export type DevFeeSwapQuote = NormalSwapQuote & {
  * @param cache - ElysiumPoolAccountCacheInterface instance to fetch solana accounts
  * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
  * @param devFeePercentage - The percentage amount to send to developer wallet prior to the swap. Percentage num/dem values has to match token decimal.
- * @returns a SwapQuote object with slippage adjusted SwapInput parameters & estimates on token amounts, fee & end whirlpool states.
+ * @returns a SwapQuote object with slippage adjusted SwapInput parameters & estimates on token amounts, fee & end pool states.
  */
 export async function swapQuoteByInputTokenWithDevFees(
-  whirlpool: ElysiumPool,
+  pool: ElysiumPool,
   inputTokenMint: Address,
   tokenAmount: BN,
   slippageTolerance: Percentage,
@@ -66,7 +66,7 @@ export async function swapQuoteByInputTokenWithDevFees(
     .div(devFeePercentage.denominator);
 
   const slippageAdjustedQuote = await swapQuoteByInputToken(
-    whirlpool,
+    pool,
     inputTokenMint,
     tokenAmount.sub(devFeeAmount),
     slippageTolerance,

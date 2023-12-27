@@ -10,7 +10,7 @@ import {
 import { TickArray, ElysiumPoolData } from "../../types/public";
 import { PoolUtil, SwapDirection } from "../../utils/public";
 import { SwapUtils } from "../../utils/public/swap-utils";
-import { ElysiumPool } from "../../whirlpool-client";
+import { ElysiumPool } from "../../pool-client";
 import { simulateSwap } from "../swap/swap-quote-impl";
 import { DevFeeSwapQuote } from "./dev-fee-swap-quote";
 
@@ -26,7 +26,7 @@ import { DevFeeSwapQuote } from "./dev-fee-swap-quote";
  * @param tickArrays - An sequential array of tick-array objects in the direction of the trade to swap on
  */
 export type SwapQuoteParam = {
-  whirlpoolData: ElysiumPoolData;
+  poolData: ElysiumPoolData;
   tokenAmount: BN;
   otherAmountThreshold: BN;
   sqrtPriceLimit: BN;
@@ -70,17 +70,17 @@ export type NormalSwapQuote = SwapInput & SwapEstimates;
  * Get an estimated swap quote using input token amount.
  *
  * @category Quotes
- * @param whirlpool - ElysiumPool to perform the swap on
+ * @param pool - ElysiumPool to perform the swap on
  * @param inputTokenMint - PublicKey for the input token mint to swap with
  * @param tokenAmount - The amount of input token to swap from
  * @param slippageTolerance - The amount of slippage to account for in this quote
  * @param programId - PublicKey for the ElysiumPool ProgramId
  * @param cache - ElysiumPoolAccountCacheInterface instance object to fetch solana accounts
  * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
- * @returns a SwapQuote object with slippage adjusted SwapInput parameters & estimates on token amounts, fee & end whirlpool states.
+ * @returns a SwapQuote object with slippage adjusted SwapInput parameters & estimates on token amounts, fee & end pool states.
  */
 export async function swapQuoteByInputToken(
-  whirlpool: ElysiumPool,
+  pool: ElysiumPool,
   inputTokenMint: Address,
   tokenAmount: BN,
   slippageTolerance: Percentage,
@@ -89,7 +89,7 @@ export async function swapQuoteByInputToken(
   opts?: ElysiumPoolAccountFetchOptions
 ): Promise<SwapQuote> {
   const params = await swapQuoteByToken(
-    whirlpool,
+    pool,
     inputTokenMint,
     tokenAmount,
     true,
@@ -107,17 +107,17 @@ export async function swapQuoteByInputToken(
  * the defined output token amount.
  *
  * @category Quotes
- * @param whirlpool - ElysiumPool to perform the swap on
+ * @param pool - ElysiumPool to perform the swap on
  * @param outputTokenMint - PublicKey for the output token mint to swap into
  * @param tokenAmount - The maximum amount of output token to receive in this swap.
  * @param slippageTolerance - The amount of slippage to account for in this quote
  * @param programId - PublicKey for the ElysiumPool ProgramId
  * @param cache - ElysiumPoolAccountCacheInterface instance to fetch solana accounts
  * @param opts an {@link ElysiumPoolAccountFetchOptions} object to define fetch and cache options when accessing on-chain accounts
- * @returns a SwapQuote object with slippage adjusted SwapInput parameters & estimates on token amounts, fee & end whirlpool states.
+ * @returns a SwapQuote object with slippage adjusted SwapInput parameters & estimates on token amounts, fee & end pool states.
  */
 export async function swapQuoteByOutputToken(
-  whirlpool: ElysiumPool,
+  pool: ElysiumPool,
   outputTokenMint: Address,
   tokenAmount: BN,
   slippageTolerance: Percentage,
@@ -126,7 +126,7 @@ export async function swapQuoteByOutputToken(
   opts?: ElysiumPoolAccountFetchOptions
 ): Promise<SwapQuote> {
   const params = await swapQuoteByToken(
-    whirlpool,
+    pool,
     outputTokenMint,
     tokenAmount,
     false,
@@ -143,7 +143,7 @@ export async function swapQuoteByOutputToken(
  * @category Quotes
  * @param params - SwapQuote parameters
  * @param slippageTolerance - The amount of slippage to account for when generating the final quote.
- * @returns a SwapQuote object with slippage adjusted SwapInput parameters & estimates on token amounts, fee & end whirlpool states.
+ * @returns a SwapQuote object with slippage adjusted SwapInput parameters & estimates on token amounts, fee & end pool states.
  */
 export function swapQuoteWithParams(
   params: SwapQuoteParam,
@@ -166,7 +166,7 @@ export function swapQuoteWithParams(
 }
 
 async function swapQuoteByToken(
-  whirlpool: ElysiumPool,
+  pool: ElysiumPool,
   inputTokenMint: Address,
   tokenAmount: BN,
   amountSpecifiedIsInput: boolean,
@@ -174,27 +174,27 @@ async function swapQuoteByToken(
   fetcher: ElysiumPoolAccountFetcherInterface,
   opts?: ElysiumPoolAccountFetchOptions
 ): Promise<SwapQuoteParam> {
-  const whirlpoolData = whirlpool.getData();
+  const poolData = pool.getData();
   const swapMintKey = AddressUtil.toPubKey(inputTokenMint);
-  const swapTokenType = PoolUtil.getTokenType(whirlpoolData, swapMintKey);
+  const swapTokenType = PoolUtil.getTokenType(poolData, swapMintKey);
   invariant(!!swapTokenType, "swapTokenMint does not match any tokens on this pool");
 
   const aToB =
-    SwapUtils.getSwapDirection(whirlpoolData, swapMintKey, amountSpecifiedIsInput) ===
+    SwapUtils.getSwapDirection(poolData, swapMintKey, amountSpecifiedIsInput) ===
     SwapDirection.AtoB;
 
   const tickArrays = await SwapUtils.getTickArrays(
-    whirlpoolData.tickCurrentIndex,
-    whirlpoolData.tickSpacing,
+    poolData.tickCurrentIndex,
+    poolData.tickSpacing,
     aToB,
     AddressUtil.toPubKey(programId),
-    whirlpool.getAddress(),
+    pool.getAddress(),
     fetcher,
     opts
   );
 
   return {
-    whirlpoolData,
+    poolData,
     tokenAmount,
     aToB,
     amountSpecifiedIsInput,

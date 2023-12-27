@@ -30,7 +30,7 @@ describe("close_position", () => {
   it("successfully closes an open position", async () => {
     const { poolInitInfo } = await initTestPool(ctx, TickSpacing.Standard);
 
-    const { params } = await openPosition(ctx, poolInitInfo.whirlpoolPda.publicKey, 0, 128);
+    const { params } = await openPosition(ctx, poolInitInfo.poolPda.publicKey, 0, 128);
     const receiverKeypair = anchor.web3.Keypair.generate();
 
     await toTx(
@@ -63,7 +63,7 @@ describe("close_position", () => {
 
     const { params } = await openPosition(
       ctx,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       0,
       128,
       owner.publicKey
@@ -100,7 +100,7 @@ describe("close_position", () => {
 
     const { params } = await openPosition(
       ctx,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       0,
       128,
       owner.publicKey
@@ -179,7 +179,7 @@ describe("close_position", () => {
 
     const { params } = await openPosition(
       ctx,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       0,
       128,
       owner.publicKey
@@ -208,7 +208,7 @@ describe("close_position", () => {
 
     const { params } = await openPosition(
       ctx,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       0,
       128,
       owner.publicKey
@@ -246,7 +246,7 @@ describe("close_position", () => {
 
     const { params } = await openPosition(
       ctx,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       0,
       128,
       owner.publicKey
@@ -305,7 +305,7 @@ describe("close_position", () => {
 
     const { params } = await openPosition(
       ctx,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       0,
       128,
       owner.publicKey
@@ -346,7 +346,7 @@ describe("close_position", () => {
 
     const { params } = await openPosition(
       ctx,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       0,
       128,
       owner.publicKey
@@ -446,7 +446,7 @@ describe("close_position", () => {
       const bundleIndex = 0;
       const positionInitInfo = await openBundledPosition(
         ctx,
-        poolInitInfo.whirlpoolPda.publicKey,
+        poolInitInfo.poolPda.publicKey,
         positionBundleInfo.positionBundleMintKeypair.publicKey,
         bundleIndex,
         0,

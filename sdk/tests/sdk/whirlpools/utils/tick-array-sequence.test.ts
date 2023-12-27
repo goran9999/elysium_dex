@@ -3,7 +3,7 @@ import * as assert from "assert";
 import { TickArraySequence } from "../../../../src/quotes/swap/tick-array-sequence";
 import { buildTickArrayData, testEmptyTickArrray } from "../../../utils/testDataTypes";
 import { TickArrayIndex } from "../../../../src/quotes/swap/tick-array-index";
-import { ElysiumPool } from "../../../../src/artifacts/whirlpool";
+import { ElysiumPool } from "../../../../src/artifacts/pool";
 import { SwapErrorCode, ElysiumPoolsError } from "../../../../src/errors/errors";
 
 describe("TickArray Sequence tests", () => {

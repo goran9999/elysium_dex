@@ -7,9 +7,9 @@ export type VaultAmounts = {
   tokenB: BN;
 };
 
-export async function getVaultAmounts(ctx: ElysiumPoolContext, whirlpoolData: ElysiumPoolData) {
+export async function getVaultAmounts(ctx: ElysiumPoolContext, poolData: ElysiumPoolData) {
   return {
-    tokenA: new BN(await getTokenBalance(ctx.provider, whirlpoolData.tokenVaultA)),
-    tokenB: new BN(await getTokenBalance(ctx.provider, whirlpoolData.tokenVaultB)),
+    tokenA: new BN(await getTokenBalance(ctx.provider, poolData.tokenVaultA)),
+    tokenB: new BN(await getTokenBalance(ctx.provider, poolData.tokenVaultB)),
   };
 }

@@ -1,7 +1,7 @@
 import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 import { PDAUtil } from "../utils/public";
 
@@ -9,13 +9,13 @@ import { PDAUtil } from "../utils/public";
  * Parameters to set the default fee rate for a FeeTier.
  *
  * @category Instruction Types
- * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this fee-tier is initialized in
+ * @param poolsConfig - The public key for the ElysiumPoolsConfig this fee-tier is initialized in
  * @param feeAuthority - Authority authorized in the ElysiumPoolsConfig to set default fee rates.
  * @param tickSpacing - The tick spacing of the fee-tier that we would like to update.
  * @param defaultFeeRate - The new default fee rate for this fee-tier. Stored as a hundredths of a basis point.
  */
 export type SetDefaultFeeRateParams = {
-  whirlpoolsConfig: PublicKey;
+  poolsConfig: PublicKey;
   feeAuthority: PublicKey;
   tickSpacing: number;
   defaultFeeRate: number;
@@ -37,13 +37,13 @@ export function setDefaultFeeRateIx(
   program: Program<ElysiumPool>,
   params: SetDefaultFeeRateParams
 ): Instruction {
-  const { whirlpoolsConfig, feeAuthority, tickSpacing, defaultFeeRate } = params;
+  const { poolsConfig, feeAuthority, tickSpacing, defaultFeeRate } = params;
 
-  const feeTierPda = PDAUtil.getFeeTier(program.programId, whirlpoolsConfig, tickSpacing);
+  const feeTierPda = PDAUtil.getFeeTier(program.programId, poolsConfig, tickSpacing);
 
   const ix = program.instruction.setDefaultFeeRate(defaultFeeRate, {
     accounts: {
-      whirlpoolsConfig,
+      poolsConfig,
       feeTier: feeTierPda.publicKey,
       feeAuthority,
     },

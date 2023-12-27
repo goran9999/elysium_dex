@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct FeeTier {
-    pub whirlpools_config: Pubkey,
+    pub pools_config: Pubkey,
     pub tick_spacing: u16,
     pub default_fee_rate: u16,
 }
@@ -14,11 +14,11 @@ impl FeeTier {
 
     pub fn initialize(
         &mut self,
-        whirlpools_config: &Account<ElysiumPoolsConfig>,
+        pools_config: &Account<ElysiumPoolsConfig>,
         tick_spacing: u16,
         default_fee_rate: u16,
     ) -> Result<()> {
-        self.whirlpools_config = whirlpools_config.key();
+        self.pools_config = pools_config.key();
         self.tick_spacing = tick_spacing;
         self.update_default_fee_rate(default_fee_rate)?;
         Ok(())

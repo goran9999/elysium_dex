@@ -6,14 +6,14 @@ use crate::state::ElysiumPool;
 #[derive(Accounts)]
 #[instruction(reward_index: u8)]
 pub struct InitializeReward<'info> {
-    #[account(address = whirlpool.reward_infos[reward_index as usize].authority)]
+    #[account(address = pool.reward_infos[reward_index as usize].authority)]
     pub reward_authority: Signer<'info>,
 
     #[account(mut)]
     pub funder: Signer<'info>,
 
     #[account(mut)]
-    pub whirlpool: Box<Account<'info, ElysiumPool>>,
+    pub pool: Box<Account<'info, ElysiumPool>>,
 
     pub reward_mint: Box<Account<'info, Mint>>,
 
@@ -21,7 +21,7 @@ pub struct InitializeReward<'info> {
         init,
         payer = funder,
         token::mint = reward_mint,
-        token::authority = whirlpool
+        token::authority = pool
     )]
     pub reward_vault: Box<Account<'info, TokenAccount>>,
 
@@ -32,9 +32,9 @@ pub struct InitializeReward<'info> {
 }
 
 pub fn handler(ctx: Context<InitializeReward>, reward_index: u8) -> Result<()> {
-    let whirlpool = &mut ctx.accounts.whirlpool;
+    let pool = &mut ctx.accounts.pool;
 
-    Ok(whirlpool.initialize_reward(
+    Ok(pool.initialize_reward(
         reward_index as usize,
         ctx.accounts.reward_mint.key(),
         ctx.accounts.reward_vault.key(),

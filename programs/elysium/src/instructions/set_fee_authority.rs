@@ -5,9 +5,9 @@ use crate::state::ElysiumPoolsConfig;
 #[derive(Accounts)]
 pub struct SetFeeAuthority<'info> {
     #[account(mut)]
-    pub whirlpools_config: Account<'info, ElysiumPoolsConfig>,
+    pub pools_config: Account<'info, ElysiumPoolsConfig>,
 
-    #[account(address = whirlpools_config.fee_authority)]
+    #[account(address = pools_config.fee_authority)]
     pub fee_authority: Signer<'info>,
 
     /// CHECK: safe, the account that will be new authority can be arbitrary
@@ -18,6 +18,6 @@ pub struct SetFeeAuthority<'info> {
 pub fn handler(ctx: Context<SetFeeAuthority>) -> Result<()> {
     Ok(ctx
         .accounts
-        .whirlpools_config
+        .pools_config
         .update_fee_authority(ctx.accounts.new_fee_authority.key()))
 }

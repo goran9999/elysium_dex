@@ -28,7 +28,7 @@ describe("initialize_config", () => {
     ).buildAndExecute();
 
     const configAccount = (await fetcher.getConfig(
-      configInitInfo.whirlpoolsConfigKeypair.publicKey
+      configInitInfo.poolsConfigKeypair.publicKey
     )) as ElysiumPoolsConfigData;
 
     assert.ok(
@@ -48,10 +48,10 @@ describe("initialize_config", () => {
     initializedConfigInfo = configInitInfo;
   });
 
-  it("fail on passing in already initialized whirlpool account", async () => {
+  it("fail on passing in already initialized pool account", async () => {
     let infoWithDupeConfigKey = {
       ...generateDefaultConfigParams(ctx).configInitInfo,
-      whirlpoolsConfigKeypair: initializedConfigInfo.whirlpoolsConfigKeypair,
+      poolsConfigKeypair: initializedConfigInfo.poolsConfigKeypair,
     };
     await assert.rejects(
       toTx(

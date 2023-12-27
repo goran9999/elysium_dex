@@ -25,20 +25,20 @@ describe("set_default_fee_rate", () => {
       ctx,
       TickSpacing.Standard
     );
-    const whirlpoolKey = poolInitInfo.whirlpoolPda.publicKey;
-    const whirlpoolsConfigKey = configInitInfo.whirlpoolsConfigKeypair.publicKey;
+    const poolKey = poolInitInfo.poolPda.publicKey;
+    const poolsConfigKey = configInitInfo.poolsConfigKeypair.publicKey;
     const feeAuthorityKeypair = configKeypairs.feeAuthorityKeypair;
 
     const newDefaultFeeRate = 45;
 
-    // Fetch initial whirlpool and check it is default
-    let whirlpool_0 = (await fetcher.getPool(whirlpoolKey)) as ElysiumPoolData;
-    assert.equal(whirlpool_0.feeRate, feeTierParams.defaultFeeRate);
+    // Fetch initial pool and check it is default
+    let pool_0 = (await fetcher.getPool(poolKey)) as ElysiumPoolData;
+    assert.equal(pool_0.feeRate, feeTierParams.defaultFeeRate);
 
     await toTx(
       ctx,
       ElysiumPoolIx.setDefaultFeeRateIx(ctx.program, {
-        whirlpoolsConfig: whirlpoolsConfigKey,
+        poolsConfig: poolsConfigKey,
         feeAuthority: feeAuthorityKeypair.publicKey,
         tickSpacing: TickSpacing.Standard,
         defaultFeeRate: newDefaultFeeRate,
@@ -47,15 +47,15 @@ describe("set_default_fee_rate", () => {
       .addSigner(feeAuthorityKeypair)
       .buildAndExecute();
 
-    // Setting the default rate did not change existing whirlpool fee rate
-    whirlpool_0 = (await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey)) as ElysiumPoolData;
-    assert.equal(whirlpool_0.feeRate, feeTierParams.defaultFeeRate);
+    // Setting the default rate did not change existing pool fee rate
+    pool_0 = (await fetcher.getPool(poolInitInfo.poolPda.publicKey)) as ElysiumPoolData;
+    assert.equal(pool_0.feeRate, feeTierParams.defaultFeeRate);
 
-    // Newly initialized whirlpools have new default fee rate
+    // Newly initialized pools have new default fee rate
     const [tokenMintA, tokenMintB] = await createInOrderMints(ctx);
-    const whirlpoolPda = PDAUtil.getElysiumPool(
+    const poolPda = PDAUtil.getElysiumPool(
       ctx.program.programId,
-      whirlpoolsConfigKey,
+      poolsConfigKey,
       tokenMintA,
       tokenMintB,
       TickSpacing.Stable
@@ -67,15 +67,15 @@ describe("set_default_fee_rate", () => {
       ...poolInitInfo,
       tokenMintA,
       tokenMintB,
-      whirlpoolPda,
+      poolPda,
       tokenVaultAKeypair,
       tokenVaultBKeypair,
       tickSpacing: TickSpacing.Stable,
     };
     await toTx(ctx, ElysiumPoolIx.initializePoolIx(ctx.program, newPoolInitInfo)).buildAndExecute();
 
-    const whirlpool_1 = (await fetcher.getPool(whirlpoolPda.publicKey)) as ElysiumPoolData;
-    assert.equal(whirlpool_1.feeRate, newDefaultFeeRate);
+    const pool_1 = (await fetcher.getPool(poolPda.publicKey)) as ElysiumPoolData;
+    assert.equal(pool_1.feeRate, newDefaultFeeRate);
   });
 
   it("successfully set_default_fee_rate max", async () => {
@@ -83,7 +83,7 @@ describe("set_default_fee_rate", () => {
       ctx,
       TickSpacing.Standard
     );
-    const whirlpoolsConfigKey = configInitInfo.whirlpoolsConfigKeypair.publicKey;
+    const poolsConfigKey = configInitInfo.poolsConfigKeypair.publicKey;
     const feeAuthorityKeypair = configKeypairs.feeAuthorityKeypair;
 
     const newDefaultFeeRate = 30_000;
@@ -91,7 +91,7 @@ describe("set_default_fee_rate", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.setDefaultFeeRateIx(ctx.program, {
-        whirlpoolsConfig: whirlpoolsConfigKey,
+        poolsConfig: poolsConfigKey,
         feeAuthority: feeAuthorityKeypair.publicKey,
         tickSpacing: TickSpacing.Standard,
         defaultFeeRate: newDefaultFeeRate,
@@ -100,11 +100,11 @@ describe("set_default_fee_rate", () => {
       .addSigner(feeAuthorityKeypair)
       .buildAndExecute();
 
-    // Newly initialized whirlpools have new default fee rate
+    // Newly initialized pools have new default fee rate
     const [tokenMintA, tokenMintB] = await createInOrderMints(ctx);
-    const whirlpoolPda = PDAUtil.getElysiumPool(
+    const poolPda = PDAUtil.getElysiumPool(
       ctx.program.programId,
-      whirlpoolsConfigKey,
+      poolsConfigKey,
       tokenMintA,
       tokenMintB,
       TickSpacing.Stable
@@ -116,20 +116,20 @@ describe("set_default_fee_rate", () => {
       ...poolInitInfo,
       tokenMintA,
       tokenMintB,
-      whirlpoolPda,
+      poolPda,
       tokenVaultAKeypair,
       tokenVaultBKeypair,
       tickSpacing: TickSpacing.Stable,
     };
     await toTx(ctx, ElysiumPoolIx.initializePoolIx(ctx.program, newPoolInitInfo)).buildAndExecute();
 
-    const whirlpool_1 = (await fetcher.getPool(whirlpoolPda.publicKey)) as ElysiumPoolData;
-    assert.equal(whirlpool_1.feeRate, newDefaultFeeRate);
+    const pool_1 = (await fetcher.getPool(poolPda.publicKey)) as ElysiumPoolData;
+    assert.equal(pool_1.feeRate, newDefaultFeeRate);
   });
 
   it("fails when default fee rate exceeds max", async () => {
     const { configInitInfo, configKeypairs } = await initTestPool(ctx, TickSpacing.Standard);
-    const whirlpoolsConfigKey = configInitInfo.whirlpoolsConfigKeypair.publicKey;
+    const poolsConfigKey = configInitInfo.poolsConfigKeypair.publicKey;
     const feeAuthorityKeypair = configKeypairs.feeAuthorityKeypair;
 
     const newDefaultFeeRate = 30_000 + 1;
@@ -137,7 +137,7 @@ describe("set_default_fee_rate", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setDefaultFeeRateIx(ctx.program, {
-          whirlpoolsConfig: whirlpoolsConfigKey,
+          poolsConfig: poolsConfigKey,
           feeAuthority: feeAuthorityKeypair.publicKey,
           tickSpacing: TickSpacing.Standard,
           defaultFeeRate: newDefaultFeeRate,
@@ -161,7 +161,7 @@ describe("set_default_fee_rate", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setDefaultFeeRateIx(ctx.program, {
-          whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
+          poolsConfig: configInitInfo.poolsConfigKeypair.publicKey,
           feeAuthority: feeAuthorityKeypair.publicKey,
           tickSpacing: TickSpacing.Standard,
           defaultFeeRate: 500,
@@ -175,11 +175,11 @@ describe("set_default_fee_rate", () => {
 
   it("fails when fee authority is not a signer", async () => {
     const { configInitInfo, configKeypairs } = await initTestPool(ctx, TickSpacing.Standard);
-    const whirlpoolsConfigKey = configInitInfo.whirlpoolsConfigKeypair.publicKey;
+    const poolsConfigKey = configInitInfo.poolsConfigKeypair.publicKey;
     const feeAuthorityKeypair = configKeypairs.feeAuthorityKeypair;
     const feeTierPda = PDAUtil.getFeeTier(
       ctx.program.programId,
-      configInitInfo.whirlpoolsConfigKeypair.publicKey,
+      configInitInfo.poolsConfigKeypair.publicKey,
       TickSpacing.Standard
     );
 
@@ -187,7 +187,7 @@ describe("set_default_fee_rate", () => {
     await assert.rejects(
       program.rpc.setDefaultFeeRate(newDefaultFeeRate, {
         accounts: {
-          whirlpoolsConfig: whirlpoolsConfigKey,
+          poolsConfig: poolsConfigKey,
           feeTier: feeTierPda.publicKey,
           feeAuthority: feeAuthorityKeypair.publicKey,
         },
@@ -198,11 +198,11 @@ describe("set_default_fee_rate", () => {
 
   it("fails when invalid fee authority provided", async () => {
     const { configInitInfo } = await initTestPool(ctx, TickSpacing.Standard);
-    const whirlpoolsConfigKey = configInitInfo.whirlpoolsConfigKeypair.publicKey;
+    const poolsConfigKey = configInitInfo.poolsConfigKeypair.publicKey;
     const fakeFeeAuthorityKeypair = anchor.web3.Keypair.generate();
     const feeTierPda = PDAUtil.getFeeTier(
       ctx.program.programId,
-      configInitInfo.whirlpoolsConfigKeypair.publicKey,
+      configInitInfo.poolsConfigKeypair.publicKey,
       TickSpacing.Standard
     );
 
@@ -210,7 +210,7 @@ describe("set_default_fee_rate", () => {
     await assert.rejects(
       program.rpc.setDefaultFeeRate(newDefaultFeeRate, {
         accounts: {
-          whirlpoolsConfig: whirlpoolsConfigKey,
+          poolsConfig: poolsConfigKey,
           feeTier: feeTierPda.publicKey,
           feeAuthority: fakeFeeAuthorityKeypair.publicKey,
         },

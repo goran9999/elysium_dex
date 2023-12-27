@@ -22,7 +22,7 @@ export const ORCA_WHIRLPOOLS_CONFIG = new PublicKey("2LecshUwdy9xi7meFgHtFJQNSKk
 export const ORCA_SUPPORTED_TICK_SPACINGS = [1, 2, 4, 8, 16, 64, 128, 256];
 
 /**
- * The number of rewards supported by this whirlpool.
+ * The number of rewards supported by this pool.
  * @category Constants
  */
 export const NUM_REWARDS = 3;

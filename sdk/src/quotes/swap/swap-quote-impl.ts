@@ -15,7 +15,7 @@ import { TickArraySequence } from "./tick-array-sequence";
 export function simulateSwap(params: SwapQuoteParam): SwapQuote {
   const {
     aToB,
-    whirlpoolData,
+    poolData,
     tickArrays,
     tokenAmount,
     sqrtPriceLimit,
@@ -31,8 +31,8 @@ export function simulateSwap(params: SwapQuoteParam): SwapQuote {
   }
 
   if (
-    (aToB && sqrtPriceLimit.gt(whirlpoolData.sqrtPrice)) ||
-    (!aToB && sqrtPriceLimit.lt(whirlpoolData.sqrtPrice))
+    (aToB && sqrtPriceLimit.gt(poolData.sqrtPrice)) ||
+    (!aToB && sqrtPriceLimit.lt(poolData.sqrtPrice))
   ) {
     throw new ElysiumPoolsError(
       "Provided SqrtPriceLimit is in the opposite direction of the trade.",
@@ -44,10 +44,10 @@ export function simulateSwap(params: SwapQuoteParam): SwapQuote {
     throw new ElysiumPoolsError("Provided tokenAmount is zero.", SwapErrorCode.ZeroTradableAmount);
   }
 
-  const tickSequence = new TickArraySequence(tickArrays, whirlpoolData.tickSpacing, aToB);
+  const tickSequence = new TickArraySequence(tickArrays, poolData.tickSpacing, aToB);
 
   // Ensure 1st search-index resides on the 1st array in the sequence to match smart contract expectation.
-  if (!tickSequence.isValidTickArray0(whirlpoolData.tickCurrentIndex)) {
+  if (!tickSequence.isValidTickArray0(poolData.tickCurrentIndex)) {
     throw new ElysiumPoolsError(
       "TickArray at index 0 does not contain the ElysiumPool current tick index.",
       SwapErrorCode.TickArraySequenceInvalid
@@ -55,7 +55,7 @@ export function simulateSwap(params: SwapQuoteParam): SwapQuote {
   }
 
   const swapResults = computeSwap(
-    whirlpoolData,
+    poolData,
     tickSequence,
     tokenAmount,
     sqrtPriceLimit,

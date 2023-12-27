@@ -4,12 +4,12 @@ use crate::state::{ElysiumPoolsConfig, FeeTier};
 
 #[derive(Accounts)]
 pub struct SetDefaultFeeRate<'info> {
-    pub whirlpools_config: Account<'info, ElysiumPoolsConfig>,
+    pub pools_config: Account<'info, ElysiumPoolsConfig>,
 
-    #[account(mut, has_one = whirlpools_config)]
+    #[account(mut, has_one = pools_config)]
     pub fee_tier: Account<'info, FeeTier>,
 
-    #[account(address = whirlpools_config.fee_authority)]
+    #[account(address = pools_config.fee_authority)]
     pub fee_authority: Signer<'info>,
 }
 

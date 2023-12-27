@@ -1,7 +1,7 @@
 import { Program } from "@coral-xyz/anchor";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 import { Instruction } from "@orca-so/common-sdk";
 
@@ -9,17 +9,17 @@ import { Instruction } from "@orca-so/common-sdk";
  * Parameters to collect fees from a position.
  *
  * @category Instruction Types
- * @param whirlpool - PublicKey for the whirlpool that the position will be opened for.
+ * @param pool - PublicKey for the pool that the position will be opened for.
  * @param position - PublicKey for the  position will be opened for.
  * @param positionTokenAccount - PublicKey for the position token's associated token address.
  * @param tokenOwnerAccountA - PublicKey for the token A account that will be withdrawed from.
  * @param tokenOwnerAccountB - PublicKey for the token B account that will be withdrawed from.
- * @param tokenVaultA - PublicKey for the tokenA vault for this whirlpool.
- * @param tokenVaultB - PublicKey for the tokenB vault for this whirlpool.
+ * @param tokenVaultA - PublicKey for the tokenA vault for this pool.
+ * @param tokenVaultB - PublicKey for the tokenB vault for this pool.
  * @param positionAuthority - authority that owns the token corresponding to this desired position.
  */
 export type CollectFeesParams = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   position: PublicKey;
   positionTokenAccount: PublicKey;
   tokenOwnerAccountA: PublicKey;
@@ -43,7 +43,7 @@ export function collectFeesIx(
   params: CollectFeesParams
 ): Instruction {
   const {
-    whirlpool,
+    pool,
     positionAuthority,
     position,
     positionTokenAccount,
@@ -55,7 +55,7 @@ export function collectFeesIx(
 
   const ix = program.instruction.collectFees({
     accounts: {
-      whirlpool,
+      pool,
       positionAuthority,
       position,
       positionTokenAccount,

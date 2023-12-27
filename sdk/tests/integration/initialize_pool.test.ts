@@ -38,56 +38,54 @@ describe("initialize_pool", () => {
       TickSpacing.Standard,
       price
     );
-    const whirlpool = (await fetcher.getPool(
-      poolInitInfo.whirlpoolPda.publicKey
-    )) as ElysiumPoolData;
+    const pool = (await fetcher.getPool(poolInitInfo.poolPda.publicKey)) as ElysiumPoolData;
 
     const expectedElysiumPoolPda = PDAUtil.getElysiumPool(
       program.programId,
-      configInitInfo.whirlpoolsConfigKeypair.publicKey,
+      configInitInfo.poolsConfigKeypair.publicKey,
       poolInitInfo.tokenMintA,
       poolInitInfo.tokenMintB,
       TickSpacing.Standard
     );
 
-    assert.ok(poolInitInfo.whirlpoolPda.publicKey.equals(expectedElysiumPoolPda.publicKey));
-    assert.equal(expectedElysiumPoolPda.bump, whirlpool.whirlpoolBump[0]);
+    assert.ok(poolInitInfo.poolPda.publicKey.equals(expectedElysiumPoolPda.publicKey));
+    assert.equal(expectedElysiumPoolPda.bump, pool.poolBump[0]);
 
-    assert.ok(whirlpool.whirlpoolsConfig.equals(poolInitInfo.whirlpoolsConfig));
-    assert.ok(whirlpool.tokenMintA.equals(poolInitInfo.tokenMintA));
-    assert.ok(whirlpool.tokenVaultA.equals(poolInitInfo.tokenVaultAKeypair.publicKey));
+    assert.ok(pool.poolsConfig.equals(poolInitInfo.poolsConfig));
+    assert.ok(pool.tokenMintA.equals(poolInitInfo.tokenMintA));
+    assert.ok(pool.tokenVaultA.equals(poolInitInfo.tokenVaultAKeypair.publicKey));
 
-    assert.ok(whirlpool.tokenMintB.equals(poolInitInfo.tokenMintB));
-    assert.ok(whirlpool.tokenVaultB.equals(poolInitInfo.tokenVaultBKeypair.publicKey));
+    assert.ok(pool.tokenMintB.equals(poolInitInfo.tokenMintB));
+    assert.ok(pool.tokenVaultB.equals(poolInitInfo.tokenVaultBKeypair.publicKey));
 
-    assert.equal(whirlpool.feeRate, feeTierParams.defaultFeeRate);
-    assert.equal(whirlpool.protocolFeeRate, configInitInfo.defaultProtocolFeeRate);
+    assert.equal(pool.feeRate, feeTierParams.defaultFeeRate);
+    assert.equal(pool.protocolFeeRate, configInitInfo.defaultProtocolFeeRate);
 
-    assert.ok(whirlpool.sqrtPrice.eq(new anchor.BN(poolInitInfo.initSqrtPrice.toString())));
-    assert.ok(whirlpool.liquidity.eq(ZERO_BN));
+    assert.ok(pool.sqrtPrice.eq(new anchor.BN(poolInitInfo.initSqrtPrice.toString())));
+    assert.ok(pool.liquidity.eq(ZERO_BN));
 
     assert.equal(
-      whirlpool.tickCurrentIndex,
+      pool.tickCurrentIndex,
       PriceMath.sqrtPriceX64ToTickIndex(poolInitInfo.initSqrtPrice)
     );
 
-    assert.ok(whirlpool.protocolFeeOwedA.eq(ZERO_BN));
-    assert.ok(whirlpool.protocolFeeOwedB.eq(ZERO_BN));
-    assert.ok(whirlpool.feeGrowthGlobalA.eq(ZERO_BN));
-    assert.ok(whirlpool.feeGrowthGlobalB.eq(ZERO_BN));
+    assert.ok(pool.protocolFeeOwedA.eq(ZERO_BN));
+    assert.ok(pool.protocolFeeOwedB.eq(ZERO_BN));
+    assert.ok(pool.feeGrowthGlobalA.eq(ZERO_BN));
+    assert.ok(pool.feeGrowthGlobalB.eq(ZERO_BN));
 
-    assert.ok(whirlpool.tickSpacing === TickSpacing.Standard);
+    assert.ok(pool.tickSpacing === TickSpacing.Standard);
 
     await asyncAssertTokenVault(program, poolInitInfo.tokenVaultAKeypair.publicKey, {
-      expectedOwner: poolInitInfo.whirlpoolPda.publicKey,
+      expectedOwner: poolInitInfo.poolPda.publicKey,
       expectedMint: poolInitInfo.tokenMintA,
     });
     await asyncAssertTokenVault(program, poolInitInfo.tokenVaultBKeypair.publicKey, {
-      expectedOwner: poolInitInfo.whirlpoolPda.publicKey,
+      expectedOwner: poolInitInfo.poolPda.publicKey,
       expectedMint: poolInitInfo.tokenMintB,
     });
 
-    whirlpool.rewardInfos.forEach((rewardInfo) => {
+    pool.rewardInfos.forEach((rewardInfo) => {
       assert.equal(rewardInfo.emissionsPerSecondX64, 0);
       assert.equal(rewardInfo.growthGlobalX64, 0);
       assert.ok(rewardInfo.authority.equals(configInitInfo.rewardEmissionsSuperAuthority));
@@ -103,45 +101,43 @@ describe("initialize_pool", () => {
       TickSpacing.Stable,
       price
     );
-    const whirlpool = (await fetcher.getPool(
-      poolInitInfo.whirlpoolPda.publicKey
-    )) as ElysiumPoolData;
+    const pool = (await fetcher.getPool(poolInitInfo.poolPda.publicKey)) as ElysiumPoolData;
 
-    assert.ok(whirlpool.whirlpoolsConfig.equals(poolInitInfo.whirlpoolsConfig));
-    assert.ok(whirlpool.tokenMintA.equals(poolInitInfo.tokenMintA));
-    assert.ok(whirlpool.tokenVaultA.equals(poolInitInfo.tokenVaultAKeypair.publicKey));
+    assert.ok(pool.poolsConfig.equals(poolInitInfo.poolsConfig));
+    assert.ok(pool.tokenMintA.equals(poolInitInfo.tokenMintA));
+    assert.ok(pool.tokenVaultA.equals(poolInitInfo.tokenVaultAKeypair.publicKey));
 
-    assert.ok(whirlpool.tokenMintB.equals(poolInitInfo.tokenMintB));
-    assert.ok(whirlpool.tokenVaultB.equals(poolInitInfo.tokenVaultBKeypair.publicKey));
+    assert.ok(pool.tokenMintB.equals(poolInitInfo.tokenMintB));
+    assert.ok(pool.tokenVaultB.equals(poolInitInfo.tokenVaultBKeypair.publicKey));
 
-    assert.equal(whirlpool.feeRate, feeTierParams.defaultFeeRate);
-    assert.equal(whirlpool.protocolFeeRate, configInitInfo.defaultProtocolFeeRate);
+    assert.equal(pool.feeRate, feeTierParams.defaultFeeRate);
+    assert.equal(pool.protocolFeeRate, configInitInfo.defaultProtocolFeeRate);
 
-    assert.ok(whirlpool.sqrtPrice.eq(new anchor.BN(poolInitInfo.initSqrtPrice.toString())));
-    assert.ok(whirlpool.liquidity.eq(ZERO_BN));
+    assert.ok(pool.sqrtPrice.eq(new anchor.BN(poolInitInfo.initSqrtPrice.toString())));
+    assert.ok(pool.liquidity.eq(ZERO_BN));
 
     assert.equal(
-      whirlpool.tickCurrentIndex,
+      pool.tickCurrentIndex,
       PriceMath.sqrtPriceX64ToTickIndex(poolInitInfo.initSqrtPrice)
     );
 
-    assert.ok(whirlpool.protocolFeeOwedA.eq(ZERO_BN));
-    assert.ok(whirlpool.protocolFeeOwedB.eq(ZERO_BN));
-    assert.ok(whirlpool.feeGrowthGlobalA.eq(ZERO_BN));
-    assert.ok(whirlpool.feeGrowthGlobalB.eq(ZERO_BN));
+    assert.ok(pool.protocolFeeOwedA.eq(ZERO_BN));
+    assert.ok(pool.protocolFeeOwedB.eq(ZERO_BN));
+    assert.ok(pool.feeGrowthGlobalA.eq(ZERO_BN));
+    assert.ok(pool.feeGrowthGlobalB.eq(ZERO_BN));
 
-    assert.ok(whirlpool.tickSpacing === TickSpacing.Stable);
+    assert.ok(pool.tickSpacing === TickSpacing.Stable);
 
     await asyncAssertTokenVault(program, poolInitInfo.tokenVaultAKeypair.publicKey, {
-      expectedOwner: poolInitInfo.whirlpoolPda.publicKey,
+      expectedOwner: poolInitInfo.poolPda.publicKey,
       expectedMint: poolInitInfo.tokenMintA,
     });
     await asyncAssertTokenVault(program, poolInitInfo.tokenVaultBKeypair.publicKey, {
-      expectedOwner: poolInitInfo.whirlpoolPda.publicKey,
+      expectedOwner: poolInitInfo.poolPda.publicKey,
       expectedMint: poolInitInfo.tokenMintB,
     });
 
-    whirlpool.rewardInfos.forEach((rewardInfo) => {
+    pool.rewardInfos.forEach((rewardInfo) => {
       assert.equal(rewardInfo.emissionsPerSecondX64, 0);
       assert.equal(rewardInfo.growthGlobalX64, 0);
       assert.ok(rewardInfo.authority.equals(configInitInfo.rewardEmissionsSuperAuthority));
@@ -195,9 +191,9 @@ describe("initialize_pool", () => {
   it("fails when token mints are in the wrong order", async () => {
     const { poolInitInfo, configInitInfo } = await buildTestPoolParams(ctx, TickSpacing.Standard);
 
-    const whirlpoolPda = PDAUtil.getElysiumPool(
+    const poolPda = PDAUtil.getElysiumPool(
       ctx.program.programId,
-      configInitInfo.whirlpoolsConfigKeypair.publicKey,
+      configInitInfo.poolsConfigKeypair.publicKey,
       poolInitInfo.tokenMintB,
       poolInitInfo.tokenMintA,
       TickSpacing.Stable
@@ -205,7 +201,7 @@ describe("initialize_pool", () => {
 
     const modifiedPoolInitInfo: InitPoolParams = {
       ...poolInitInfo,
-      whirlpoolPda,
+      poolPda,
       tickSpacing: TickSpacing.Stable,
       tokenMintA: poolInitInfo.tokenMintB,
       tokenMintB: poolInitInfo.tokenMintA,
@@ -223,9 +219,9 @@ describe("initialize_pool", () => {
   it("fails when the same token mint is passed in", async () => {
     const { poolInitInfo, configInitInfo } = await buildTestPoolParams(ctx, TickSpacing.Standard);
 
-    const whirlpoolPda = PDAUtil.getElysiumPool(
+    const poolPda = PDAUtil.getElysiumPool(
       ctx.program.programId,
-      configInitInfo.whirlpoolsConfigKeypair.publicKey,
+      configInitInfo.poolsConfigKeypair.publicKey,
       poolInitInfo.tokenMintA,
       poolInitInfo.tokenMintA,
       TickSpacing.Stable
@@ -233,7 +229,7 @@ describe("initialize_pool", () => {
 
     const modifiedPoolInitInfo: InitPoolParams = {
       ...poolInitInfo,
-      whirlpoolPda,
+      poolPda,
       tickSpacing: TickSpacing.Stable,
       tokenMintB: poolInitInfo.tokenMintA,
     };
@@ -285,17 +281,17 @@ describe("initialize_pool", () => {
   it("ignore passed bump", async () => {
     const { poolInitInfo } = await buildTestPoolParams(ctx, TickSpacing.Standard);
 
-    const whirlpoolPda = poolInitInfo.whirlpoolPda;
-    const validBump = whirlpoolPda.bump;
+    const poolPda = poolInitInfo.poolPda;
+    const validBump = poolPda.bump;
     const invalidBump = (validBump + 1) % 256; // +1 shift mod 256
     const modifiedElysiumPoolPda: PDA = {
-      publicKey: whirlpoolPda.publicKey,
+      publicKey: poolPda.publicKey,
       bump: invalidBump,
     };
 
     const modifiedPoolInitInfo: InitPoolParams = {
       ...poolInitInfo,
-      whirlpoolPda: modifiedElysiumPoolPda,
+      poolPda: modifiedElysiumPoolPda,
     };
 
     await toTx(
@@ -304,10 +300,8 @@ describe("initialize_pool", () => {
     ).buildAndExecute();
 
     // check if passed invalid bump was ignored
-    const whirlpool = (await fetcher.getPool(
-      poolInitInfo.whirlpoolPda.publicKey
-    )) as ElysiumPoolData;
-    assert.equal(whirlpool.whirlpoolBump, validBump);
-    assert.notEqual(whirlpool.whirlpoolBump, invalidBump);
+    const pool = (await fetcher.getPool(poolInitInfo.poolPda.publicKey)) as ElysiumPoolData;
+    assert.equal(pool.poolBump, validBump);
+    assert.notEqual(pool.poolBump, invalidBump);
   });
 });

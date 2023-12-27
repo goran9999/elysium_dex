@@ -22,8 +22,8 @@ import { ElysiumPoolTestFixture } from "../../utils/fixture";
 interface SharedTestContext {
   provider: anchor.AnchorProvider;
   program: ElysiumPool;
-  whirlpoolCtx: ElysiumPoolContext;
-  whirlpoolClient: ElysiumPoolClient;
+  poolCtx: ElysiumPoolContext;
+  poolClient: ElysiumPoolClient;
 }
 
 describe("PositionImpl#collectFees()", () => {
@@ -38,19 +38,19 @@ describe("PositionImpl#collectFees()", () => {
 
     anchor.setProvider(provider);
     const program = anchor.workspace.ElysiumPool;
-    const whirlpoolCtx = ElysiumPoolContext.fromWorkspace(provider, program);
-    const whirlpoolClient = buildElysiumPoolClient(whirlpoolCtx);
+    const poolCtx = ElysiumPoolContext.fromWorkspace(provider, program);
+    const poolClient = buildElysiumPoolClient(poolCtx);
 
     testCtx = {
       provider,
       program,
-      whirlpoolCtx,
-      whirlpoolClient,
+      poolCtx,
+      poolClient,
     };
   });
 
   async function accrueFees(fixture: ElysiumPoolTestFixture) {
-    const ctx = testCtx.whirlpoolCtx;
+    const ctx = testCtx.poolCtx;
     const {
       poolInitInfo,
       positions: [positionInfo],
@@ -58,13 +58,13 @@ describe("PositionImpl#collectFees()", () => {
       tokenAccountB,
     } = fixture.getInfos();
 
-    const { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair } = poolInitInfo;
+    const { poolPda, tokenVaultAKeypair, tokenVaultBKeypair } = poolInitInfo;
 
-    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, whirlpoolPda.publicKey, 22528);
-    const oraclePda = PDAUtil.getOracle(ctx.program.programId, whirlpoolPda.publicKey);
+    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, poolPda.publicKey, 22528);
+    const oraclePda = PDAUtil.getOracle(ctx.program.programId, poolPda.publicKey);
 
-    const pool = await testCtx.whirlpoolClient.getPool(whirlpoolPda.publicKey);
-    const position = await testCtx.whirlpoolClient.getPosition(positionInfo.publicKey);
+    const pool = await testCtx.poolClient.getPool(poolPda.publicKey);
+    const position = await testCtx.poolClient.getPosition(positionInfo.publicKey);
 
     // Accrue fees in token A
     await toTx(
@@ -75,7 +75,7 @@ describe("PositionImpl#collectFees()", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
         amountSpecifiedIsInput: true,
         aToB: true,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -97,7 +97,7 @@ describe("PositionImpl#collectFees()", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
         amountSpecifiedIsInput: true,
         aToB: false,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -116,7 +116,7 @@ describe("PositionImpl#collectFees()", () => {
     const tickUpperData = position.getLowerTickData();
 
     const quote = collectFeesQuote({
-      whirlpool: poolData,
+      pool: poolData,
       position: positionData,
       tickLower: tickLowerData,
       tickUpper: tickUpperData,
@@ -125,9 +125,9 @@ describe("PositionImpl#collectFees()", () => {
     assert.ok(quote.feeOwedA.gtn(0) || quote.feeOwedB.gtn(0));
   }
 
-  context("when the whirlpool is SPL-only", () => {
+  context("when the pool is SPL-only", () => {
     it("should collect fees", async () => {
-      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.poolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -138,10 +138,10 @@ describe("PositionImpl#collectFees()", () => {
 
       const { positions, poolInitInfo } = fixture.getInfos();
 
-      const pool = await testCtx.whirlpoolClient.getPool(poolInitInfo.whirlpoolPda.publicKey);
-      const position = await testCtx.whirlpoolClient.getPosition(positions[0].publicKey);
+      const pool = await testCtx.poolClient.getPool(poolInitInfo.poolPda.publicKey);
+      const position = await testCtx.poolClient.getPosition(positions[0].publicKey);
 
-      const positionDataBefore = await testCtx.whirlpoolCtx.fetcher.getPosition(
+      const positionDataBefore = await testCtx.poolCtx.fetcher.getPosition(
         position.getAddress(),
         IGNORE_CACHE
       );
@@ -154,7 +154,7 @@ describe("PositionImpl#collectFees()", () => {
       const tickUpperData = position.getLowerTickData();
 
       const quote = collectFeesQuote({
-        whirlpool: poolData,
+        pool: poolData,
         position: positionData,
         tickLower: tickLowerData,
         tickUpper: tickUpperData,
@@ -173,7 +173,7 @@ describe("PositionImpl#collectFees()", () => {
 
       await tx.buildAndExecute();
 
-      const positionDataAfter = await testCtx.whirlpoolCtx.fetcher.getPosition(
+      const positionDataAfter = await testCtx.poolCtx.fetcher.getPosition(
         position.getAddress(),
         IGNORE_CACHE
       );
@@ -184,27 +184,21 @@ describe("PositionImpl#collectFees()", () => {
         poolInitInfo.tokenMintA,
         otherWallet.publicKey
       );
-      const accountA = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(
-        accountAPubkey,
-        IGNORE_CACHE
-      );
+      const accountA = await testCtx.poolCtx.fetcher.getTokenInfo(accountAPubkey, IGNORE_CACHE);
       assert.ok(accountA && new BN(accountA.amount.toString()).eq(quote.feeOwedA));
 
       const accountBPubkey = getAssociatedTokenAddressSync(
         poolInitInfo.tokenMintB,
         otherWallet.publicKey
       );
-      const accountB = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(
-        accountBPubkey,
-        IGNORE_CACHE
-      );
+      const accountB = await testCtx.poolCtx.fetcher.getTokenInfo(accountBPubkey, IGNORE_CACHE);
       assert.ok(accountB && new BN(accountB.amount.toString()).eq(quote.feeOwedB));
     });
   });
 
-  context("when the whirlpool is SOL-SPL", () => {
+  context("when the pool is SOL-SPL", () => {
     it("should collect fees", async () => {
-      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.poolCtx).init({
         tickSpacing,
         positions: [
           { tickLowerIndex, tickUpperIndex, liquidityAmount }, // In range position
@@ -216,10 +210,10 @@ describe("PositionImpl#collectFees()", () => {
 
       const { positions, poolInitInfo } = fixture.getInfos();
 
-      const pool = await testCtx.whirlpoolClient.getPool(poolInitInfo.whirlpoolPda.publicKey);
-      const position = await testCtx.whirlpoolClient.getPosition(positions[0].publicKey);
+      const pool = await testCtx.poolClient.getPool(poolInitInfo.poolPda.publicKey);
+      const position = await testCtx.poolClient.getPosition(positions[0].publicKey);
 
-      const positionDataBefore = await testCtx.whirlpoolCtx.fetcher.getPosition(
+      const positionDataBefore = await testCtx.poolCtx.fetcher.getPosition(
         position.getAddress(),
         IGNORE_CACHE
       );
@@ -232,7 +226,7 @@ describe("PositionImpl#collectFees()", () => {
       const tickUpperData = position.getLowerTickData();
 
       const quote = collectFeesQuote({
-        whirlpool: poolData,
+        pool: poolData,
         position: positionData,
         tickLower: tickLowerData,
         tickUpper: tickUpperData,
@@ -252,7 +246,7 @@ describe("PositionImpl#collectFees()", () => {
 
       await tx.addSigner(otherWallet).buildAndExecute();
 
-      const positionDataAfter = await testCtx.whirlpoolCtx.fetcher.getPosition(
+      const positionDataAfter = await testCtx.poolCtx.fetcher.getPosition(
         position.getAddress(),
         IGNORE_CACHE
       );
@@ -260,7 +254,7 @@ describe("PositionImpl#collectFees()", () => {
       assert.notEqual(positionDataAfter, null);
 
       const solBalanceAfter = await testCtx.provider.connection.getBalance(otherWallet.publicKey);
-      const minAccountExempt = await testCtx.whirlpoolCtx.fetcher.getAccountRentExempt();
+      const minAccountExempt = await testCtx.poolCtx.fetcher.getAccountRentExempt();
       assert.equal(
         solBalanceAfter - solBalanceBefore,
         quote.feeOwedA.toNumber() + minAccountExempt
@@ -270,10 +264,7 @@ describe("PositionImpl#collectFees()", () => {
         poolInitInfo.tokenMintB,
         otherWallet.publicKey
       );
-      const accountB = await testCtx.whirlpoolCtx.fetcher.getTokenInfo(
-        accountBPubkey,
-        IGNORE_CACHE
-      );
+      const accountB = await testCtx.poolCtx.fetcher.getTokenInfo(accountBPubkey, IGNORE_CACHE);
       assert.ok(accountB && new BN(accountB.amount.toString()).eq(quote.feeOwedB));
     });
   });

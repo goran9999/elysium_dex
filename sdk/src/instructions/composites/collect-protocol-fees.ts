@@ -9,7 +9,7 @@ import {
   addNativeMintHandlingIx,
   getTokenMintsFromElysiumPools,
   resolveAtaForMints,
-} from "../../utils/whirlpool-ata-utils";
+} from "../../utils/pool-ata-utils";
 import { collectProtocolFeesIx } from "../collect-protocol-fees-ix";
 
 export async function collectProtocolFees(
@@ -19,13 +19,11 @@ export async function collectProtocolFees(
   const receiverKey = ctx.wallet.publicKey;
   const payerKey = ctx.wallet.publicKey;
 
-  const whirlpoolDatas = Array.from(
-    (await ctx.fetcher.getPools(poolAddresses, PREFER_CACHE)).values()
-  );
+  const poolDatas = Array.from((await ctx.fetcher.getPools(poolAddresses, PREFER_CACHE)).values());
 
   const accountExemption = await ctx.fetcher.getAccountRentExempt();
   const { ataTokenAddresses, resolveAtaIxs } = await resolveAtaForMints(ctx, {
-    mints: getTokenMintsFromElysiumPools(whirlpoolDatas, TokenMintTypes.POOL_ONLY).mintMap,
+    mints: getTokenMintsFromElysiumPools(poolDatas, TokenMintTypes.POOL_ONLY).mintMap,
     accountExemption,
     receiver: receiverKey,
     payer: payerKey,
@@ -46,9 +44,9 @@ export async function collectProtocolFees(
       throw new Error(`Pool not found: ${poolAddress}`);
     }
 
-    const poolConfig = await ctx.fetcher.getConfig(pool.whirlpoolsConfig);
+    const poolConfig = await ctx.fetcher.getConfig(pool.poolsConfig);
     if (!poolConfig) {
-      throw new Error(`Config not found: ${pool.whirlpoolsConfig}`);
+      throw new Error(`Config not found: ${pool.poolsConfig}`);
     }
 
     if (poolConfig.collectProtocolFeesAuthority.toBase58() !== ctx.wallet.publicKey.toBase58()) {
@@ -72,8 +70,8 @@ export async function collectProtocolFees(
     // add collect ixn
     instructions.push(
       collectProtocolFeesIx(ctx.program, {
-        whirlpoolsConfig: pool.whirlpoolsConfig,
-        whirlpool: AddressUtil.toPubKey(poolAddress),
+        poolsConfig: pool.poolsConfig,
+        pool: AddressUtil.toPubKey(poolAddress),
         tokenVaultA: pool.tokenVaultA,
         tokenVaultB: pool.tokenVaultB,
         tokenOwnerAccountA: ataTokenAddresses[pool.tokenMintA.toBase58()],

@@ -32,7 +32,7 @@ pub fn handler(
     let timestamp = to_timestamp_u64(clock.unix_timestamp)?;
 
     let update = calculate_modify_liquidity(
-        &ctx.accounts.whirlpool,
+        &ctx.accounts.pool,
         &ctx.accounts.position,
         &ctx.accounts.tick_array_lower,
         &ctx.accounts.tick_array_upper,
@@ -41,7 +41,7 @@ pub fn handler(
     )?;
 
     sync_modify_liquidity_values(
-        &mut ctx.accounts.whirlpool,
+        &mut ctx.accounts.pool,
         &mut ctx.accounts.position,
         &ctx.accounts.tick_array_lower,
         &ctx.accounts.tick_array_upper,
@@ -50,8 +50,8 @@ pub fn handler(
     )?;
 
     let (delta_a, delta_b) = calculate_liquidity_token_deltas(
-        ctx.accounts.whirlpool.tick_current_index,
-        ctx.accounts.whirlpool.sqrt_price,
+        ctx.accounts.pool.tick_current_index,
+        ctx.accounts.pool.sqrt_price,
         &ctx.accounts.position,
         liquidity_delta,
     )?;
@@ -63,7 +63,7 @@ pub fn handler(
     }
 
     transfer_from_vault_to_owner(
-        &ctx.accounts.whirlpool,
+        &ctx.accounts.pool,
         &ctx.accounts.token_vault_a,
         &ctx.accounts.token_owner_account_a,
         &ctx.accounts.token_program,
@@ -71,7 +71,7 @@ pub fn handler(
     )?;
 
     transfer_from_vault_to_owner(
-        &ctx.accounts.whirlpool,
+        &ctx.accounts.pool,
         &ctx.accounts.token_vault_b,
         &ctx.accounts.token_owner_account_b,
         &ctx.accounts.token_program,

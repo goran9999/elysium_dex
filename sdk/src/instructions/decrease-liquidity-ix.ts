@@ -2,7 +2,7 @@ import { BN, Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 /**
  * Parameters to remove liquidity from a position.
@@ -11,19 +11,19 @@ import { ElysiumPool } from "../artifacts/whirlpool";
  * @param liquidityAmount - The total amount of Liquidity the user is withdrawing
  * @param tokenMinA - The minimum amount of token A to remove from the position.
  * @param tokenMinB - The minimum amount of token B to remove from the position.
- * @param whirlpool - PublicKey for the whirlpool that the position will be opened for.
+ * @param pool - PublicKey for the pool that the position will be opened for.
  * @param position - PublicKey for the  position will be opened for.
  * @param positionTokenAccount - PublicKey for the position token's associated token address.
  * @param tokenOwnerAccountA - PublicKey for the token A account that will be withdrawed from.
  * @param tokenOwnerAccountB - PublicKey for the token B account that will be withdrawed from.
- * @param tokenVaultA - PublicKey for the tokenA vault for this whirlpool.
- * @param tokenVaultB - PublicKey for the tokenB vault for this whirlpool.
+ * @param tokenVaultA - PublicKey for the tokenA vault for this pool.
+ * @param tokenVaultB - PublicKey for the tokenB vault for this pool.
  * @param tickArrayLower - PublicKey for the tick-array account that hosts the tick at the lower tick index.
  * @param tickArrayUpper - PublicKey for the tick-array account that hosts the tick at the upper tick index.
  * @param positionAuthority - authority that owns the token corresponding to this desired position.
  */
 export type DecreaseLiquidityParams = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   position: PublicKey;
   positionTokenAccount: PublicKey;
   tokenOwnerAccountA: PublicKey;
@@ -65,7 +65,7 @@ export function decreaseLiquidityIx(
     liquidityAmount,
     tokenMinA,
     tokenMinB,
-    whirlpool,
+    pool,
     positionAuthority,
     position,
     positionTokenAccount,
@@ -79,7 +79,7 @@ export function decreaseLiquidityIx(
 
   const ix = program.instruction.decreaseLiquidity(liquidityAmount, tokenMinA, tokenMinB, {
     accounts: {
-      whirlpool,
+      pool,
       tokenProgram: TOKEN_PROGRAM_ID,
       positionAuthority,
       position,

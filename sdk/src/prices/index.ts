@@ -21,13 +21,13 @@ export * from "./price-module";
  *                    The subsequent tokens are alternative tokens that can be used to price the first token.
  * @param tickSpacings The group of tick spacings that you want to search ElysiumPools for.
  * @param programId The public key of the ElysiumPool Program account that you want to search ElysiumPools for.
- * @param whirlpoolsConfig The public key of the {@link ElysiumPoolsConfig} account that you want to search ElysiumPools for.
+ * @param poolsConfig The public key of the {@link ElysiumPoolsConfig} account that you want to search ElysiumPools for.
  */
 export type GetPricesConfig = {
   quoteTokens: PublicKey[];
   tickSpacings: number[];
   programId: PublicKey;
-  whirlpoolsConfig: PublicKey;
+  poolsConfig: PublicKey;
 };
 
 /**
@@ -59,7 +59,7 @@ export type PriceCalculationData = {
 };
 
 /**
- * A map of whirlpool addresses against {@link ElysiumPoolData} accounts
+ * A map of pool addresses against {@link ElysiumPoolData} accounts
  * @category PriceModule
  */
 export type PoolMap = Record<string, ElysiumPoolData>;
@@ -102,7 +102,7 @@ export const defaultGetPricesConfig: GetPricesConfig = {
   quoteTokens: defaultQuoteTokens,
   tickSpacings: ORCA_SUPPORTED_TICK_SPACINGS,
   programId: ORCA_WHIRLPOOL_PROGRAM_ID,
-  whirlpoolsConfig: ORCA_WHIRLPOOLS_CONFIG,
+  poolsConfig: ORCA_WHIRLPOOLS_CONFIG,
 };
 
 /**

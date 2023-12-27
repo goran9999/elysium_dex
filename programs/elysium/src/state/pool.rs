@@ -12,8 +12,8 @@ use super::ElysiumPoolsConfig;
 #[account]
 #[derive(Default)]
 pub struct ElysiumPool {
-    pub whirlpools_config: Pubkey, // 32
-    pub whirlpool_bump: [u8; 1],   // 1
+    pub pools_config: Pubkey, // 32
+    pub pool_bump: [u8; 1],   // 1
 
     pub tick_spacing: u16,          // 2
     pub tick_spacing_seed: [u8; 2], // 2
@@ -60,18 +60,18 @@ impl ElysiumPool {
     pub const LEN: usize = 8 + 261 + 384;
     pub fn seeds(&self) -> [&[u8]; 6] {
         [
-            &b"whirlpool"[..],
-            self.whirlpools_config.as_ref(),
+            &b"pool"[..],
+            self.pools_config.as_ref(),
             self.token_mint_a.as_ref(),
             self.token_mint_b.as_ref(),
             self.tick_spacing_seed.as_ref(),
-            self.whirlpool_bump.as_ref(),
+            self.pool_bump.as_ref(),
         ]
     }
 
     pub fn initialize(
         &mut self,
-        whirlpools_config: &Account<ElysiumPoolsConfig>,
+        pools_config: &Account<ElysiumPoolsConfig>,
         bump: u8,
         tick_spacing: u16,
         sqrt_price: u128,
@@ -89,14 +89,14 @@ impl ElysiumPool {
             return Err(ErrorCode::SqrtPriceOutOfBounds.into());
         }
 
-        self.whirlpools_config = whirlpools_config.key();
-        self.whirlpool_bump = [bump];
+        self.pools_config = pools_config.key();
+        self.pool_bump = [bump];
 
         self.tick_spacing = tick_spacing;
         self.tick_spacing_seed = self.tick_spacing.to_le_bytes();
 
         self.update_fee_rate(default_fee_rate)?;
-        self.update_protocol_fee_rate(whirlpools_config.default_protocol_fee_rate)?;
+        self.update_protocol_fee_rate(pools_config.default_protocol_fee_rate)?;
 
         self.liquidity = 0;
         self.sqrt_price = sqrt_price;
@@ -114,7 +114,7 @@ impl ElysiumPool {
         self.fee_growth_global_b = 0;
 
         self.reward_infos =
-            [ElysiumPoolRewardInfo::new(whirlpools_config.reward_emissions_super_authority);
+            [ElysiumPoolRewardInfo::new(pools_config.reward_emissions_super_authority);
                 NUM_REWARDS];
 
         Ok(())
@@ -123,7 +123,7 @@ impl ElysiumPool {
     /// Update all reward values for the ElysiumPool.
     ///
     /// # Parameters
-    /// - `reward_infos` - An array of all updated whirlpool rewards
+    /// - `reward_infos` - An array of all updated pool rewards
     /// - `reward_last_updated_timestamp` - The timestamp when the rewards were last updated
     pub fn update_rewards(
         &mut self,
@@ -289,24 +289,24 @@ impl ElysiumPoolRewardInfo {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
 pub struct ElysiumPoolBumps {
-    pub whirlpool_bump: u8,
+    pub pool_bump: u8,
 }
 
 #[test]
-fn test_whirlpool_reward_info_not_initialized() {
+fn test_pool_reward_info_not_initialized() {
     let reward_info = ElysiumPoolRewardInfo::default();
     assert_eq!(reward_info.initialized(), false);
 }
 
 #[test]
-fn test_whirlpool_reward_info_initialized() {
+fn test_pool_reward_info_initialized() {
     let reward_info = &mut ElysiumPoolRewardInfo::default();
     reward_info.mint = Pubkey::new_unique();
     assert_eq!(reward_info.initialized(), true);
 }
 
 #[cfg(test)]
-pub mod whirlpool_builder {
+pub mod pool_builder {
     use super::{ElysiumPool, ElysiumPoolRewardInfo, NUM_REWARDS};
 
     #[derive(Default)]

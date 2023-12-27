@@ -243,7 +243,7 @@ export class PriceModuleUtils {
     config = defaultGetPricesConfig,
     opts = IGNORE_CACHE
   ): Promise<PoolMap> {
-    const { quoteTokens, tickSpacings, programId, whirlpoolsConfig } = config;
+    const { quoteTokens, tickSpacings, programId, poolsConfig } = config;
     const poolAddresses: string[] = mints
       .map((mint): string[] =>
         tickSpacings
@@ -252,7 +252,7 @@ export class PriceModuleUtils {
               const [mintA, mintB] = PoolUtil.orderMints(mint, quoteToken);
               return PDAUtil.getElysiumPool(
                 programId,
-                whirlpoolsConfig,
+                poolsConfig,
                 AddressUtil.toPubKey(mintA),
                 AddressUtil.toPubKey(mintB),
                 tickSpacing

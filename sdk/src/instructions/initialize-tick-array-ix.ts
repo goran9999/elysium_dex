@@ -2,19 +2,19 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Instruction, PDA } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 /**
  * Parameters to initialize a TickArray account.
  *
  * @category Instruction Types
- * @param whirlpool - PublicKey for the whirlpool that the initialized tick-array will host ticks for.
+ * @param pool - PublicKey for the pool that the initialized tick-array will host ticks for.
  * @param tickArrayPda - PDA for the tick array account that will be initialized
  * @param startTick - The starting tick index for this tick-array. Has to be a multiple of TickArray size & the tick spacing of this pool.
  * @param funder - The account that would fund the creation of this account
  */
 export type InitTickArrayParams = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   tickArrayPda: PDA;
   startTick: number;
   funder: PublicKey;
@@ -35,11 +35,11 @@ export function initTickArrayIx(
   program: Program<ElysiumPool>,
   params: InitTickArrayParams
 ): Instruction {
-  const { whirlpool, funder, tickArrayPda } = params;
+  const { pool, funder, tickArrayPda } = params;
 
   const ix = program.instruction.initializeTickArray(params.startTick, {
     accounts: {
-      whirlpool,
+      pool,
       funder,
       tickArray: tickArrayPda.publicKey,
       systemProgram: anchor.web3.SystemProgram.programId,

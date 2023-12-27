@@ -2,7 +2,7 @@ import { Address } from "@coral-xyz/anchor";
 import { Percentage, TransactionBuilder } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
 import { ElysiumPoolContext } from "./context";
-import { ElysiumPoolClientImpl } from "./impl/whirlpool-client-impl";
+import { ElysiumPoolClientImpl } from "./impl/pool-client-impl";
 import { DevFeeSwapInput, SwapInput } from "./instructions";
 import {
   ElysiumPoolAccountFetchOptions,
@@ -99,17 +99,17 @@ export interface ElysiumPoolClient {
 
   /**
    * Create a ElysiumPool account for a group of token A, token B and tick spacing
-   * @param whirlpoolConfig the address of the whirlpool config
+   * @param poolConfig the address of the pool config
    * @param tokenMintA the address of the token A
    * @param tokenMintB the address of the token B
    * @param tickSpacing the space between two ticks in the tick array
    * @param initialTick the initial tick that the pool is set to (derived from initial price)
    * @param funder the account to debit SOL from to fund the creation of the account(s)
-   * @return `poolKey`: The public key of the newly created whirlpool account. `tx`: The transaction containing instructions for the on-chain operations.
+   * @return `poolKey`: The public key of the newly created pool account. `tx`: The transaction containing instructions for the on-chain operations.
    * @throws error when the tokens are not in the canonical byte-based ordering. To resolve this, invert the token order and the initialTick (see `TickUtil.invertTick()`, `PriceMath.invertSqrtPriceX64()`, or `PriceMath.invertPrice()`).
    */
   createPool: (
-    whirlpoolsConfig: Address,
+    poolsConfig: Address,
     tokenMintA: Address,
     tokenMintB: Address,
     tickSpacing: number,

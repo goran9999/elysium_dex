@@ -1,6 +1,6 @@
 import { Program } from "@coral-xyz/anchor";
 import { PDA } from "@orca-so/common-sdk";
-import { ElysiumPool } from "./artifacts/whirlpool";
+import { ElysiumPool } from "./artifacts/pool";
 import * as ix from "./instructions";
 
 /**
@@ -366,7 +366,7 @@ export class ElysiumPoolIx {
   }
 
   /**
-   * Set the whirlpool reward authority at the provided `reward_index`.
+   * Set the pool reward authority at the provided `reward_index`.
    * Only the current reward super authority has permission to invoke this instruction.
    *
    * #### Special Errors
@@ -385,7 +385,7 @@ export class ElysiumPoolIx {
   }
 
   /**
-   * Set the whirlpool reward authority at the provided `reward_index`.
+   * Set the pool reward authority at the provided `reward_index`.
    * Only the current reward authority for this reward index has permission to invoke this instruction.
    *
    * #### Special Errors
@@ -424,9 +424,9 @@ export class ElysiumPoolIx {
   }
 
   /**
-   * Set the whirlpool reward super authority for a ElysiumPoolsConfig
+   * Set the pool reward super authority for a ElysiumPoolsConfig
    * Only the current reward super authority has permission to invoke this instruction.
-   * This instruction will not change the authority on any `ElysiumPoolRewardInfo` whirlpool rewards.
+   * This instruction will not change the authority on any `ElysiumPoolRewardInfo` pool rewards.
    *
    * @param program - program object containing services required to generate the instruction
    * @param params - SetRewardEmissionsSuperAuthorityParams object

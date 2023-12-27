@@ -4,22 +4,22 @@ use crate::state::*;
 
 // Calculates the next global reward growth variables based on the given timestamp.
 // The provided timestamp must be greater than or equal to the last updated timestamp.
-pub fn next_whirlpool_reward_infos(
-    whirlpool: &ElysiumPool,
+pub fn next_pool_reward_infos(
+    pool: &ElysiumPool,
     next_timestamp: u64,
 ) -> Result<[ElysiumPoolRewardInfo; NUM_REWARDS], ErrorCode> {
-    let curr_timestamp = whirlpool.reward_last_updated_timestamp;
+    let curr_timestamp = pool.reward_last_updated_timestamp;
     if next_timestamp < curr_timestamp {
         return Err(ErrorCode::InvalidTimestamp.into());
     }
 
     // No-op if no liquidity or no change in timestamp
-    if whirlpool.liquidity == 0 || next_timestamp == curr_timestamp {
-        return Ok(whirlpool.reward_infos);
+    if pool.liquidity == 0 || next_timestamp == curr_timestamp {
+        return Ok(pool.reward_infos);
     }
 
     // Calculate new global reward growth
-    let mut next_reward_infos = whirlpool.reward_infos;
+    let mut next_reward_infos = pool.reward_infos;
     let time_delta = u128::from(next_timestamp - curr_timestamp);
     for i in 0..NUM_REWARDS {
         if !next_reward_infos[i].initialized() {
@@ -33,7 +33,7 @@ pub fn next_whirlpool_reward_infos(
         let reward_growth_delta = checked_mul_div(
             time_delta,
             reward_info.emissions_per_second_x64,
-            whirlpool.liquidity,
+            pool.liquidity,
         )
         .unwrap_or(0);
 
@@ -45,37 +45,35 @@ pub fn next_whirlpool_reward_infos(
     Ok(next_reward_infos)
 }
 
-// Calculates the next global liquidity for a whirlpool depending on its position relative
+// Calculates the next global liquidity for a pool depending on its position relative
 // to the lower and upper tick indexes and the liquidity_delta.
-pub fn next_whirlpool_liquidity(
-    whirlpool: &ElysiumPool,
+pub fn next_pool_liquidity(
+    pool: &ElysiumPool,
     tick_upper_index: i32,
     tick_lower_index: i32,
     liquidity_delta: i128,
 ) -> Result<u128, ErrorCode> {
-    if whirlpool.tick_current_index < tick_upper_index
-        && whirlpool.tick_current_index >= tick_lower_index
-    {
-        add_liquidity_delta(whirlpool.liquidity, liquidity_delta)
+    if pool.tick_current_index < tick_upper_index && pool.tick_current_index >= tick_lower_index {
+        add_liquidity_delta(pool.liquidity, liquidity_delta)
     } else {
-        Ok(whirlpool.liquidity)
+        Ok(pool.liquidity)
     }
 }
 
 #[cfg(test)]
-mod whirlpool_manager_tests {
+mod pool_manager_tests {
 
     use anchor_lang::prelude::Pubkey;
 
-    use crate::manager::whirlpool_manager::next_whirlpool_reward_infos;
+    use crate::manager::pool_manager::next_pool_reward_infos;
     use crate::math::Q64_RESOLUTION;
-    use crate::state::whirlpool::ElysiumPoolRewardInfo;
-    use crate::state::whirlpool::NUM_REWARDS;
-    use crate::state::whirlpool_builder::ElysiumPoolBuilder;
+    use crate::state::pool::ElysiumPoolRewardInfo;
+    use crate::state::pool::NUM_REWARDS;
+    use crate::state::pool_builder::ElysiumPoolBuilder;
     use crate::state::ElysiumPool;
 
-    // Initializes a whirlpool for testing with all the rewards initialized
-    fn init_test_whirlpool(liquidity: u128, reward_last_updated_timestamp: u64) -> ElysiumPool {
+    // Initializes a pool for testing with all the rewards initialized
+    fn init_test_pool(liquidity: u128, reward_last_updated_timestamp: u64) -> ElysiumPool {
         ElysiumPoolBuilder::new()
             .liquidity(liquidity)
             .reward_last_updated_timestamp(reward_last_updated_timestamp) // Jan 1 2021 EST
@@ -103,10 +101,10 @@ mod whirlpool_manager_tests {
     }
 
     #[test]
-    fn test_next_whirlpool_reward_infos_zero_liquidity_no_op() {
-        let whirlpool = init_test_whirlpool(0, 1577854800);
+    fn test_next_pool_reward_infos_zero_liquidity_no_op() {
+        let pool = init_test_pool(0, 1577854800);
 
-        let result = next_whirlpool_reward_infos(&whirlpool, 1577855800);
+        let result = next_pool_reward_infos(&pool, 1577855800);
         assert_eq!(
             ElysiumPoolRewardInfo::to_reward_growths(&result.unwrap()),
             [
@@ -118,10 +116,10 @@ mod whirlpool_manager_tests {
     }
 
     #[test]
-    fn test_next_whirlpool_reward_infos_same_timestamp_no_op() {
-        let whirlpool = init_test_whirlpool(100, 1577854800);
+    fn test_next_pool_reward_infos_same_timestamp_no_op() {
+        let pool = init_test_pool(100, 1577854800);
 
-        let result = next_whirlpool_reward_infos(&whirlpool, 1577854800);
+        let result = next_pool_reward_infos(&pool, 1577854800);
         assert_eq!(
             ElysiumPoolRewardInfo::to_reward_growths(&result.unwrap()),
             [
@@ -134,31 +132,31 @@ mod whirlpool_manager_tests {
 
     #[test]
     #[should_panic(expected = "InvalidTimestamp")]
-    fn test_next_whirlpool_reward_infos_invalid_timestamp() {
-        let whirlpool = &ElysiumPoolBuilder::new()
+    fn test_next_pool_reward_infos_invalid_timestamp() {
+        let pool = &ElysiumPoolBuilder::new()
             .liquidity(100)
             .reward_last_updated_timestamp(1577854800) // Jan 1 2020 EST
             .build();
 
         // New timestamp is earlier than the last updated timestamp
-        next_whirlpool_reward_infos(whirlpool, 1577768400).unwrap(); // Dec 31 2019 EST
+        next_pool_reward_infos(pool, 1577768400).unwrap(); // Dec 31 2019 EST
     }
 
     #[test]
-    fn test_next_whirlpool_reward_infos_no_initialized_rewards() {
-        let whirlpool = &ElysiumPoolBuilder::new()
+    fn test_next_pool_reward_infos_no_initialized_rewards() {
+        let pool = &ElysiumPoolBuilder::new()
             .liquidity(100)
             .reward_last_updated_timestamp(1577854800) // Jan 1 2021 EST
             .build();
 
         let new_timestamp = 1577854800 + 300;
-        let result = next_whirlpool_reward_infos(whirlpool, new_timestamp).unwrap();
+        let result = next_pool_reward_infos(pool, new_timestamp).unwrap();
         assert_eq!(ElysiumPoolRewardInfo::to_reward_growths(&result), [0, 0, 0]);
     }
 
     #[test]
-    fn test_next_whirlpool_reward_infos_some_initialized_rewards() {
-        let whirlpool = &ElysiumPoolBuilder::new()
+    fn test_next_pool_reward_infos_some_initialized_rewards() {
+        let pool = &ElysiumPoolBuilder::new()
             .liquidity(100)
             .reward_last_updated_timestamp(1577854800) // Jan 1 2021 EST
             .reward_info(
@@ -172,16 +170,16 @@ mod whirlpool_manager_tests {
             .build();
 
         let new_timestamp = 1577854800 + 300;
-        let result = next_whirlpool_reward_infos(whirlpool, new_timestamp).unwrap();
+        let result = next_pool_reward_infos(pool, new_timestamp).unwrap();
         assert_eq!(result[0].growth_global_x64, 3 << Q64_RESOLUTION);
         for i in 1..NUM_REWARDS {
-            assert_eq!(whirlpool.reward_infos[i].growth_global_x64, 0);
+            assert_eq!(pool.reward_infos[i].growth_global_x64, 0);
         }
     }
 
     #[test]
-    fn test_next_whirlpool_reward_infos_delta_zero_on_overflow() {
-        let whirlpool = &ElysiumPoolBuilder::new()
+    fn test_next_pool_reward_infos_delta_zero_on_overflow() {
+        let pool = &ElysiumPoolBuilder::new()
             .liquidity(100)
             .reward_last_updated_timestamp(0)
             .reward_info(
@@ -196,16 +194,16 @@ mod whirlpool_manager_tests {
             .build();
 
         let new_timestamp = i64::MAX as u64;
-        let result = next_whirlpool_reward_infos(whirlpool, new_timestamp).unwrap();
+        let result = next_pool_reward_infos(pool, new_timestamp).unwrap();
         assert_eq!(result[0].growth_global_x64, 100);
     }
 
     #[test]
-    fn test_next_whirlpool_reward_infos_all_initialized_rewards() {
-        let whirlpool = init_test_whirlpool(100, 1577854800);
+    fn test_next_pool_reward_infos_all_initialized_rewards() {
+        let pool = init_test_pool(100, 1577854800);
 
         let new_timestamp = 1577854800 + 300;
-        let result = next_whirlpool_reward_infos(&whirlpool, new_timestamp).unwrap();
+        let result = next_pool_reward_infos(&pool, new_timestamp).unwrap();
         assert_eq!(result[0].growth_global_x64, 130 << Q64_RESOLUTION);
         assert_eq!(
             result[1].growth_global_x64,

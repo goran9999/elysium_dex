@@ -33,7 +33,7 @@ import { ElysiumPoolTestFixture } from "../../utils/fixture";
 import { initTestPool } from "../../utils/init-utils";
 import { mintTokensToTestAccount } from "../../utils/test-builders";
 
-describe("whirlpool-impl", () => {
+describe("pool-impl", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
   const program = anchor.workspace.ElysiumPool;
@@ -50,7 +50,7 @@ describe("whirlpool-impl", () => {
       TickSpacing.Standard,
       PriceMath.priceToSqrtPriceX64(new Decimal(100), 6, 6)
     );
-    const pool = await client.getPool(poolInitInfo.whirlpoolPda.publicKey);
+    const pool = await client.getPool(poolInitInfo.poolPda.publicKey);
 
     // Verify token mint info is correct
     const tokenAInfo = pool.getTokenAInfo();
@@ -131,7 +131,7 @@ describe("whirlpool-impl", () => {
     assert.ok(positionData.tickLowerIndex === tickLowerIndex);
     assert.ok(positionData.tickUpperIndex === tickUpperIndex);
     assert.ok(positionData.positionMint.equals(positionMint));
-    assert.ok(positionData.whirlpool.equals(poolInitInfo.whirlpoolPda.publicKey));
+    assert.ok(positionData.pool.equals(poolInitInfo.poolPda.publicKey));
 
     // [Action] Close Position
     const txs = await pool.closePosition(positionAddress, Percentage.fromFraction(1, 100));
@@ -158,7 +158,7 @@ describe("whirlpool-impl", () => {
       TickSpacing.Standard,
       PriceMath.priceToSqrtPriceX64(new Decimal(100), 6, 6)
     );
-    const pool = await client.getPool(poolInitInfo.whirlpoolPda.publicKey);
+    const pool = await client.getPool(poolInitInfo.poolPda.publicKey);
 
     // Verify token mint info is correct
     const tokenAInfo = pool.getTokenAInfo();
@@ -240,7 +240,7 @@ describe("whirlpool-impl", () => {
     assert.ok(positionData.tickLowerIndex === tickLowerIndex);
     assert.ok(positionData.tickUpperIndex === tickUpperIndex);
     assert.ok(positionData.positionMint.equals(positionMint));
-    assert.ok(positionData.whirlpool.equals(poolInitInfo.whirlpoolPda.publicKey));
+    assert.ok(positionData.pool.equals(poolInitInfo.poolPda.publicKey));
 
     // Transfer the position token to another wallet
     const otherWallet = anchor.web3.Keypair.generate();
@@ -339,14 +339,14 @@ describe("whirlpool-impl", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       tokenAccountA,
       tokenAccountB,
       positions,
     } = fixture.getInfos();
 
-    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, whirlpoolPda.publicKey, 22528);
-    const oraclePda = PDAUtil.getOracle(ctx.program.programId, whirlpoolPda.publicKey);
+    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, poolPda.publicKey, 22528);
+    const oraclePda = PDAUtil.getOracle(ctx.program.programId, poolPda.publicKey);
 
     // Accrue fees in token A
     await toTx(
@@ -357,7 +357,7 @@ describe("whirlpool-impl", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
         amountSpecifiedIsInput: true,
         aToB: true,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -379,7 +379,7 @@ describe("whirlpool-impl", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
         amountSpecifiedIsInput: true,
         aToB: false,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -414,7 +414,7 @@ describe("whirlpool-impl", () => {
 
     await transferToken(provider, walletPositionTokenAccount, newOwnerPositionTokenAccount, 1);
 
-    const pool = await client.getPool(whirlpoolPda.publicKey, IGNORE_CACHE);
+    const pool = await client.getPool(poolPda.publicKey, IGNORE_CACHE);
     const position = await client.getPosition(positionWithFees.publicKey, IGNORE_CACHE);
     const positionData = position.getData();
     const poolData = pool.getData();
@@ -455,7 +455,7 @@ describe("whirlpool-impl", () => {
     );
 
     const feesQuote = collectFeesQuote({
-      whirlpool: poolData,
+      pool: poolData,
       position: positionData,
       tickLower: position.getLowerTickData(),
       tickUpper: position.getUpperTickData(),
@@ -483,7 +483,7 @@ describe("whirlpool-impl", () => {
     });
     const closeTimestampInSeconds = new anchor.BN(tx!.blockTime!.toString());
     const rewardsQuote = collectRewardsQuote({
-      whirlpool: poolData,
+      pool: poolData,
       position: positionData,
       tickLower: position.getLowerTickData(),
       tickUpper: position.getUpperTickData(),
@@ -534,14 +534,14 @@ describe("whirlpool-impl", () => {
       tokenAIsNative: true,
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       tokenAccountA,
       tokenAccountB,
       positions,
     } = fixture.getInfos();
 
-    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, whirlpoolPda.publicKey, 22528);
-    const oraclePda = PDAUtil.getOracle(ctx.program.programId, whirlpoolPda.publicKey);
+    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, poolPda.publicKey, 22528);
+    const oraclePda = PDAUtil.getOracle(ctx.program.programId, poolPda.publicKey);
 
     // Accrue fees in token A
     await toTx(
@@ -552,7 +552,7 @@ describe("whirlpool-impl", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
         amountSpecifiedIsInput: true,
         aToB: true,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -574,7 +574,7 @@ describe("whirlpool-impl", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
         amountSpecifiedIsInput: true,
         aToB: false,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -609,7 +609,7 @@ describe("whirlpool-impl", () => {
 
     await transferToken(provider, walletPositionTokenAccount, newOwnerPositionTokenAccount, 1);
 
-    const pool = await client.getPool(whirlpoolPda.publicKey, IGNORE_CACHE);
+    const pool = await client.getPool(poolPda.publicKey, IGNORE_CACHE);
     const position = await client.getPosition(positionWithFees.publicKey, IGNORE_CACHE);
     const positionData = position.getData();
     const poolData = pool.getData();
@@ -622,7 +622,7 @@ describe("whirlpool-impl", () => {
     );
 
     const feesQuote = collectFeesQuote({
-      whirlpool: poolData,
+      pool: poolData,
       position: positionData,
       tickLower: position.getLowerTickData(),
       tickUpper: position.getUpperTickData(),
@@ -678,7 +678,7 @@ describe("whirlpool-impl", () => {
     });
     const closeTimestampInSeconds = new anchor.BN(tx!.blockTime!.toString());
     const rewardsQuote = collectRewardsQuote({
-      whirlpool: poolData,
+      pool: poolData,
       position: positionData,
       tickLower: position.getLowerTickData(),
       tickUpper: position.getUpperTickData(),

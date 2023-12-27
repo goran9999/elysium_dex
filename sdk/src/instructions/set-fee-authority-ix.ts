@@ -1,18 +1,18 @@
 import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 /**
  * Parameters to set the fee authority in a ElysiumPoolsConfig
  *
  * @category Instruction Types
- * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
+ * @param poolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
  * @param feeAuthority - The current feeAuthority in the ElysiumPoolsConfig
  * @param newFeeAuthority - The new feeAuthority in the ElysiumPoolsConfig
  */
 export type SetFeeAuthorityParams = {
-  whirlpoolsConfig: PublicKey;
+  poolsConfig: PublicKey;
   feeAuthority: PublicKey;
   newFeeAuthority: PublicKey;
 };
@@ -31,11 +31,11 @@ export function setFeeAuthorityIx(
   program: Program<ElysiumPool>,
   params: SetFeeAuthorityParams
 ): Instruction {
-  const { whirlpoolsConfig, feeAuthority, newFeeAuthority } = params;
+  const { poolsConfig, feeAuthority, newFeeAuthority } = params;
 
   const ix = program.instruction.setFeeAuthority({
     accounts: {
-      whirlpoolsConfig,
+      poolsConfig,
       feeAuthority,
       newFeeAuthority,
     },

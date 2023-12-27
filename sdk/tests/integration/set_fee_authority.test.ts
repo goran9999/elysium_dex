@@ -24,7 +24,7 @@ describe("set_fee_authority", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.setFeeAuthorityIx(ctx.program, {
-        whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
+        poolsConfig: configInitInfo.poolsConfigKeypair.publicKey,
         feeAuthority: feeAuthorityKeypair.publicKey,
         newFeeAuthority: newAuthorityKeypair.publicKey,
       })
@@ -32,7 +32,7 @@ describe("set_fee_authority", () => {
       .addSigner(feeAuthorityKeypair)
       .buildAndExecute();
     const config = (await fetcher.getConfig(
-      configInitInfo.whirlpoolsConfigKeypair.publicKey
+      configInitInfo.poolsConfigKeypair.publicKey
     )) as ElysiumPoolsConfigData;
     assert.ok(config.feeAuthority.equals(newAuthorityKeypair.publicKey));
   });
@@ -51,7 +51,7 @@ describe("set_fee_authority", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setFeeAuthorityIx(ctx.program, {
-          whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
+          poolsConfig: configInitInfo.poolsConfigKeypair.publicKey,
           feeAuthority: feeAuthorityKeypair.publicKey,
           newFeeAuthority: provider.wallet.publicKey,
         })
@@ -71,7 +71,7 @@ describe("set_fee_authority", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setFeeAuthorityIx(ctx.program, {
-          whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
+          poolsConfig: configInitInfo.poolsConfigKeypair.publicKey,
           feeAuthority: provider.wallet.publicKey,
           newFeeAuthority: provider.wallet.publicKey,
         })

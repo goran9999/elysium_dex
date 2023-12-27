@@ -5,7 +5,7 @@ use crate::{
     errors::ErrorCode,
     manager::swap_manager::*,
     state::{ElysiumPool, TickArray},
-    util::{to_timestamp_u64, update_and_swap_whirlpool, SwapTickSequence},
+    util::{to_timestamp_u64, update_and_swap_pool, SwapTickSequence},
 };
 
 #[derive(Accounts)]
@@ -16,54 +16,54 @@ pub struct TwoHopSwap<'info> {
     pub token_authority: Signer<'info>,
 
     #[account(mut)]
-    pub whirlpool_one: Box<Account<'info, ElysiumPool>>,
+    pub pool_one: Box<Account<'info, ElysiumPool>>,
 
     #[account(mut)]
-    pub whirlpool_two: Box<Account<'info, ElysiumPool>>,
+    pub pool_two: Box<Account<'info, ElysiumPool>>,
 
-    #[account(mut, constraint = token_owner_account_one_a.mint == whirlpool_one.token_mint_a)]
+    #[account(mut, constraint = token_owner_account_one_a.mint == pool_one.token_mint_a)]
     pub token_owner_account_one_a: Box<Account<'info, TokenAccount>>,
-    #[account(mut, address = whirlpool_one.token_vault_a)]
+    #[account(mut, address = pool_one.token_vault_a)]
     pub token_vault_one_a: Box<Account<'info, TokenAccount>>,
 
-    #[account(mut, constraint = token_owner_account_one_b.mint == whirlpool_one.token_mint_b)]
+    #[account(mut, constraint = token_owner_account_one_b.mint == pool_one.token_mint_b)]
     pub token_owner_account_one_b: Box<Account<'info, TokenAccount>>,
-    #[account(mut, address = whirlpool_one.token_vault_b)]
+    #[account(mut, address = pool_one.token_vault_b)]
     pub token_vault_one_b: Box<Account<'info, TokenAccount>>,
 
-    #[account(mut, constraint = token_owner_account_two_a.mint == whirlpool_two.token_mint_a)]
+    #[account(mut, constraint = token_owner_account_two_a.mint == pool_two.token_mint_a)]
     pub token_owner_account_two_a: Box<Account<'info, TokenAccount>>,
-    #[account(mut, address = whirlpool_two.token_vault_a)]
+    #[account(mut, address = pool_two.token_vault_a)]
     pub token_vault_two_a: Box<Account<'info, TokenAccount>>,
 
-    #[account(mut, constraint = token_owner_account_two_b.mint == whirlpool_two.token_mint_b)]
+    #[account(mut, constraint = token_owner_account_two_b.mint == pool_two.token_mint_b)]
     pub token_owner_account_two_b: Box<Account<'info, TokenAccount>>,
-    #[account(mut, address = whirlpool_two.token_vault_b)]
+    #[account(mut, address = pool_two.token_vault_b)]
     pub token_vault_two_b: Box<Account<'info, TokenAccount>>,
 
-    #[account(mut, constraint = tick_array_one_0.load()?.whirlpool == whirlpool_one.key())]
+    #[account(mut, constraint = tick_array_one_0.load()?.pool == pool_one.key())]
     pub tick_array_one_0: AccountLoader<'info, TickArray>,
 
-    #[account(mut, constraint = tick_array_one_1.load()?.whirlpool == whirlpool_one.key())]
+    #[account(mut, constraint = tick_array_one_1.load()?.pool == pool_one.key())]
     pub tick_array_one_1: AccountLoader<'info, TickArray>,
 
-    #[account(mut, constraint = tick_array_one_2.load()?.whirlpool == whirlpool_one.key())]
+    #[account(mut, constraint = tick_array_one_2.load()?.pool == pool_one.key())]
     pub tick_array_one_2: AccountLoader<'info, TickArray>,
 
-    #[account(mut, constraint = tick_array_two_0.load()?.whirlpool == whirlpool_two.key())]
+    #[account(mut, constraint = tick_array_two_0.load()?.pool == pool_two.key())]
     pub tick_array_two_0: AccountLoader<'info, TickArray>,
 
-    #[account(mut, constraint = tick_array_two_1.load()?.whirlpool == whirlpool_two.key())]
+    #[account(mut, constraint = tick_array_two_1.load()?.pool == pool_two.key())]
     pub tick_array_two_1: AccountLoader<'info, TickArray>,
 
-    #[account(mut, constraint = tick_array_two_2.load()?.whirlpool == whirlpool_two.key())]
+    #[account(mut, constraint = tick_array_two_2.load()?.pool == pool_two.key())]
     pub tick_array_two_2: AccountLoader<'info, TickArray>,
 
-    #[account(seeds = [b"oracle", whirlpool_one.key().as_ref()],bump)]
+    #[account(seeds = [b"oracle", pool_one.key().as_ref()],bump)]
     /// CHECK: Oracle is currently unused and will be enabled on subsequent updates
     pub oracle_one: UncheckedAccount<'info>,
 
-    #[account(seeds = [b"oracle", whirlpool_two.key().as_ref()],bump)]
+    #[account(seeds = [b"oracle", pool_two.key().as_ref()],bump)]
     /// CHECK: Oracle is currently unused and will be enabled on subsequent updates
     pub oracle_two: UncheckedAccount<'info>,
 }
@@ -82,24 +82,24 @@ pub fn handler(
     // Update the global reward growth which increases as a function of time.
     let timestamp = to_timestamp_u64(clock.unix_timestamp)?;
 
-    let whirlpool_one = &mut ctx.accounts.whirlpool_one;
-    let whirlpool_two = &mut ctx.accounts.whirlpool_two;
+    let pool_one = &mut ctx.accounts.pool_one;
+    let pool_two = &mut ctx.accounts.pool_two;
 
-    // Don't allow swaps on the same whirlpool
-    if whirlpool_one.key() == whirlpool_two.key() {
+    // Don't allow swaps on the same pool
+    if pool_one.key() == pool_two.key() {
         return Err(ErrorCode::DuplicateTwoHopPool.into());
     }
 
     let swap_one_output_mint = if a_to_b_one {
-        whirlpool_one.token_mint_b
+        pool_one.token_mint_b
     } else {
-        whirlpool_one.token_mint_a
+        pool_one.token_mint_a
     };
 
     let swap_two_input_mint = if a_to_b_two {
-        whirlpool_two.token_mint_a
+        pool_two.token_mint_a
     } else {
-        whirlpool_two.token_mint_b
+        pool_two.token_mint_b
     };
     if swap_one_output_mint != swap_two_input_mint {
         return Err(ErrorCode::InvalidIntermediaryMint.into());
@@ -124,7 +124,7 @@ pub fn handler(
         // and the swap calculations occur from Swap 1 => Swap 2
         // and the swaps occur from Swap 1 => Swap 2
         let swap_calc_one = swap(
-            &whirlpool_one,
+            &pool_one,
             &mut swap_tick_sequence_one,
             amount,
             sqrt_price_limit_one,
@@ -141,7 +141,7 @@ pub fn handler(
         };
 
         let swap_calc_two = swap(
-            &whirlpool_two,
+            &pool_two,
             &mut swap_tick_sequence_two,
             swap_two_input_amount,
             sqrt_price_limit_two,
@@ -155,7 +155,7 @@ pub fn handler(
         // and the swap calculations occur from Swap 2 => Swap 1
         // but the actual swaps occur from Swap 1 => Swap 2 (to ensure that the intermediate token exists in the account)
         let swap_calc_two = swap(
-            &whirlpool_two,
+            &pool_two,
             &mut swap_tick_sequence_two,
             amount,
             sqrt_price_limit_two,
@@ -172,7 +172,7 @@ pub fn handler(
         };
 
         let swap_calc_one = swap(
-            &whirlpool_one,
+            &pool_one,
             &mut swap_tick_sequence_one,
             swap_one_output_amount,
             sqrt_price_limit_one,
@@ -209,8 +209,8 @@ pub fn handler(
         }
     }
 
-    update_and_swap_whirlpool(
-        whirlpool_one,
+    update_and_swap_pool(
+        pool_one,
         &ctx.accounts.token_authority,
         &ctx.accounts.token_owner_account_one_a,
         &ctx.accounts.token_owner_account_one_b,
@@ -222,8 +222,8 @@ pub fn handler(
         timestamp,
     )?;
 
-    update_and_swap_whirlpool(
-        whirlpool_two,
+    update_and_swap_pool(
+        pool_two,
         &ctx.accounts.token_authority,
         &ctx.accounts.token_owner_account_two_a,
         &ctx.accounts.token_owner_account_two_b,

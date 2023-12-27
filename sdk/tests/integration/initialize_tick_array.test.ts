@@ -24,12 +24,12 @@ describe("initialize_tick_array", () => {
   it("successfully init a TickArray account", async () => {
     const tickSpacing = TickSpacing.Standard;
     const { poolInitInfo } = await initTestPool(ctx, TickSpacing.Standard);
-    await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey);
+    await fetcher.getPool(poolInitInfo.poolPda.publicKey);
     const startTick = TICK_ARRAY_SIZE * tickSpacing * 2;
 
     const tickArrayInitInfo = generateDefaultInitTickArrayParams(
       ctx,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       startTick
     );
 
@@ -43,12 +43,12 @@ describe("initialize_tick_array", () => {
   it("successfully init a TickArray account with a negative index", async () => {
     const tickSpacing = TickSpacing.Standard;
     const { poolInitInfo } = await initTestPool(ctx, TickSpacing.Standard);
-    await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey);
+    await fetcher.getPool(poolInitInfo.poolPda.publicKey);
     const startTick = TICK_ARRAY_SIZE * tickSpacing * -2;
 
     const tickArrayInitInfo = generateDefaultInitTickArrayParams(
       ctx,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       startTick
     );
 
@@ -64,20 +64,20 @@ describe("initialize_tick_array", () => {
     const { poolInitInfo } = await initTestPool(ctx, TickSpacing.Standard);
     const funderKeypair = anchor.web3.Keypair.generate();
     await systemTransferTx(provider, funderKeypair.publicKey, ONE_SOL).buildAndExecute();
-    await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey);
+    await fetcher.getPool(poolInitInfo.poolPda.publicKey);
     const startTick = TICK_ARRAY_SIZE * tickSpacing * 3;
-    await initTickArray(ctx, poolInitInfo.whirlpoolPda.publicKey, startTick, funderKeypair);
+    await initTickArray(ctx, poolInitInfo.poolPda.publicKey, startTick, funderKeypair);
   });
 
   it("fails when start tick index is not a valid start index", async () => {
     const tickSpacing = TickSpacing.Standard;
     const { poolInitInfo } = await initTestPool(ctx, TickSpacing.Standard);
-    await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey);
+    await fetcher.getPool(poolInitInfo.poolPda.publicKey);
     const startTick = TICK_ARRAY_SIZE * tickSpacing * 2 + 1;
 
     const params = generateDefaultInitTickArrayParams(
       ctx,
-      poolInitInfo.whirlpoolPda.publicKey,
+      poolInitInfo.poolPda.publicKey,
       startTick
     );
 
@@ -101,7 +101,7 @@ describe("initialize_tick_array", () => {
     let tickArrayData = (await fetcher.getTickArray(
       tickArrayInitInfo.tickArrayPda.publicKey
     )) as TickArrayData;
-    assert.ok(tickArrayData.whirlpool.equals(poolInitInfo.whirlpoolPda.publicKey));
+    assert.ok(tickArrayData.pool.equals(poolInitInfo.poolPda.publicKey));
     assert.ok(tickArrayData.startTickIndex == startTick);
   }
 });

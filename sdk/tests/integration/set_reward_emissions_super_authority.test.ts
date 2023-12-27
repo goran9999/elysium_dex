@@ -26,7 +26,7 @@ describe("set_reward_emissions_super_authority", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.setRewardEmissionsSuperAuthorityIx(ctx.program, {
-        whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
+        poolsConfig: configInitInfo.poolsConfigKeypair.publicKey,
         rewardEmissionsSuperAuthority: rewardEmissionsSuperAuthorityKeypair.publicKey,
         newRewardEmissionsSuperAuthority: newAuthorityKeypair.publicKey,
       })
@@ -35,7 +35,7 @@ describe("set_reward_emissions_super_authority", () => {
       .buildAndExecute();
 
     const config = (await fetcher.getConfig(
-      configInitInfo.whirlpoolsConfigKeypair.publicKey
+      configInitInfo.poolsConfigKeypair.publicKey
     )) as ElysiumPoolsConfigData;
     assert.ok(config.rewardEmissionsSuperAuthority.equals(newAuthorityKeypair.publicKey));
   });
@@ -53,7 +53,7 @@ describe("set_reward_emissions_super_authority", () => {
     await assert.rejects(
       ctx.program.rpc.setRewardEmissionsSuperAuthority({
         accounts: {
-          whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
+          poolsConfig: configInitInfo.poolsConfigKeypair.publicKey,
           rewardEmissionsSuperAuthority: rewardEmissionsSuperAuthorityKeypair.publicKey,
           newRewardEmissionsSuperAuthority: provider.wallet.publicKey,
         },
@@ -73,7 +73,7 @@ describe("set_reward_emissions_super_authority", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setRewardEmissionsSuperAuthorityIx(ctx.program, {
-          whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
+          poolsConfig: configInitInfo.poolsConfigKeypair.publicKey,
           rewardEmissionsSuperAuthority: provider.wallet.publicKey,
           newRewardEmissionsSuperAuthority: provider.wallet.publicKey,
         })

@@ -4,12 +4,12 @@ import { AccountLayout, NATIVE_MINT, getAssociatedTokenAddressSync } from "@sola
 import { PublicKey } from "@solana/web3.js";
 import * as assert from "assert";
 import { SwapQuote, ElysiumPoolContext } from "../../src";
-import { ElysiumPool } from "../../src/artifacts/whirlpool";
+import { ElysiumPool } from "../../src/artifacts/pool";
 import { DevFeeSwapQuote } from "../../src/quotes/public/dev-fee-swap-quote";
 import { TickData, ElysiumPoolData } from "../../src/types/public";
 import { TEST_TOKEN_PROGRAM_ID } from "./test-consts";
 import { getTokenBalance } from "./token";
-import { VaultAmounts } from "./whirlpools-test-utils";
+import { VaultAmounts } from "./pools-test-utils";
 
 export function assertInputOutputQuoteEqual(
   inputTokenQuote: SwapQuote,

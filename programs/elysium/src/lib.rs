@@ -443,7 +443,7 @@ pub mod elysium {
         return instructions::set_collect_protocol_fees_authority::handler(ctx);
     }
 
-    /// Set the whirlpool reward authority at the provided `reward_index`.
+    /// Set the pool reward authority at the provided `reward_index`.
     /// Only the current reward authority for this reward index has permission to invoke this instruction.
     ///
     /// ### Authority
@@ -457,7 +457,7 @@ pub mod elysium {
         return instructions::set_reward_authority::handler(ctx, reward_index);
     }
 
-    /// Set the whirlpool reward authority at the provided `reward_index`.
+    /// Set the pool reward authority at the provided `reward_index`.
     /// Only the current reward super authority has permission to invoke this instruction.
     ///
     /// ### Authority
@@ -474,9 +474,9 @@ pub mod elysium {
         return instructions::set_reward_authority_by_super_authority::handler(ctx, reward_index);
     }
 
-    /// Set the whirlpool reward super authority for a ElysiumPoolConfig
+    /// Set the pool reward super authority for a ElysiumPoolConfig
     /// Only the current reward super authority has permission to invoke this instruction.
-    /// This instruction will not change the authority on any `ElysiumPoolRewardInfo` whirlpool rewards.
+    /// This instruction will not change the authority on any `ElysiumPoolRewardInfo` pool rewards.
     ///
     /// ### Authority
     /// - "reward_emissions_super_authority" - Set authority that can control reward authorities for all pools in this config space.
@@ -510,7 +510,7 @@ pub mod elysium {
     /// - `LiquidityOverflow` - Liquidity value overflowed 128bits during tick crossing.
     /// - `InvalidTickSpacing` - The swap pool was initialized with tick-spacing of 0.
     /// - `InvalidIntermediaryMint` - Error if the intermediary mint between hop one and two do not equal.
-    /// - `DuplicateTwoHopPool` - Error if whirlpool one & two are the same pool.
+    /// - `DuplicateTwoHopPool` - Error if pool one & two are the same pool.
     pub fn two_hop_swap(
         ctx: Context<TwoHopSwap>,
         amount: u64,

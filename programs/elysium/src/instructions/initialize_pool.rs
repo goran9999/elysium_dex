@@ -5,7 +5,7 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount};
 #[derive(Accounts)]
 #[instruction(bumps: ElysiumPoolBumps, tick_spacing: u16)]
 pub struct InitializePool<'info> {
-    pub whirlpools_config: Box<Account<'info, ElysiumPoolsConfig>>,
+    pub pools_config: Box<Account<'info, ElysiumPoolsConfig>>,
 
     pub token_mint_a: Account<'info, Mint>,
     pub token_mint_b: Account<'info, Mint>,
@@ -15,8 +15,8 @@ pub struct InitializePool<'info> {
 
     #[account(init,
       seeds = [
-        b"whirlpool".as_ref(),
-        whirlpools_config.key().as_ref(),
+        b"pool".as_ref(),
+        pools_config.key().as_ref(),
         token_mint_a.key().as_ref(),
         token_mint_b.key().as_ref(),
         tick_spacing.to_le_bytes().as_ref()
@@ -24,21 +24,21 @@ pub struct InitializePool<'info> {
       bump,
       payer = funder,
       space = ElysiumPool::LEN)]
-    pub whirlpool: Box<Account<'info, ElysiumPool>>,
+    pub pool: Box<Account<'info, ElysiumPool>>,
 
     #[account(init,
       payer = funder,
       token::mint = token_mint_a,
-      token::authority = whirlpool)]
+      token::authority = pool)]
     pub token_vault_a: Box<Account<'info, TokenAccount>>,
 
     #[account(init,
       payer = funder,
       token::mint = token_mint_b,
-      token::authority = whirlpool)]
+      token::authority = pool)]
     pub token_vault_b: Box<Account<'info, TokenAccount>>,
 
-    #[account(has_one = whirlpools_config)]
+    #[account(has_one = pools_config)]
     pub fee_tier: Account<'info, FeeTier>,
 
     #[account(address = token::ID)]
@@ -56,16 +56,16 @@ pub fn handler(
     let token_mint_a = ctx.accounts.token_mint_a.key();
     let token_mint_b = ctx.accounts.token_mint_b.key();
 
-    let whirlpool = &mut ctx.accounts.whirlpool;
-    let whirlpools_config = &ctx.accounts.whirlpools_config;
+    let pool = &mut ctx.accounts.pool;
+    let pools_config = &ctx.accounts.pools_config;
 
     let default_fee_rate = ctx.accounts.fee_tier.default_fee_rate;
 
     // ignore the bump passed and use one Anchor derived
-    let bump = *ctx.bumps.get("whirlpool").unwrap();
+    let bump = *ctx.bumps.get("pool").unwrap();
 
-    Ok(whirlpool.initialize(
-        whirlpools_config,
+    Ok(pool.initialize(
+        pools_config,
         bump,
         tick_spacing,
         initial_sqrt_price,

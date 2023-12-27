@@ -5,7 +5,7 @@ use crate::state::*;
 #[derive(Accounts)]
 #[instruction(start_tick_index: i32)]
 pub struct InitializeTickArray<'info> {
-    pub whirlpool: Account<'info, ElysiumPool>,
+    pub pool: Account<'info, ElysiumPool>,
 
     #[account(mut)]
     pub funder: Signer<'info>,
@@ -13,7 +13,7 @@ pub struct InitializeTickArray<'info> {
     #[account(
       init,
       payer = funder,
-      seeds = [b"tick_array", whirlpool.key().as_ref(), start_tick_index.to_string().as_bytes()],
+      seeds = [b"tick_array", pool.key().as_ref(), start_tick_index.to_string().as_bytes()],
       bump,
       space = TickArray::LEN)]
     pub tick_array: AccountLoader<'info, TickArray>,
@@ -23,5 +23,5 @@ pub struct InitializeTickArray<'info> {
 
 pub fn handler(ctx: Context<InitializeTickArray>, start_tick_index: i32) -> Result<()> {
     let mut tick_array = ctx.accounts.tick_array.load_init()?;
-    Ok(tick_array.initialize(&ctx.accounts.whirlpool, start_tick_index)?)
+    Ok(tick_array.initialize(&ctx.accounts.pool, start_tick_index)?)
 }

@@ -1,18 +1,18 @@
 import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 /**
  * Parameters to set the collect fee authority in a ElysiumPoolsConfig
  *
  * @category Instruction Types
- * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
+ * @param poolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
  * @param collectProtocolFeesAuthority - The current collectProtocolFeesAuthority in the ElysiumPoolsConfig
  * @param newCollectProtocolFeesAuthority - The new collectProtocolFeesAuthority in the ElysiumPoolsConfig
  */
 export type SetCollectProtocolFeesAuthorityParams = {
-  whirlpoolsConfig: PublicKey;
+  poolsConfig: PublicKey;
   collectProtocolFeesAuthority: PublicKey;
   newCollectProtocolFeesAuthority: PublicKey;
 };
@@ -30,12 +30,11 @@ export function setCollectProtocolFeesAuthorityIx(
   program: Program<ElysiumPool>,
   params: SetCollectProtocolFeesAuthorityParams
 ): Instruction {
-  const { whirlpoolsConfig, collectProtocolFeesAuthority, newCollectProtocolFeesAuthority } =
-    params;
+  const { poolsConfig, collectProtocolFeesAuthority, newCollectProtocolFeesAuthority } = params;
 
   const ix = program.instruction.setCollectProtocolFeesAuthority({
     accounts: {
-      whirlpoolsConfig,
+      poolsConfig,
       collectProtocolFeesAuthority,
       newCollectProtocolFeesAuthority,
     },

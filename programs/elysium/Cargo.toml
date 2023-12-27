@@ -1,12 +1,12 @@
 [package]
-name = "whirlpool"
+name = "pool"
 version = "0.2.0"
 description = "Created with Anchor"
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "whirlpool"
+name = "pool"
 
 [features]
 no-entrypoint = []

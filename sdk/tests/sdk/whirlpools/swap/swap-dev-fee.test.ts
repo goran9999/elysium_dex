@@ -26,9 +26,9 @@ import {
   buildPosition,
   setupSwapTest,
 } from "../../../utils/swap-test-utils";
-import { getVaultAmounts } from "../../../utils/whirlpools-test-utils";
+import { getVaultAmounts } from "../../../utils/pools-test-utils";
 
-describe("whirlpool-dev-fee-swap", () => {
+describe("pool-dev-fee-swap", () => {
   const provider = anchor.AnchorProvider.local(undefined, defaultConfirmOptions);
 
   const program = anchor.workspace.ElysiumPool;
@@ -41,7 +41,7 @@ describe("whirlpool-dev-fee-swap", () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -1, offsetIndex: 22 }, tickSpacing);
     const devWallet = Keypair.generate();
     const aToB = false;
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -63,11 +63,11 @@ describe("whirlpool-dev-fee-swap", () => {
     const postFeeTokenAmount = inputTokenAmount.sub(
       inputTokenAmount.mul(devFeePercentage.numerator).div(devFeePercentage.denominator)
     );
-    const whirlpoolData = await whirlpool.refreshData();
-    const beforeVaultAmounts = await getVaultAmounts(ctx, whirlpoolData);
+    const poolData = await pool.refreshData();
+    const beforeVaultAmounts = await getVaultAmounts(ctx, poolData);
     const inputTokenQuote = await swapQuoteByInputToken(
-      whirlpool,
-      whirlpoolData.tokenMintB,
+      pool,
+      poolData.tokenMintB,
       inputTokenAmount,
       slippageTolerance,
       ctx.program.programId,
@@ -75,8 +75,8 @@ describe("whirlpool-dev-fee-swap", () => {
       IGNORE_CACHE
     );
     const postFeeInputTokenQuote = await swapQuoteByInputToken(
-      whirlpool,
-      whirlpoolData.tokenMintB,
+      pool,
+      poolData.tokenMintB,
       postFeeTokenAmount,
       slippageTolerance,
       ctx.program.programId,
@@ -84,8 +84,8 @@ describe("whirlpool-dev-fee-swap", () => {
       IGNORE_CACHE
     );
     const inputTokenQuoteWithDevFees = await swapQuoteByInputTokenWithDevFees(
-      whirlpool,
-      whirlpoolData.tokenMintB,
+      pool,
+      poolData.tokenMintB,
       inputTokenAmount,
       slippageTolerance,
       ctx.program.programId,
@@ -95,11 +95,11 @@ describe("whirlpool-dev-fee-swap", () => {
     );
     assertDevFeeQuotes(inputTokenQuote, postFeeInputTokenQuote, inputTokenQuoteWithDevFees);
     await (
-      await whirlpool.swapWithDevFees(inputTokenQuoteWithDevFees, devWallet.publicKey)
+      await pool.swapWithDevFees(inputTokenQuoteWithDevFees, devWallet.publicKey)
     ).buildAndExecute();
 
-    const newData = await whirlpool.refreshData();
-    const afterVaultAmounts = await getVaultAmounts(ctx, whirlpoolData);
+    const newData = await pool.refreshData();
+    const afterVaultAmounts = await getVaultAmounts(ctx, poolData);
     assertQuoteAndResults(aToB, inputTokenQuote, newData, beforeVaultAmounts, afterVaultAmounts);
   });
 
@@ -107,7 +107,7 @@ describe("whirlpool-dev-fee-swap", () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -1, offsetIndex: 22 }, tickSpacing);
     const devWallet = Keypair.generate();
     const aToB = false;
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -130,13 +130,13 @@ describe("whirlpool-dev-fee-swap", () => {
       inputTokenAmount.mul(devFeePercentage.numerator).div(devFeePercentage.denominator)
     );
 
-    const whirlpoolData = await whirlpool.refreshData();
-    const swapToken = aToB ? whirlpoolData.tokenMintA : whirlpoolData.tokenMintB;
-    const beforeVaultAmounts = await getVaultAmounts(ctx, whirlpoolData);
+    const poolData = await pool.refreshData();
+    const swapToken = aToB ? poolData.tokenMintA : poolData.tokenMintB;
+    const beforeVaultAmounts = await getVaultAmounts(ctx, poolData);
 
     const { inputTokenQuote, postFeeInputTokenQuote, inputTokenQuoteWithDevFees } = await getQuotes(
       ctx,
-      whirlpool,
+      pool,
       swapToken,
       inputTokenAmount,
       postFeeTokenAmount,
@@ -145,11 +145,11 @@ describe("whirlpool-dev-fee-swap", () => {
     );
     assertDevFeeQuotes(inputTokenQuote, postFeeInputTokenQuote, inputTokenQuoteWithDevFees);
     await (
-      await whirlpool.swapWithDevFees(inputTokenQuoteWithDevFees, devWallet.publicKey)
+      await pool.swapWithDevFees(inputTokenQuoteWithDevFees, devWallet.publicKey)
     ).buildAndExecute();
 
-    const newData = await whirlpool.refreshData();
-    const afterVaultAmounts = await getVaultAmounts(ctx, whirlpoolData);
+    const newData = await pool.refreshData();
+    const afterVaultAmounts = await getVaultAmounts(ctx, poolData);
     assertQuoteAndResults(
       aToB,
       postFeeInputTokenQuote,
@@ -164,7 +164,7 @@ describe("whirlpool-dev-fee-swap", () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 1, offsetIndex: 22 }, tickSpacing);
     const devWallet = Keypair.generate();
     const aToB = true;
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -187,12 +187,12 @@ describe("whirlpool-dev-fee-swap", () => {
       inputTokenAmount.mul(devFeePercentage.numerator).div(devFeePercentage.denominator)
     );
 
-    const whirlpoolData = await whirlpool.refreshData();
-    const swapToken = aToB ? whirlpoolData.tokenMintA : whirlpoolData.tokenMintB;
-    const beforeVaultAmounts = await getVaultAmounts(ctx, whirlpoolData);
+    const poolData = await pool.refreshData();
+    const swapToken = aToB ? poolData.tokenMintA : poolData.tokenMintB;
+    const beforeVaultAmounts = await getVaultAmounts(ctx, poolData);
     const { inputTokenQuote, postFeeInputTokenQuote, inputTokenQuoteWithDevFees } = await getQuotes(
       ctx,
-      whirlpool,
+      pool,
       swapToken,
       inputTokenAmount,
       postFeeTokenAmount,
@@ -201,11 +201,11 @@ describe("whirlpool-dev-fee-swap", () => {
     );
     assertDevFeeQuotes(inputTokenQuote, postFeeInputTokenQuote, inputTokenQuoteWithDevFees);
     await (
-      await whirlpool.swapWithDevFees(inputTokenQuoteWithDevFees, devWallet.publicKey)
+      await pool.swapWithDevFees(inputTokenQuoteWithDevFees, devWallet.publicKey)
     ).buildAndExecute();
 
-    const newData = await whirlpool.refreshData();
-    const afterVaultAmounts = await getVaultAmounts(ctx, whirlpoolData);
+    const newData = await pool.refreshData();
+    const afterVaultAmounts = await getVaultAmounts(ctx, poolData);
     assertQuoteAndResults(
       aToB,
       postFeeInputTokenQuote,
@@ -220,7 +220,7 @@ describe("whirlpool-dev-fee-swap", () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: 1, offsetIndex: 1 }, tickSpacing);
     const aToB = true;
     const tokenAIsNative = true;
-    const whirlpool = await setupSwapTest(
+    const pool = await setupSwapTest(
       {
         ctx,
         client,
@@ -269,13 +269,13 @@ describe("whirlpool-dev-fee-swap", () => {
       inputTokenAmount.mul(devFeePercentage.numerator).div(devFeePercentage.denominator)
     );
 
-    const whirlpoolData = await whirlpool.refreshData();
-    const swapToken = aToB ? whirlpoolData.tokenMintA : whirlpoolData.tokenMintB;
-    const beforeVaultAmounts = await getVaultAmounts(ctx, whirlpoolData);
+    const poolData = await pool.refreshData();
+    const swapToken = aToB ? poolData.tokenMintA : poolData.tokenMintB;
+    const beforeVaultAmounts = await getVaultAmounts(ctx, poolData);
 
     const { inputTokenQuote, postFeeInputTokenQuote, inputTokenQuoteWithDevFees } = await getQuotes(
       ctx,
-      whirlpool,
+      pool,
       swapToken,
       inputTokenAmount,
       postFeeTokenAmount,
@@ -285,11 +285,11 @@ describe("whirlpool-dev-fee-swap", () => {
 
     assertDevFeeQuotes(inputTokenQuote, postFeeInputTokenQuote, inputTokenQuoteWithDevFees);
     await (
-      await whirlpool.swapWithDevFees(inputTokenQuoteWithDevFees, devWallet.publicKey)
+      await pool.swapWithDevFees(inputTokenQuoteWithDevFees, devWallet.publicKey)
     ).buildAndExecute();
 
-    const newData = await whirlpool.refreshData();
-    const afterVaultAmounts = await getVaultAmounts(ctx, whirlpoolData);
+    const newData = await pool.refreshData();
+    const afterVaultAmounts = await getVaultAmounts(ctx, poolData);
     assertQuoteAndResults(
       aToB,
       postFeeInputTokenQuote,
@@ -310,7 +310,7 @@ describe("whirlpool-dev-fee-swap", () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -1, offsetIndex: 22 }, tickSpacing);
     const devWallet = Keypair.generate();
     const aToB = false;
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -333,12 +333,12 @@ describe("whirlpool-dev-fee-swap", () => {
       inputTokenAmount.mul(devFeePercentage.numerator).div(devFeePercentage.denominator)
     );
 
-    const whirlpoolData = await whirlpool.refreshData();
-    const swapToken = aToB ? whirlpoolData.tokenMintA : whirlpoolData.tokenMintB;
-    const beforeVaultAmounts = await getVaultAmounts(ctx, whirlpoolData);
+    const poolData = await pool.refreshData();
+    const swapToken = aToB ? poolData.tokenMintA : poolData.tokenMintB;
+    const beforeVaultAmounts = await getVaultAmounts(ctx, poolData);
     const { inputTokenQuote, postFeeInputTokenQuote, inputTokenQuoteWithDevFees } = await getQuotes(
       ctx,
-      whirlpool,
+      pool,
       swapToken,
       inputTokenAmount,
       postFeeTokenAmount,
@@ -347,11 +347,11 @@ describe("whirlpool-dev-fee-swap", () => {
     );
     assertDevFeeQuotes(inputTokenQuote, postFeeInputTokenQuote, inputTokenQuoteWithDevFees);
     await (
-      await whirlpool.swapWithDevFees(inputTokenQuoteWithDevFees, devWallet.publicKey)
+      await pool.swapWithDevFees(inputTokenQuoteWithDevFees, devWallet.publicKey)
     ).buildAndExecute();
 
-    const newData = await whirlpool.refreshData();
-    const afterVaultAmounts = await getVaultAmounts(ctx, whirlpoolData);
+    const newData = await pool.refreshData();
+    const afterVaultAmounts = await getVaultAmounts(ctx, poolData);
     assertQuoteAndResults(
       aToB,
       postFeeInputTokenQuote,
@@ -364,7 +364,7 @@ describe("whirlpool-dev-fee-swap", () => {
 
   it("swap with dev-fee of 100%", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -1, offsetIndex: 22 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -383,13 +383,13 @@ describe("whirlpool-dev-fee-swap", () => {
 
     const devFeePercentage = Percentage.fromFraction(100, 100); // 100%
     const inputTokenAmount = new BN(119500000);
-    const whirlpoolData = await whirlpool.refreshData();
-    const swapToken = whirlpoolData.tokenMintB;
+    const poolData = await pool.refreshData();
+    const swapToken = poolData.tokenMintB;
 
     assert.rejects(
       () =>
         swapQuoteByInputTokenWithDevFees(
-          whirlpool,
+          pool,
           swapToken,
           inputTokenAmount,
           slippageTolerance,
@@ -404,7 +404,7 @@ describe("whirlpool-dev-fee-swap", () => {
 
   it("swap with dev-fee of 200%", async () => {
     const currIndex = arrayTickIndexToTickIndex({ arrayIndex: -1, offsetIndex: 22 }, tickSpacing);
-    const whirlpool = await setupSwapTest({
+    const pool = await setupSwapTest({
       ctx,
       client,
       tickSpacing,
@@ -423,13 +423,13 @@ describe("whirlpool-dev-fee-swap", () => {
 
     const devFeePercentage = Percentage.fromFraction(200, 100); // 200%
     const inputTokenAmount = new BN(119500000);
-    const whirlpoolData = await whirlpool.refreshData();
-    const swapToken = whirlpoolData.tokenMintB;
+    const poolData = await pool.refreshData();
+    const swapToken = poolData.tokenMintB;
 
     assert.rejects(
       () =>
         swapQuoteByInputTokenWithDevFees(
-          whirlpool,
+          pool,
           swapToken,
           inputTokenAmount,
           slippageTolerance,
@@ -445,7 +445,7 @@ describe("whirlpool-dev-fee-swap", () => {
 
 async function getQuotes(
   ctx: ElysiumPoolContext,
-  whirlpool: ElysiumPool,
+  pool: ElysiumPool,
   swapToken: Address,
   inputTokenAmount: BN,
   postFeeTokenAmount: BN,
@@ -453,7 +453,7 @@ async function getQuotes(
   devFeePercentage: Percentage
 ) {
   const inputTokenQuote = await swapQuoteByInputToken(
-    whirlpool,
+    pool,
     swapToken,
     inputTokenAmount,
     slippageTolerance,
@@ -462,7 +462,7 @@ async function getQuotes(
     IGNORE_CACHE
   );
   const postFeeInputTokenQuote = await swapQuoteByInputToken(
-    whirlpool,
+    pool,
     swapToken,
     postFeeTokenAmount,
     slippageTolerance,
@@ -471,7 +471,7 @@ async function getQuotes(
     IGNORE_CACHE
   );
   const inputTokenQuoteWithDevFees = await swapQuoteByInputTokenWithDevFees(
-    whirlpool,
+    pool,
     swapToken,
     inputTokenAmount,
     slippageTolerance,

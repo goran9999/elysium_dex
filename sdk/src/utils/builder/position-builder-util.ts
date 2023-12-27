@@ -6,19 +6,19 @@ import { PDAUtil } from "../public";
 export async function getTickArrayDataForPosition(
   ctx: ElysiumPoolContext,
   position: PositionData,
-  whirlpool: ElysiumPoolData,
+  pool: ElysiumPoolData,
   opts?: ElysiumPoolAccountFetchOptions
 ) {
   const lowerTickArrayKey = PDAUtil.getTickArrayFromTickIndex(
     position.tickLowerIndex,
-    whirlpool.tickSpacing,
-    position.whirlpool,
+    pool.tickSpacing,
+    position.pool,
     ctx.program.programId
   ).publicKey;
   const upperTickArrayKey = PDAUtil.getTickArrayFromTickIndex(
     position.tickUpperIndex,
-    whirlpool.tickSpacing,
-    position.whirlpool,
+    pool.tickSpacing,
+    position.pool,
     ctx.program.programId
   ).publicKey;
 

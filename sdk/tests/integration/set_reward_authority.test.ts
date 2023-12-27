@@ -25,7 +25,7 @@ describe("set_reward_authority", () => {
     for (let i = 0; i < NUM_REWARDS; i++) {
       txBuilder.addInstruction(
         ElysiumPoolIx.setRewardAuthorityIx(ctx.program, {
-          whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+          pool: poolInitInfo.poolPda.publicKey,
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           newRewardAuthority: newKeypairs[i].publicKey,
           rewardIndex: i,
@@ -36,13 +36,13 @@ describe("set_reward_authority", () => {
       maxSupportedTransactionVersion: undefined,
     });
 
-    const pool = (await fetcher.getPool(poolInitInfo.whirlpoolPda.publicKey)) as ElysiumPoolData;
+    const pool = (await fetcher.getPool(poolInitInfo.poolPda.publicKey)) as ElysiumPoolData;
     for (let i = 0; i < NUM_REWARDS; i++) {
       assert.ok(pool.rewardInfos[i].authority.equals(newKeypairs[i].publicKey));
     }
   });
 
-  it("fails when provided reward_authority does not match whirlpool reward authority", async () => {
+  it("fails when provided reward_authority does not match pool reward authority", async () => {
     const { poolInitInfo } = await initTestPool(ctx, TickSpacing.Standard);
 
     const fakeAuthority = anchor.web3.Keypair.generate();
@@ -51,7 +51,7 @@ describe("set_reward_authority", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setRewardAuthorityIx(ctx.program, {
-          whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+          pool: poolInitInfo.poolPda.publicKey,
           rewardAuthority: fakeAuthority.publicKey,
           newRewardAuthority: newAuthority.publicKey,
           rewardIndex: 0,
@@ -71,7 +71,7 @@ describe("set_reward_authority", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setRewardAuthorityIx(ctx.program, {
-          whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+          pool: poolInitInfo.poolPda.publicKey,
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           newRewardAuthority: newAuthority.publicKey,
           rewardIndex: -1,
@@ -83,7 +83,7 @@ describe("set_reward_authority", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setRewardAuthorityIx(ctx.program, {
-          whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+          pool: poolInitInfo.poolPda.publicKey,
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           newRewardAuthority: newAuthority.publicKey,
           rewardIndex: 255,
@@ -103,7 +103,7 @@ describe("set_reward_authority", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setRewardAuthorityIx(ctx.program, {
-          whirlpool: poolInitInfo.whirlpoolPda.publicKey,
+          pool: poolInitInfo.poolPda.publicKey,
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           newRewardAuthority: newAuthority.publicKey,
           rewardIndex: 0,

@@ -28,15 +28,9 @@ describe("collect_protocol_fees", () => {
       positions: [{ tickLowerIndex, tickUpperIndex, liquidityAmount: new anchor.BN(10_000_000) }],
     });
     const {
-      poolInitInfo: {
-        whirlpoolPda,
-        tokenVaultAKeypair,
-        tokenVaultBKeypair,
-        tokenMintA,
-        tokenMintB,
-      },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair, tokenMintA, tokenMintB },
       configKeypairs: { feeAuthorityKeypair, collectProtocolFeesAuthorityKeypair },
-      configInitInfo: { whirlpoolsConfigKeypair: whirlpoolsConfigKeypair },
+      configInitInfo: { poolsConfigKeypair: poolsConfigKeypair },
       tokenAccountA,
       tokenAccountB,
       positions,
@@ -45,8 +39,8 @@ describe("collect_protocol_fees", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.setProtocolFeeRateIx(ctx.program, {
-        whirlpool: whirlpoolPda.publicKey,
-        whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
+        pool: poolPda.publicKey,
+        poolsConfig: poolsConfigKeypair.publicKey,
         feeAuthority: feeAuthorityKeypair.publicKey,
         protocolFeeRate: 2500,
       })
@@ -54,16 +48,13 @@ describe("collect_protocol_fees", () => {
       .addSigner(feeAuthorityKeypair)
       .buildAndExecute();
 
-    const poolBefore = (await fetcher.getPool(
-      whirlpoolPda.publicKey,
-      IGNORE_CACHE
-    )) as ElysiumPoolData;
+    const poolBefore = (await fetcher.getPool(poolPda.publicKey, IGNORE_CACHE)) as ElysiumPoolData;
     assert.ok(poolBefore?.protocolFeeOwedA.eq(ZERO_BN));
     assert.ok(poolBefore?.protocolFeeOwedB.eq(ZERO_BN));
 
     const tickArrayPda = positions[0].tickArrayLower;
 
-    const oraclePda = PDAUtil.getOracle(ctx.program.programId, whirlpoolPda.publicKey);
+    const oraclePda = PDAUtil.getOracle(ctx.program.programId, poolPda.publicKey);
 
     // Accrue fees in token A
     await toTx(
@@ -74,7 +65,7 @@ describe("collect_protocol_fees", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
         amountSpecifiedIsInput: true,
         aToB: true,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -96,7 +87,7 @@ describe("collect_protocol_fees", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
         amountSpecifiedIsInput: true,
         aToB: false,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -109,10 +100,7 @@ describe("collect_protocol_fees", () => {
       })
     ).buildAndExecute();
 
-    const poolAfter = (await fetcher.getPool(
-      whirlpoolPda.publicKey,
-      IGNORE_CACHE
-    )) as ElysiumPoolData;
+    const poolAfter = (await fetcher.getPool(poolPda.publicKey, IGNORE_CACHE)) as ElysiumPoolData;
     assert.ok(poolAfter?.protocolFeeOwedA.eq(new BN(150)));
     assert.ok(poolAfter?.protocolFeeOwedB.eq(new BN(150)));
 
@@ -122,8 +110,8 @@ describe("collect_protocol_fees", () => {
     await toTx(
       ctx,
       ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
-        whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
-        whirlpool: whirlpoolPda.publicKey,
+        poolsConfig: poolsConfigKeypair.publicKey,
+        pool: poolPda.publicKey,
         collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
         tokenVaultA: tokenVaultAKeypair.publicKey,
         tokenVaultB: tokenVaultBKeypair.publicKey,
@@ -155,9 +143,9 @@ describe("collect_protocol_fees", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       configKeypairs: { collectProtocolFeesAuthorityKeypair },
-      configInitInfo: { whirlpoolsConfigKeypair },
+      configInitInfo: { poolsConfigKeypair },
       tokenAccountA,
       tokenAccountB,
     } = fixture.getInfos();
@@ -166,8 +154,8 @@ describe("collect_protocol_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
-          whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
-          whirlpool: whirlpoolPda.publicKey,
+          poolsConfig: poolsConfigKeypair.publicKey,
+          pool: poolPda.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
           tokenVaultA: tokenVaultAKeypair.publicKey,
           tokenVaultB: tokenVaultBKeypair.publicKey,
@@ -192,9 +180,9 @@ describe("collect_protocol_fees", () => {
       ],
     });
     const {
-      poolInitInfo: { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair },
       configKeypairs: { rewardEmissionsSuperAuthorityKeypair },
-      configInitInfo: { whirlpoolsConfigKeypair },
+      configInitInfo: { poolsConfigKeypair },
       tokenAccountA,
       tokenAccountB,
     } = fixture.getInfos();
@@ -203,8 +191,8 @@ describe("collect_protocol_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
-          whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
-          whirlpool: whirlpoolPda.publicKey,
+          poolsConfig: poolsConfigKeypair.publicKey,
+          pool: poolPda.publicKey,
           collectProtocolFeesAuthority: rewardEmissionsSuperAuthorityKeypair.publicKey,
           tokenVaultA: tokenVaultAKeypair.publicKey,
           tokenVaultB: tokenVaultBKeypair.publicKey,
@@ -218,7 +206,7 @@ describe("collect_protocol_fees", () => {
     );
   });
 
-  it("fails when whirlpool does not match config", async () => {
+  it("fails when pool does not match config", async () => {
     const tickSpacing = TickSpacing.Standard;
     const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
@@ -233,20 +221,20 @@ describe("collect_protocol_fees", () => {
     const {
       poolInitInfo: { tokenVaultAKeypair, tokenVaultBKeypair },
       configKeypairs: { collectProtocolFeesAuthorityKeypair },
-      configInitInfo: { whirlpoolsConfigKeypair },
+      configInitInfo: { poolsConfigKeypair },
       tokenAccountA,
       tokenAccountB,
     } = fixture.getInfos();
     const {
-      poolInitInfo: { whirlpoolPda: whirlpoolPda2 },
+      poolInitInfo: { poolPda: poolPda2 },
     } = await initTestPool(ctx, tickSpacing);
 
     await assert.rejects(
       toTx(
         ctx,
         ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
-          whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
-          whirlpool: whirlpoolPda2.publicKey,
+          poolsConfig: poolsConfigKeypair.publicKey,
+          pool: poolPda2.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
           tokenVaultA: tokenVaultAKeypair.publicKey,
           tokenVaultB: tokenVaultBKeypair.publicKey,
@@ -260,7 +248,7 @@ describe("collect_protocol_fees", () => {
     );
   });
 
-  it("fails when vaults do not match whirlpool vaults", async () => {
+  it("fails when vaults do not match pool vaults", async () => {
     const tickSpacing = TickSpacing.Standard;
     const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
@@ -273,15 +261,9 @@ describe("collect_protocol_fees", () => {
       ],
     });
     const {
-      poolInitInfo: {
-        whirlpoolPda,
-        tokenVaultAKeypair,
-        tokenVaultBKeypair,
-        tokenMintA,
-        tokenMintB,
-      },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair, tokenMintA, tokenMintB },
       configKeypairs: { collectProtocolFeesAuthorityKeypair },
-      configInitInfo: { whirlpoolsConfigKeypair: whirlpoolsConfigKeypair },
+      configInitInfo: { poolsConfigKeypair: poolsConfigKeypair },
       tokenAccountA,
       tokenAccountB,
     } = fixture.getInfos();
@@ -293,8 +275,8 @@ describe("collect_protocol_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
-          whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
-          whirlpool: whirlpoolPda.publicKey,
+          poolsConfig: poolsConfigKeypair.publicKey,
+          pool: poolPda.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
           tokenVaultA: fakeVaultA,
           tokenVaultB: tokenVaultBKeypair.publicKey,
@@ -311,8 +293,8 @@ describe("collect_protocol_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
-          whirlpoolsConfig: whirlpoolsConfigKeypair.publicKey,
-          whirlpool: whirlpoolPda.publicKey,
+          poolsConfig: poolsConfigKeypair.publicKey,
+          pool: poolPda.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
           tokenVaultA: tokenVaultAKeypair.publicKey,
           tokenVaultB: fakeVaultB,
@@ -326,7 +308,7 @@ describe("collect_protocol_fees", () => {
     );
   });
 
-  it("fails when destination mints do not match whirlpool mints", async () => {
+  it("fails when destination mints do not match pool mints", async () => {
     const tickSpacing = TickSpacing.Standard;
     const fixture = await new ElysiumPoolTestFixture(ctx).init({
       tickSpacing,
@@ -339,15 +321,9 @@ describe("collect_protocol_fees", () => {
       ],
     });
     const {
-      poolInitInfo: {
-        whirlpoolPda,
-        tokenVaultAKeypair,
-        tokenVaultBKeypair,
-        tokenMintA,
-        tokenMintB,
-      },
+      poolInitInfo: { poolPda, tokenVaultAKeypair, tokenVaultBKeypair, tokenMintA, tokenMintB },
       configKeypairs: { collectProtocolFeesAuthorityKeypair },
-      configInitInfo: { whirlpoolsConfigKeypair: whirlpoolsConfigKepair },
+      configInitInfo: { poolsConfigKeypair: poolsConfigKepair },
       tokenAccountA,
       tokenAccountB,
     } = fixture.getInfos();
@@ -359,8 +335,8 @@ describe("collect_protocol_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
-          whirlpoolsConfig: whirlpoolsConfigKepair.publicKey,
-          whirlpool: whirlpoolPda.publicKey,
+          poolsConfig: poolsConfigKepair.publicKey,
+          pool: poolPda.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
           tokenVaultA: tokenVaultAKeypair.publicKey,
           tokenVaultB: tokenVaultBKeypair.publicKey,
@@ -377,8 +353,8 @@ describe("collect_protocol_fees", () => {
       toTx(
         ctx,
         ElysiumPoolIx.collectProtocolFeesIx(ctx.program, {
-          whirlpoolsConfig: whirlpoolsConfigKepair.publicKey,
-          whirlpool: whirlpoolPda.publicKey,
+          poolsConfig: poolsConfigKepair.publicKey,
+          pool: poolPda.publicKey,
           collectProtocolFeesAuthority: collectProtocolFeesAuthorityKeypair.publicKey,
           tokenVaultA: tokenVaultAKeypair.publicKey,
           tokenVaultB: tokenVaultBKeypair.publicKey,

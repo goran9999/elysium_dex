@@ -10,14 +10,14 @@ import {
 import { ParsableElysiumPool } from "../parsing";
 
 /**
- * Retrieve a list of whirlpool addresses and accounts filtered by the given params using
+ * Retrieve a list of pool addresses and accounts filtered by the given params using
  * getProgramAccounts.
  * @category Network
  *
  * @param connection The connection to use to fetch accounts
  * @param programId The ElysiumPool program to search ElysiumPool accounts for
  * @param configId The {@link ElysiumPoolConfig} account program address to filter by
- * @returns tuple of whirlpool addresses and accounts
+ * @returns tuple of pool addresses and accounts
  */
 export async function getAllElysiumPoolAccountsForConfig({
   connection,
@@ -45,7 +45,7 @@ export async function getAllElysiumPoolAccountsForConfig({
   const parsedAccounts: [string, ElysiumPoolData][] = [];
   accounts.forEach(({ pubkey, account }) => {
     const parsedAccount = ParsableElysiumPool.parse(pubkey, account);
-    invariant(!!parsedAccount, `could not parse whirlpool: ${pubkey.toBase58()}`);
+    invariant(!!parsedAccount, `could not parse pool: ${pubkey.toBase58()}`);
     parsedAccounts.push([AddressUtil.toString(pubkey), parsedAccount]);
   });
 

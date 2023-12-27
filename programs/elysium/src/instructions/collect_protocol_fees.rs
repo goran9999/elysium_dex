@@ -4,24 +4,24 @@ use anchor_spl::token::{self, Token, TokenAccount};
 
 #[derive(Accounts)]
 pub struct CollectProtocolFees<'info> {
-    pub whirlpools_config: Box<Account<'info, ElysiumPoolsConfig>>,
+    pub pools_config: Box<Account<'info, ElysiumPoolsConfig>>,
 
-    #[account(mut, has_one = whirlpools_config)]
-    pub whirlpool: Box<Account<'info, ElysiumPool>>,
+    #[account(mut, has_one = pools_config)]
+    pub pool: Box<Account<'info, ElysiumPool>>,
 
-    #[account(address = whirlpools_config.collect_protocol_fees_authority)]
+    #[account(address = pools_config.collect_protocol_fees_authority)]
     pub collect_protocol_fees_authority: Signer<'info>,
 
-    #[account(mut, address = whirlpool.token_vault_a)]
+    #[account(mut, address = pool.token_vault_a)]
     pub token_vault_a: Account<'info, TokenAccount>,
 
-    #[account(mut, address = whirlpool.token_vault_b)]
+    #[account(mut, address = pool.token_vault_b)]
     pub token_vault_b: Account<'info, TokenAccount>,
 
-    #[account(mut, constraint = token_destination_a.mint == whirlpool.token_mint_a)]
+    #[account(mut, constraint = token_destination_a.mint == pool.token_mint_a)]
     pub token_destination_a: Account<'info, TokenAccount>,
 
-    #[account(mut, constraint = token_destination_b.mint == whirlpool.token_mint_b)]
+    #[account(mut, constraint = token_destination_b.mint == pool.token_mint_b)]
     pub token_destination_b: Account<'info, TokenAccount>,
 
     #[account(address = token::ID)]
@@ -29,23 +29,23 @@ pub struct CollectProtocolFees<'info> {
 }
 
 pub fn handler(ctx: Context<CollectProtocolFees>) -> Result<()> {
-    let whirlpool = &ctx.accounts.whirlpool;
+    let pool = &ctx.accounts.pool;
 
     transfer_from_vault_to_owner(
-        whirlpool,
+        pool,
         &ctx.accounts.token_vault_a,
         &ctx.accounts.token_destination_a,
         &ctx.accounts.token_program,
-        whirlpool.protocol_fee_owed_a,
+        pool.protocol_fee_owed_a,
     )?;
 
     transfer_from_vault_to_owner(
-        whirlpool,
+        pool,
         &ctx.accounts.token_vault_b,
         &ctx.accounts.token_destination_b,
         &ctx.accounts.token_program,
-        whirlpool.protocol_fee_owed_b,
+        pool.protocol_fee_owed_b,
     )?;
 
-    Ok(ctx.accounts.whirlpool.reset_protocol_fees_owed())
+    Ok(ctx.accounts.pool.reset_protocol_fees_owed())
 }

@@ -2,7 +2,7 @@ import { BN, Program } from "@coral-xyz/anchor";
 import { Instruction, PDA } from "@orca-so/common-sdk";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Keypair, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 import { ElysiumPoolBumpsData } from "../types/public/anchor-types";
 
 /**
@@ -10,8 +10,8 @@ import { ElysiumPoolBumpsData } from "../types/public/anchor-types";
  *
  * @category Instruction Types
  * @param initSqrtPrice - The desired initial sqrt-price for this pool
- * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
- * @param whirlpoolPda - PDA for the whirlpool account that would be initialized
+ * @param poolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
+ * @param poolPda - PDA for the pool account that would be initialized
  * @param tokenMintA - Mint public key for token A
  * @param tokenMintB - Mint public key for token B
  * @param tokenVaultAKeypair - Keypair of the token A vault for this pool
@@ -22,8 +22,8 @@ import { ElysiumPoolBumpsData } from "../types/public/anchor-types";
  */
 export type InitPoolParams = {
   initSqrtPrice: BN;
-  whirlpoolsConfig: PublicKey;
-  whirlpoolPda: PDA;
+  poolsConfig: PublicKey;
+  poolPda: PDA;
   tokenMintA: PublicKey;
   tokenMintB: PublicKey;
   tokenVaultAKeypair: Keypair;
@@ -53,8 +53,8 @@ export function initializePoolIx(
     initSqrtPrice,
     tokenMintA,
     tokenMintB,
-    whirlpoolsConfig,
-    whirlpoolPda,
+    poolsConfig,
+    poolPda,
     feeTierKey,
     tokenVaultAKeypair,
     tokenVaultBKeypair,
@@ -62,17 +62,17 @@ export function initializePoolIx(
     funder,
   } = params;
 
-  const whirlpoolBumps: ElysiumPoolBumpsData = {
-    whirlpoolBump: whirlpoolPda.bump,
+  const poolBumps: ElysiumPoolBumpsData = {
+    poolBump: poolPda.bump,
   };
 
-  const ix = program.instruction.initializePool(whirlpoolBumps, tickSpacing, initSqrtPrice, {
+  const ix = program.instruction.initializePool(poolBumps, tickSpacing, initSqrtPrice, {
     accounts: {
-      whirlpoolsConfig,
+      poolsConfig,
       tokenMintA,
       tokenMintB,
       funder,
-      whirlpool: whirlpoolPda.publicKey,
+      pool: poolPda.publicKey,
       tokenVaultA: tokenVaultAKeypair.publicKey,
       tokenVaultB: tokenVaultBKeypair.publicKey,
       feeTier: feeTierKey,

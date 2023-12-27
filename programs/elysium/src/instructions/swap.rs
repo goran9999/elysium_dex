@@ -5,7 +5,7 @@ use crate::{
     errors::ErrorCode,
     manager::swap_manager::*,
     state::{ElysiumPool, TickArray},
-    util::{to_timestamp_u64, update_and_swap_whirlpool, SwapTickSequence},
+    util::{to_timestamp_u64, update_and_swap_pool, SwapTickSequence},
 };
 
 #[derive(Accounts)]
@@ -16,28 +16,28 @@ pub struct Swap<'info> {
     pub token_authority: Signer<'info>,
 
     #[account(mut)]
-    pub whirlpool: Box<Account<'info, ElysiumPool>>,
+    pub pool: Box<Account<'info, ElysiumPool>>,
 
-    #[account(mut, constraint = token_owner_account_a.mint == whirlpool.token_mint_a)]
+    #[account(mut, constraint = token_owner_account_a.mint == pool.token_mint_a)]
     pub token_owner_account_a: Box<Account<'info, TokenAccount>>,
-    #[account(mut, address = whirlpool.token_vault_a)]
+    #[account(mut, address = pool.token_vault_a)]
     pub token_vault_a: Box<Account<'info, TokenAccount>>,
 
-    #[account(mut, constraint = token_owner_account_b.mint == whirlpool.token_mint_b)]
+    #[account(mut, constraint = token_owner_account_b.mint == pool.token_mint_b)]
     pub token_owner_account_b: Box<Account<'info, TokenAccount>>,
-    #[account(mut, address = whirlpool.token_vault_b)]
+    #[account(mut, address = pool.token_vault_b)]
     pub token_vault_b: Box<Account<'info, TokenAccount>>,
 
-    #[account(mut, has_one = whirlpool)]
+    #[account(mut, has_one = pool)]
     pub tick_array_0: AccountLoader<'info, TickArray>,
 
-    #[account(mut, has_one = whirlpool)]
+    #[account(mut, has_one = pool)]
     pub tick_array_1: AccountLoader<'info, TickArray>,
 
-    #[account(mut, has_one = whirlpool)]
+    #[account(mut, has_one = pool)]
     pub tick_array_2: AccountLoader<'info, TickArray>,
 
-    #[account(seeds = [b"oracle", whirlpool.key().as_ref()],bump)]
+    #[account(seeds = [b"oracle", pool.key().as_ref()],bump)]
     /// CHECK: Oracle is currently unused and will be enabled on subsequent updates
     pub oracle: UncheckedAccount<'info>,
 }
@@ -50,7 +50,7 @@ pub fn handler(
     amount_specified_is_input: bool,
     a_to_b: bool, // Zero for one
 ) -> Result<()> {
-    let whirlpool = &mut ctx.accounts.whirlpool;
+    let pool = &mut ctx.accounts.pool;
     let clock = Clock::get()?;
     // Update the global reward growth which increases as a function of time.
     let timestamp = to_timestamp_u64(clock.unix_timestamp)?;
@@ -61,7 +61,7 @@ pub fn handler(
     );
 
     let swap_update = swap(
-        &whirlpool,
+        &pool,
         &mut swap_tick_sequence,
         amount,
         sqrt_price_limit,
@@ -84,8 +84,8 @@ pub fn handler(
         }
     }
 
-    update_and_swap_whirlpool(
-        whirlpool,
+    update_and_swap_pool(
+        pool,
         &ctx.accounts.token_authority,
         &ctx.accounts.token_owner_account_a,
         &ctx.accounts.token_owner_account_b,

@@ -41,8 +41,8 @@ import {
   TokenMintTypes,
   getTokenMintsFromElysiumPools,
   resolveAtaForMints,
-} from "../utils/whirlpool-ata-utils";
-import { ElysiumPool } from "../whirlpool-client";
+} from "../utils/pool-ata-utils";
+import { ElysiumPool } from "../pool-client";
 import { PositionImpl } from "./position-impl";
 import { getRewardInfos, getTokenVaultAccountInfos } from "./util";
 
@@ -158,7 +158,7 @@ export class ElysiumPoolImpl implements ElysiumPool {
         initTickArrayIx(this.ctx.program, {
           startTick: initTickArrayInfo.startIndex,
           tickArrayPda: initTickArrayInfo.pda,
-          whirlpool: this.address,
+          pool: this.address,
           funder: !!funder ? AddressUtil.toPubKey(funder) : this.ctx.provider.wallet.publicKey,
         })
       );
@@ -198,7 +198,7 @@ export class ElysiumPoolImpl implements ElysiumPool {
       this.ctx,
       {
         swapInput: quote,
-        whirlpool: this,
+        pool: this,
         wallet: sourceWalletKey,
       },
       IGNORE_CACHE
@@ -242,7 +242,7 @@ export class ElysiumPoolImpl implements ElysiumPool {
       this.ctx,
       {
         swapInput: quote,
-        whirlpool: this,
+        pool: this,
         wallet: sourceWalletKey,
       },
       IGNORE_CACHE
@@ -272,18 +272,18 @@ export class ElysiumPoolImpl implements ElysiumPool {
 
     invariant(liquidity.gt(new BN(0)), "liquidity must be greater than zero");
 
-    const whirlpool = await this.ctx.fetcher.getPool(this.address, PREFER_CACHE);
-    if (!whirlpool) {
+    const pool = await this.ctx.fetcher.getPool(this.address, PREFER_CACHE);
+    if (!pool) {
       throw new Error(`ElysiumPool not found: ${translateAddress(this.address).toBase58()}`);
     }
 
     invariant(
-      TickUtil.isTickInitializable(tickLower, whirlpool.tickSpacing),
-      `lower tick ${tickLower} is not an initializable tick for tick-spacing ${whirlpool.tickSpacing}`
+      TickUtil.isTickInitializable(tickLower, pool.tickSpacing),
+      `lower tick ${tickLower} is not an initializable tick for tick-spacing ${pool.tickSpacing}`
     );
     invariant(
-      TickUtil.isTickInitializable(tickUpper, whirlpool.tickSpacing),
-      `upper tick ${tickUpper} is not an initializable tick for tick-spacing ${whirlpool.tickSpacing}`
+      TickUtil.isTickInitializable(tickUpper, pool.tickSpacing),
+      `upper tick ${tickUpper} is not an initializable tick for tick-spacing ${pool.tickSpacing}`
     );
 
     const positionMintKeypair = Keypair.generate();
@@ -311,7 +311,7 @@ export class ElysiumPoolImpl implements ElysiumPool {
         metadataPda,
         positionMintAddress: positionMintPubkey,
         positionTokenAccount: positionTokenAccountAddress,
-        whirlpool: this.address,
+        pool: this.address,
         tickLowerIndex: tickLower,
         tickUpperIndex: tickUpper,
       }
@@ -325,8 +325,8 @@ export class ElysiumPoolImpl implements ElysiumPool {
       this.ctx.connection,
       wallet,
       [
-        { tokenMint: whirlpool.tokenMintA, wrappedSolAmountIn: tokenMaxA },
-        { tokenMint: whirlpool.tokenMintB, wrappedSolAmountIn: tokenMaxB },
+        { tokenMint: pool.tokenMintA, wrappedSolAmountIn: tokenMaxA },
+        { tokenMint: pool.tokenMintB, wrappedSolAmountIn: tokenMaxB },
       ],
       () => this.ctx.fetcher.getAccountRentExempt(),
       funder,
@@ -357,14 +357,14 @@ export class ElysiumPoolImpl implements ElysiumPool {
       liquidityAmount: liquidity,
       tokenMaxA,
       tokenMaxB,
-      whirlpool: this.address,
+      pool: this.address,
       positionAuthority: wallet,
       position: positionPda.publicKey,
       positionTokenAccount: positionTokenAccountAddress,
       tokenOwnerAccountA,
       tokenOwnerAccountB,
-      tokenVaultA: whirlpool.tokenVaultA,
-      tokenVaultB: whirlpool.tokenVaultB,
+      tokenVaultA: pool.tokenVaultA,
+      tokenVaultB: pool.tokenVaultB,
       tickArrayLower: tickArrayLowerPda.publicKey,
       tickArrayUpper: tickArrayUpperPda.publicKey,
     });
@@ -388,10 +388,10 @@ export class ElysiumPoolImpl implements ElysiumPool {
       throw new Error(`Position not found: ${positionAddress.toBase58()}`);
     }
 
-    const whirlpool = this.data;
+    const pool = this.data;
 
     invariant(
-      positionData.whirlpool.equals(this.address),
+      positionData.pool.equals(this.address),
       `Position ${positionAddress.toBase58()} is not a position for ElysiumPool ${this.address.toBase58()}`
     );
 
@@ -417,40 +417,40 @@ export class ElysiumPoolImpl implements ElysiumPool {
 
     const tickArrayLower = PDAUtil.getTickArrayFromTickIndex(
       positionData.tickLowerIndex,
-      whirlpool.tickSpacing,
-      positionData.whirlpool,
+      pool.tickSpacing,
+      positionData.pool,
       this.ctx.program.programId
     ).publicKey;
 
     const tickArrayUpper = PDAUtil.getTickArrayFromTickIndex(
       positionData.tickUpperIndex,
-      whirlpool.tickSpacing,
-      positionData.whirlpool,
+      pool.tickSpacing,
+      positionData.pool,
       this.ctx.program.programId
     ).publicKey;
 
     const [tickArrayLowerData, tickArrayUpperData] = await getTickArrayDataForPosition(
       this.ctx,
       positionData,
-      whirlpool,
+      pool,
       IGNORE_CACHE
     );
 
     invariant(
       !!tickArrayLowerData,
-      `Tick array ${tickArrayLower} expected to be initialized for whirlpool ${this.address}`
+      `Tick array ${tickArrayLower} expected to be initialized for pool ${this.address}`
     );
 
     invariant(
       !!tickArrayUpperData,
-      `Tick array ${tickArrayUpper} expected to be initialized for whirlpool ${this.address}`
+      `Tick array ${tickArrayUpper} expected to be initialized for pool ${this.address}`
     );
 
     const position = new PositionImpl(
       this.ctx,
       positionAddress,
       positionData,
-      whirlpool,
+      pool,
       tickArrayLowerData,
       tickArrayUpperData
     );
@@ -460,14 +460,14 @@ export class ElysiumPoolImpl implements ElysiumPool {
 
     const feesQuote = collectFeesQuote({
       position: positionData,
-      whirlpool,
+      pool,
       tickLower,
       tickUpper,
     });
 
     const rewardsQuote = collectRewardsQuote({
       position: positionData,
-      whirlpool,
+      pool,
       tickLower,
       tickUpper,
     });
@@ -493,7 +493,7 @@ export class ElysiumPoolImpl implements ElysiumPool {
       mintType = TokenMintTypes.REWARD_ONLY;
     }
 
-    const affiliatedMints = getTokenMintsFromElysiumPools([whirlpool], mintType);
+    const affiliatedMints = getTokenMintsFromElysiumPools([pool], mintType);
     const { ataTokenAddresses: walletTokenAccountsByMint, resolveAtaIxs } =
       await resolveAtaForMints(this.ctx, {
         mints: affiliatedMints.mintMap,
@@ -520,28 +520,28 @@ export class ElysiumPoolImpl implements ElysiumPool {
 
     if (shouldDecreaseLiquidity) {
       /* Remove all liquidity remaining in the position */
-      const tokenOwnerAccountA = walletTokenAccountsByMint[whirlpool.tokenMintA.toBase58()];
-      const tokenOwnerAccountB = walletTokenAccountsByMint[whirlpool.tokenMintB.toBase58()];
+      const tokenOwnerAccountA = walletTokenAccountsByMint[pool.tokenMintA.toBase58()];
+      const tokenOwnerAccountB = walletTokenAccountsByMint[pool.tokenMintB.toBase58()];
 
       const decreaseLiqQuote = decreaseLiquidityQuoteByLiquidityWithParams({
         liquidity: positionData.liquidity,
         slippageTolerance,
-        sqrtPrice: whirlpool.sqrtPrice,
-        tickCurrentIndex: whirlpool.tickCurrentIndex,
+        sqrtPrice: pool.sqrtPrice,
+        tickCurrentIndex: pool.tickCurrentIndex,
         tickLowerIndex: positionData.tickLowerIndex,
         tickUpperIndex: positionData.tickUpperIndex,
       });
 
       const liquidityIx = decreaseLiquidityIx(this.ctx.program, {
         ...decreaseLiqQuote,
-        whirlpool: positionData.whirlpool,
+        pool: positionData.pool,
         positionAuthority: positionWallet,
         position: positionAddress,
         positionTokenAccount,
         tokenOwnerAccountA,
         tokenOwnerAccountB,
-        tokenVaultA: whirlpool.tokenVaultA,
-        tokenVaultB: whirlpool.tokenVaultB,
+        tokenVaultA: pool.tokenVaultA,
+        tokenVaultB: pool.tokenVaultB,
         tickArrayLower,
         tickArrayUpper,
       });

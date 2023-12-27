@@ -59,16 +59,16 @@ impl Tick {
         tick_index > MAX_TICK_INDEX || tick_index < MIN_TICK_INDEX
     }
 
-    /// Check that the tick index is a valid start tick for a tick array in this whirlpool
+    /// Check that the tick index is a valid start tick for a tick array in this pool
     /// A valid start-tick-index is a multiple of tick_spacing & number of ticks in a tick-array.
     ///
     /// # Parameters
     /// - `tick_index` - A i32 integer representing the tick index
-    /// - `tick_spacing` - A u8 integer of the tick spacing for this whirlpool
+    /// - `tick_spacing` - A u8 integer of the tick spacing for this pool
     ///
     /// # Returns
-    /// - `true`: The tick index is a valid start-tick-index for this whirlpool
-    /// - `false`: The tick index is not a valid start-tick-index for this whirlpool
+    /// - `true`: The tick index is a valid start-tick-index for this pool
+    /// - `false`: The tick index is not a valid start-tick-index for this pool
     ///            or the tick index not within the range supported by this contract
     pub fn check_is_valid_start_tick(tick_index: i32, tick_spacing: u16) -> bool {
         let ticks_in_array = TICK_ARRAY_SIZE * tick_spacing as i32;
@@ -90,7 +90,7 @@ impl Tick {
     ///
     /// # Parameters
     /// - `tick_index` - A i32 integer representing the tick index
-    /// - `tick_spacing` - A u8 integer of the tick spacing for this whirlpool
+    /// - `tick_spacing` - A u8 integer of the tick spacing for this pool
     ///
     /// # Returns
     /// - `true`: The tick index is within max/min index bounds for this protocol and is a usable tick-index given the tick-spacing
@@ -143,14 +143,14 @@ impl TickUpdate {
 pub struct TickArray {
     pub start_tick_index: i32,
     pub ticks: [Tick; TICK_ARRAY_SIZE_USIZE],
-    pub whirlpool: Pubkey,
+    pub pool: Pubkey,
 }
 
 impl Default for TickArray {
     #[inline]
     fn default() -> TickArray {
         TickArray {
-            whirlpool: Pubkey::default(),
+            pool: Pubkey::default(),
             ticks: [Tick::default(); TICK_ARRAY_SIZE_USIZE],
             start_tick_index: 0,
         }
@@ -164,7 +164,7 @@ impl TickArray {
     ///
     /// # Parameters
     /// - `tick_index` - A i32 integer representing the tick index to start searching for
-    /// - `tick_spacing` - A u8 integer of the tick spacing for this whirlpool
+    /// - `tick_spacing` - A u8 integer of the tick spacing for this pool
     /// - `a_to_b` - If the trade is from a_to_b, the search will move to the left and the starting search tick is inclusive.
     ///              If the trade is from b_to_a, the search will move to the right and the starting search tick is not inclusive.
     ///
@@ -215,21 +215,17 @@ impl TickArray {
     /// Initialize the TickArray object
     ///
     /// # Parameters
-    /// - `whirlpool` - the tick index the desired Tick object is stored in
-    /// - `start_tick_index` - A u8 integer of the tick spacing for this whirlpool
+    /// - `pool` - the tick index the desired Tick object is stored in
+    /// - `start_tick_index` - A u8 integer of the tick spacing for this pool
     ///
     /// # Errors
     /// - `InvalidStartTick`: - The provided start-tick-index is not an initializable tick index in this ElysiumPool w/ this tick-spacing.
-    pub fn initialize(
-        &mut self,
-        whirlpool: &Account<ElysiumPool>,
-        start_tick_index: i32,
-    ) -> Result<()> {
-        if !Tick::check_is_valid_start_tick(start_tick_index, whirlpool.tick_spacing) {
+    pub fn initialize(&mut self, pool: &Account<ElysiumPool>, start_tick_index: i32) -> Result<()> {
+        if !Tick::check_is_valid_start_tick(start_tick_index, pool.tick_spacing) {
             return Err(ErrorCode::InvalidStartTick.into());
         }
 
-        self.whirlpool = whirlpool.key();
+        self.pool = pool.key();
         self.start_tick_index = start_tick_index;
         Ok(())
     }
@@ -238,7 +234,7 @@ impl TickArray {
     ///
     /// # Parameters
     /// - `tick_index` - the tick index the desired Tick object is stored in
-    /// - `tick_spacing` - A u8 integer of the tick spacing for this whirlpool
+    /// - `tick_spacing` - A u8 integer of the tick spacing for this pool
     ///
     /// # Returns
     /// - `&Tick`: A reference to the desired Tick object
@@ -260,7 +256,7 @@ impl TickArray {
     ///
     /// # Parameters
     /// - `tick_index` - the tick index the desired Tick object is stored in
-    /// - `tick_spacing` - A u8 integer of the tick spacing for this whirlpool
+    /// - `tick_spacing` - A u8 integer of the tick spacing for this pool
     /// - `update` - A reference to a TickUpdate object to update the Tick object at the given index
     ///
     /// # Errors

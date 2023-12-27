@@ -1,7 +1,7 @@
 import { BorshAccountsCoder, Idl } from "@coral-xyz/anchor";
 import { ParsableEntity, staticImplements } from "@orca-so/common-sdk";
 import { AccountInfo, PublicKey } from "@solana/web3.js";
-import * as ElysiumPoolIDL from "../../artifacts/whirlpool.json";
+import * as ElysiumPoolIDL from "../../artifacts/pool.json";
 import {
   AccountName,
   FeeTierData,

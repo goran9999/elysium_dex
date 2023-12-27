@@ -1,6 +1,6 @@
 import { Program } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 import { Instruction } from "@orca-so/common-sdk";
 
@@ -8,13 +8,13 @@ import { Instruction } from "@orca-so/common-sdk";
  * Parameters to update fees and reward values for a position.
  *
  * @category Instruction Types
- * @param whirlpool - PublicKey for the whirlpool that the position will be opened for.
+ * @param pool - PublicKey for the pool that the position will be opened for.
  * @param position - PublicKey for the  position will be opened for.
  * @param tickArrayLower - PublicKey for the tick-array account that hosts the tick at the lower tick index.
  * @param tickArrayUpper - PublicKey for the tick-array account that hosts the tick at the upper tick index.
  */
 export type UpdateFeesAndRewardsParams = {
-  whirlpool: PublicKey;
+  pool: PublicKey;
   position: PublicKey;
   tickArrayLower: PublicKey;
   tickArrayUpper: PublicKey;
@@ -36,11 +36,11 @@ export function updateFeesAndRewardsIx(
   program: Program<ElysiumPool>,
   params: UpdateFeesAndRewardsParams
 ): Instruction {
-  const { whirlpool, position, tickArrayLower, tickArrayUpper } = params;
+  const { pool, position, tickArrayLower, tickArrayUpper } = params;
 
   const ix = program.instruction.updateFeesAndRewards({
     accounts: {
-      whirlpool,
+      pool,
       position,
       tickArrayLower,
       tickArrayUpper,

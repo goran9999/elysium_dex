@@ -6,7 +6,7 @@ import { PositionData, TickData, ElysiumPoolData } from "../../types/public";
  * @category Quotes
  */
 export type CollectFeesQuoteParam = {
-  whirlpool: ElysiumPoolData;
+  pool: ElysiumPoolData;
   position: PositionData;
   tickLower: TickData;
   tickUpper: TickData;
@@ -28,13 +28,13 @@ export type CollectFeesQuote = {
  * @returns A quote object containing the fees owed for each token in the pool.
  */
 export function collectFeesQuote(param: CollectFeesQuoteParam): CollectFeesQuote {
-  const { whirlpool, position, tickLower, tickUpper } = param;
+  const { pool, position, tickLower, tickUpper } = param;
 
   const {
     tickCurrentIndex,
     feeGrowthGlobalA: feeGrowthGlobalAX64,
     feeGrowthGlobalB: feeGrowthGlobalBX64,
-  } = whirlpool;
+  } = pool;
   const {
     tickLowerIndex,
     tickUpperIndex,

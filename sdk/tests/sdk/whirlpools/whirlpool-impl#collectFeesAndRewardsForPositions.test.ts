@@ -39,8 +39,8 @@ import { FundedPositionInfo } from "../../utils/init-utils";
 interface SharedTestContext {
   provider: anchor.AnchorProvider;
   program: ElysiumPool;
-  whirlpoolCtx: ElysiumPoolContext;
-  whirlpoolClient: ElysiumPoolClient;
+  poolCtx: ElysiumPoolContext;
+  poolClient: ElysiumPoolClient;
 }
 
 describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
@@ -57,31 +57,31 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
 
     anchor.setProvider(provider);
     const program = anchor.workspace.ElysiumPool;
-    const whirlpoolCtx = ElysiumPoolContext.fromWorkspace(provider, program, undefined, undefined, {
+    const poolCtx = ElysiumPoolContext.fromWorkspace(provider, program, undefined, undefined, {
       userDefaultBuildOptions: {
         maxSupportedTransactionVersion: "legacy",
       },
     });
-    const whirlpoolClient = buildElysiumPoolClient(whirlpoolCtx);
+    const poolClient = buildElysiumPoolClient(poolCtx);
 
     testCtx = {
       provider,
       program,
-      whirlpoolCtx,
-      whirlpoolClient,
+      poolCtx,
+      poolClient,
     };
   });
 
   async function accrueFees(fixture: ElysiumPoolTestFixture) {
-    const ctx = testCtx.whirlpoolCtx;
+    const ctx = testCtx.poolCtx;
     const { poolInitInfo, positions, tokenAccountA, tokenAccountB } = fixture.getInfos();
 
-    const { whirlpoolPda, tokenVaultAKeypair, tokenVaultBKeypair } = poolInitInfo;
+    const { poolPda, tokenVaultAKeypair, tokenVaultBKeypair } = poolInitInfo;
 
-    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, whirlpoolPda.publicKey, 22528);
-    const oraclePda = PDAUtil.getOracle(ctx.program.programId, whirlpoolPda.publicKey);
+    const tickArrayPda = PDAUtil.getTickArray(ctx.program.programId, poolPda.publicKey, 22528);
+    const oraclePda = PDAUtil.getOracle(ctx.program.programId, poolPda.publicKey);
 
-    const pool = await testCtx.whirlpoolClient.getPool(whirlpoolPda.publicKey);
+    const pool = await testCtx.poolClient.getPool(poolPda.publicKey);
 
     // Accrue fees in token A
     await toTx(
@@ -92,7 +92,7 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(4)),
         amountSpecifiedIsInput: true,
         aToB: true,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -114,7 +114,7 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
         sqrtPriceLimit: MathUtil.toX64(new Decimal(5)),
         amountSpecifiedIsInput: true,
         aToB: false,
-        whirlpool: whirlpoolPda.publicKey,
+        pool: poolPda.publicKey,
         tokenAuthority: ctx.wallet.publicKey,
         tokenOwnerAccountA: tokenAccountA,
         tokenVaultA: tokenVaultAKeypair.publicKey,
@@ -129,7 +129,7 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
 
     // all position should get some fees
     for (const positionInfo of positions) {
-      const position = await testCtx.whirlpoolClient.getPosition(positionInfo.publicKey);
+      const position = await testCtx.poolClient.getPosition(positionInfo.publicKey);
 
       const poolData = await pool.refreshData();
       const positionData = await position.refreshData();
@@ -137,7 +137,7 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
       const tickUpperData = position.getLowerTickData();
 
       const quote = collectFeesQuote({
-        whirlpool: poolData,
+        pool: poolData,
         position: positionData,
         tickLower: tickLowerData,
         tickUpper: tickUpperData,
@@ -148,17 +148,17 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
   }
 
   async function stopRewardsEmission(fixture: ElysiumPoolTestFixture) {
-    const ctx = testCtx.whirlpoolCtx;
+    const ctx = testCtx.poolCtx;
     const { poolInitInfo, configKeypairs } = fixture.getInfos();
-    const { whirlpoolPda } = poolInitInfo;
+    const { poolPda } = poolInitInfo;
 
-    const pool = await testCtx.whirlpoolClient.getPool(whirlpoolPda.publicKey);
+    const pool = await testCtx.poolClient.getPool(poolPda.publicKey);
 
     for (let i = 0; i < NUM_REWARDS; i++) {
       await toTx(
         ctx,
         ElysiumPoolIx.setRewardEmissionsIx(ctx.program, {
-          whirlpool: pool.getAddress(),
+          pool: pool.getAddress(),
           rewardVaultKey: pool.getData().rewardInfos[i].vault,
           rewardAuthority: configKeypairs.rewardEmissionsSuperAuthorityKeypair.publicKey,
           rewardIndex: i,
@@ -171,11 +171,11 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
   }
 
   async function burnAndCloseATAs(fixture: ElysiumPoolTestFixture) {
-    const ctx = testCtx.whirlpoolCtx;
+    const ctx = testCtx.poolCtx;
     const { poolInitInfo, configKeypairs } = fixture.getInfos();
-    const { whirlpoolPda } = poolInitInfo;
+    const { poolPda } = poolInitInfo;
 
-    const pool = await testCtx.whirlpoolClient.getPool(whirlpoolPda.publicKey);
+    const pool = await testCtx.poolClient.getPool(poolPda.publicKey);
 
     const mintA = pool.getTokenAInfo().mint;
     const mintB = pool.getTokenBInfo().mint;
@@ -215,11 +215,11 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
   }
 
   async function createATAs(fixture: ElysiumPoolTestFixture) {
-    const ctx = testCtx.whirlpoolCtx;
+    const ctx = testCtx.poolCtx;
     const { poolInitInfo, configKeypairs } = fixture.getInfos();
-    const { whirlpoolPda } = poolInitInfo;
+    const { poolPda } = poolInitInfo;
 
-    const pool = await testCtx.whirlpoolClient.getPool(whirlpoolPda.publicKey);
+    const pool = await testCtx.poolClient.getPool(poolPda.publicKey);
 
     const mintA = pool.getTokenAInfo().mint;
     const mintB = pool.getTokenBInfo().mint;
@@ -264,7 +264,7 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
     const numOfPool = 3;
 
     for (let i = 0; i < numOfPool; i++) {
-      const fixture = await new ElysiumPoolTestFixture(testCtx.whirlpoolCtx).init({
+      const fixture = await new ElysiumPoolTestFixture(testCtx.poolCtx).init({
         tokenAIsNative,
         tickSpacing,
         positions: [
@@ -302,25 +302,22 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
 
     // check all positions have fees and rewards
     for (const positionInfo of positions) {
-      const position = await testCtx.whirlpoolClient.getPosition(positionInfo.publicKey);
+      const position = await testCtx.poolClient.getPosition(positionInfo.publicKey);
 
-      const poolData = await testCtx.whirlpoolCtx.fetcher.getPool(
-        position.getData().whirlpool,
-        IGNORE_CACHE
-      );
+      const poolData = await testCtx.poolCtx.fetcher.getPool(position.getData().pool, IGNORE_CACHE);
       const positionData = await position.refreshData();
       const tickLowerData = position.getLowerTickData();
       const tickUpperData = position.getLowerTickData();
 
       const feeQuote = collectFeesQuote({
-        whirlpool: poolData!,
+        pool: poolData!,
         position: positionData,
         tickLower: tickLowerData,
         tickUpper: tickUpperData,
       });
 
       const rewardQuote = collectRewardsQuote({
-        whirlpool: poolData!,
+        pool: poolData!,
         position: positionData,
         tickLower: tickLowerData,
         tickUpper: tickUpperData,
@@ -334,7 +331,7 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
       assert.ok(rewardQuote[2]?.gt(ZERO));
     }
 
-    const txs = await testCtx.whirlpoolClient.collectFeesAndRewardsForPositions(
+    const txs = await testCtx.poolClient.collectFeesAndRewardsForPositions(
       positions.map((p) => p.publicKey),
       IGNORE_CACHE
     );
@@ -348,10 +345,7 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
     }
 
     const parallel = true;
-    const processor = new TransactionProcessor(
-      testCtx.whirlpoolCtx.connection,
-      testCtx.whirlpoolCtx.wallet
-    );
+    const processor = new TransactionProcessor(testCtx.poolCtx.connection, testCtx.poolCtx.wallet);
     const { execute } = await processor.signAndConstructTransactions(requests, parallel);
 
     const txResults = await execute();
@@ -364,25 +358,22 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
 
     // check all positions have no fees and rewards
     for (const positionInfo of positions) {
-      const position = await testCtx.whirlpoolClient.getPosition(positionInfo.publicKey);
+      const position = await testCtx.poolClient.getPosition(positionInfo.publicKey);
 
-      const poolData = await testCtx.whirlpoolCtx.fetcher.getPool(
-        position.getData().whirlpool,
-        IGNORE_CACHE
-      );
+      const poolData = await testCtx.poolCtx.fetcher.getPool(position.getData().pool, IGNORE_CACHE);
       const positionData = await position.refreshData();
       const tickLowerData = position.getLowerTickData();
       const tickUpperData = position.getLowerTickData();
 
       const feeQuote = collectFeesQuote({
-        whirlpool: poolData!,
+        pool: poolData!,
         position: positionData,
         tickLower: tickLowerData,
         tickUpper: tickUpperData,
       });
 
       const rewardQuote = collectRewardsQuote({
-        whirlpool: poolData!,
+        pool: poolData!,
         position: positionData,
         tickLower: tickLowerData,
         tickUpper: tickUpperData,
@@ -397,7 +388,7 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
     }
   }
 
-  context("when the whirlpool is SPL-only", () => {
+  context("when the pool is SPL-only", () => {
     it("should collect fees and rewards, create all ATAs", async () => {
       const tokenAIsNative = false;
       const ataExists = false;
@@ -411,7 +402,7 @@ describe("ElysiumPoolImpl#collectFeesAndRewardsForPositions()", () => {
     });
   });
 
-  context("when the whirlpool is SOL-SPL", () => {
+  context("when the pool is SOL-SPL", () => {
     it("should collect fees and rewards, create all ATAs", async () => {
       const tokenAIsNative = true;
       const ataExists = false;

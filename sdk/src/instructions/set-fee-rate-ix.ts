@@ -1,20 +1,20 @@
 import { Program } from "@coral-xyz/anchor";
 import { Instruction } from "@orca-so/common-sdk";
 import { PublicKey } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 /**
  * Parameters to set fee rate for a ElysiumPool.
  *
  * @category Instruction Types
- * @param whirlpool - PublicKey for the whirlpool to update. This whirlpool has to be part of the provided ElysiumPoolsConfig space.
- * @param whirlpoolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
+ * @param pool - PublicKey for the pool to update. This pool has to be part of the provided ElysiumPoolsConfig space.
+ * @param poolsConfig - The public key for the ElysiumPoolsConfig this pool is initialized in
  * @param feeAuthority - Authority authorized in the ElysiumPoolsConfig to set default fee rates.
  * @param feeRate - The new fee rate for this fee-tier. Stored as a hundredths of a basis point.
  */
 export type SetFeeRateParams = {
-  whirlpool: PublicKey;
-  whirlpoolsConfig: PublicKey;
+  pool: PublicKey;
+  poolsConfig: PublicKey;
   feeAuthority: PublicKey;
   feeRate: number;
 };
@@ -32,12 +32,12 @@ export type SetFeeRateParams = {
  * @returns - Instruction to perform the action.
  */
 export function setFeeRateIx(program: Program<ElysiumPool>, params: SetFeeRateParams): Instruction {
-  const { whirlpoolsConfig, whirlpool, feeAuthority, feeRate } = params;
+  const { poolsConfig, pool, feeAuthority, feeRate } = params;
 
   const ix = program.instruction.setFeeRate(feeRate, {
     accounts: {
-      whirlpoolsConfig,
-      whirlpool,
+      poolsConfig,
+      pool,
       feeAuthority,
     },
   });

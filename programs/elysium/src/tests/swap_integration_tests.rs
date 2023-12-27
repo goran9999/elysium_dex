@@ -3,7 +3,7 @@ use crate::manager::swap_manager::*;
 use crate::math::*;
 use crate::state::{MAX_TICK_INDEX, MIN_TICK_INDEX, TICK_ARRAY_SIZE};
 use crate::util::test_utils::swap_test_fixture::*;
-use crate::util::{create_whirlpool_reward_infos, SwapTickSequence};
+use crate::util::{create_pool_reward_infos, SwapTickSequence};
 use serde::Deserialize;
 use serde_json;
 use serde_with::{serde_as, DisplayFromStr};
@@ -113,7 +113,7 @@ fn run_swap_integration_tests() {
             fee_growth_global_b: 0,
             fee_rate: test.fee_rate,
             protocol_fee_rate: test.protocol_fee_rate,
-            reward_infos: create_whirlpool_reward_infos(100, 10),
+            reward_infos: create_pool_reward_infos(100, 10),
             ..Default::default()
         });
 

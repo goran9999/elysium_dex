@@ -1,9 +1,9 @@
 # ElysiumPools
 
 Whirpools is an open-source concentrated liquidity AMM contract on the Solana blockchain.
-This repository contains the Rust smart contract as well as the Typescript SDK (`@orca-so/whirlpools-sdk`) to interact with a deployed program.
+This repository contains the Rust smart contract as well as the Typescript SDK (`@orca-so/pools-sdk`) to interact with a deployed program.
 
-The contract has been audited by [Kudelski and Neodyme](https://orca-so.gitbook.io/orca-developer-portal/whirlpools/overview#security-audits).
+The contract has been audited by [Kudelski and Neodyme](https://orca-so.gitbook.io/orca-developer-portal/pools/overview#security-audits).
 
 The contract has been deployed using verifiable build, so that you can ensure that the hash of the on-chain program matches the hash of the program of the given codebase.
 
@@ -49,7 +49,7 @@ Use the SDK to interact with a deployed ElysiumPools program via Typescript.
 In your package, run:
 
 ```
-yarn add "@orca-so/whirlpools-sdk"
+yarn add "@orca-so/pools-sdk"
 yarn add "@coral-xyz/anchor"
 yarn add "decimal.js"
 ```
@@ -60,7 +60,7 @@ Read instructions on how to use the SDK on the [Orca Developer Portal](https://o
 
 ## Run Typescript tests via local validator
 
-In the whirlpools/sdk folder, run:
+In the pools/sdk folder, run:
 
 ```
 anchor test
@@ -70,11 +70,11 @@ anchor test
 
 In the `sdk` folder, run `yarn run docs`
 
-You can also see the generated [TypeDoc](https://orca-so.github.io/whirlpools/).
+You can also see the generated [TypeDoc](https://orca-so.github.io/pools/).
 
 ## Sample Codes
 
-You can find sample code covering basic operations [here](https://github.com/everlastingsong/tour-de-whirlpool/tree/main/src/EN).
+You can find sample code covering basic operations [here](https://github.com/everlastingsong/tour-de-pool/tree/main/src/EN).
 
 ---
 

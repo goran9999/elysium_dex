@@ -1,5 +1,5 @@
 {
-  "name": "@orca-so/whirlpools-sdk",
+  "name": "@orca-so/pools-sdk",
   "version": "0.11.8",
   "description": "Typescript SDK to interact with Orca's ElysiumPool program.",
   "license": "Apache-2.0",
@@ -48,7 +48,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/orca-so/whirlpools.git"
+    "url": "git+https://github.com/orca-so/pools.git"
   },
   "keywords": [
     "orca_so",
@@ -61,7 +61,7 @@
   ],
   "author": "team@orca.so",
   "bugs": {
-    "url": "https://github.com/orca-so/whirlpools/issues"
+    "url": "https://github.com/orca-so/pools/issues"
   },
   "homepage": "https://www.orca.so"
 }

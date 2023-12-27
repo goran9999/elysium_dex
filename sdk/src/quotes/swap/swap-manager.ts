@@ -14,7 +14,7 @@ export type SwapResult = {
 };
 
 export function computeSwap(
-  whirlpoolData: ElysiumPoolData,
+  poolData: ElysiumPoolData,
   tickSequence: TickArraySequence,
   tokenAmount: BN,
   sqrtPriceLimit: BN,
@@ -23,16 +23,14 @@ export function computeSwap(
 ): SwapResult {
   let amountRemaining = tokenAmount;
   let amountCalculated = ZERO;
-  let currSqrtPrice = whirlpoolData.sqrtPrice;
-  let currLiquidity = whirlpoolData.liquidity;
-  let currTickIndex = whirlpoolData.tickCurrentIndex;
+  let currSqrtPrice = poolData.sqrtPrice;
+  let currLiquidity = poolData.liquidity;
+  let currTickIndex = poolData.tickCurrentIndex;
   let totalFeeAmount = ZERO;
-  const feeRate = whirlpoolData.feeRate;
-  const protocolFeeRate = whirlpoolData.protocolFeeRate;
+  const feeRate = poolData.feeRate;
+  const protocolFeeRate = poolData.protocolFeeRate;
   let currProtocolFee = new BN(0);
-  let currFeeGrowthGlobalInput = aToB
-    ? whirlpoolData.feeGrowthGlobalA
-    : whirlpoolData.feeGrowthGlobalB;
+  let currFeeGrowthGlobalInput = aToB ? poolData.feeGrowthGlobalA : poolData.feeGrowthGlobalB;
 
   while (amountRemaining.gt(ZERO) && !sqrtPriceLimit.eq(currSqrtPrice)) {
     let { nextIndex: nextTickIndex } = tickSequence.findNextInitializedTickIndex(currTickIndex);

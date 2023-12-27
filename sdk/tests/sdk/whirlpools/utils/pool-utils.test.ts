@@ -6,20 +6,20 @@ import { Keypair } from "@solana/web3.js";
 describe("PoolUtils tests", () => {
   describe("getTokenType", () => {
     it("Token is tokenA", async () => {
-      const whirlpoolData = testElysiumPoolData;
-      const result = PoolUtil.getTokenType(whirlpoolData, whirlpoolData.tokenMintA);
+      const poolData = testElysiumPoolData;
+      const result = PoolUtil.getTokenType(poolData, poolData.tokenMintA);
       assert.equal(result, TokenType.TokenA);
     });
 
     it("Token is tokenB", async () => {
-      const whirlpoolData = testElysiumPoolData;
-      const result = PoolUtil.getTokenType(whirlpoolData, whirlpoolData.tokenMintB);
+      const poolData = testElysiumPoolData;
+      const result = PoolUtil.getTokenType(poolData, poolData.tokenMintB);
       assert.equal(result, TokenType.TokenB);
     });
 
     it("Token is some other token", async () => {
-      const whirlpoolData = testElysiumPoolData;
-      const result = PoolUtil.getTokenType(whirlpoolData, Keypair.generate().publicKey);
+      const poolData = testElysiumPoolData;
+      const result = PoolUtil.getTokenType(poolData, Keypair.generate().publicKey);
       assert.ok(result === undefined);
     });
   });

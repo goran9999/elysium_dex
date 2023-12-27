@@ -19,32 +19,29 @@ describe("set_fee_rate", () => {
       ctx,
       TickSpacing.Standard
     );
-    const whirlpoolKey = poolInitInfo.whirlpoolPda.publicKey;
-    const whirlpoolsConfigKey = configInitInfo.whirlpoolsConfigKeypair.publicKey;
+    const poolKey = poolInitInfo.poolPda.publicKey;
+    const poolsConfigKey = configInitInfo.poolsConfigKeypair.publicKey;
     const feeAuthorityKeypair = configKeypairs.feeAuthorityKeypair;
 
     const newFeeRate = 50;
 
-    let whirlpool = (await fetcher.getPool(whirlpoolKey, IGNORE_CACHE)) as ElysiumPoolData;
+    let pool = (await fetcher.getPool(poolKey, IGNORE_CACHE)) as ElysiumPoolData;
 
-    assert.equal(whirlpool.feeRate, feeTierParams.defaultFeeRate);
+    assert.equal(pool.feeRate, feeTierParams.defaultFeeRate);
 
     const setFeeRateTx = toTx(
       ctx,
       ElysiumPoolIx.setFeeRateIx(program, {
-        whirlpool: whirlpoolKey,
-        whirlpoolsConfig: whirlpoolsConfigKey,
+        pool: poolKey,
+        poolsConfig: poolsConfigKey,
         feeAuthority: feeAuthorityKeypair.publicKey,
         feeRate: newFeeRate,
       })
     ).addSigner(feeAuthorityKeypair);
     await setFeeRateTx.buildAndExecute();
 
-    whirlpool = (await fetcher.getPool(
-      poolInitInfo.whirlpoolPda.publicKey,
-      IGNORE_CACHE
-    )) as ElysiumPoolData;
-    assert.equal(whirlpool.feeRate, newFeeRate);
+    pool = (await fetcher.getPool(poolInitInfo.poolPda.publicKey, IGNORE_CACHE)) as ElysiumPoolData;
+    assert.equal(pool.feeRate, newFeeRate);
   });
 
   it("successfully sets_fee_rate max", async () => {
@@ -52,32 +49,29 @@ describe("set_fee_rate", () => {
       ctx,
       TickSpacing.Standard
     );
-    const whirlpoolKey = poolInitInfo.whirlpoolPda.publicKey;
-    const whirlpoolsConfigKey = configInitInfo.whirlpoolsConfigKeypair.publicKey;
+    const poolKey = poolInitInfo.poolPda.publicKey;
+    const poolsConfigKey = configInitInfo.poolsConfigKeypair.publicKey;
     const feeAuthorityKeypair = configKeypairs.feeAuthorityKeypair;
 
     const newFeeRate = 30_000;
 
-    let whirlpool = (await fetcher.getPool(whirlpoolKey, IGNORE_CACHE)) as ElysiumPoolData;
+    let pool = (await fetcher.getPool(poolKey, IGNORE_CACHE)) as ElysiumPoolData;
 
-    assert.equal(whirlpool.feeRate, feeTierParams.defaultFeeRate);
+    assert.equal(pool.feeRate, feeTierParams.defaultFeeRate);
 
     const setFeeRateTx = toTx(
       ctx,
       ElysiumPoolIx.setFeeRateIx(program, {
-        whirlpool: whirlpoolKey,
-        whirlpoolsConfig: whirlpoolsConfigKey,
+        pool: poolKey,
+        poolsConfig: poolsConfigKey,
         feeAuthority: feeAuthorityKeypair.publicKey,
         feeRate: newFeeRate,
       })
     ).addSigner(feeAuthorityKeypair);
     await setFeeRateTx.buildAndExecute();
 
-    whirlpool = (await fetcher.getPool(
-      poolInitInfo.whirlpoolPda.publicKey,
-      IGNORE_CACHE
-    )) as ElysiumPoolData;
-    assert.equal(whirlpool.feeRate, newFeeRate);
+    pool = (await fetcher.getPool(poolInitInfo.poolPda.publicKey, IGNORE_CACHE)) as ElysiumPoolData;
+    assert.equal(pool.feeRate, newFeeRate);
   });
 
   it("fails when fee rate exceeds max", async () => {
@@ -85,8 +79,8 @@ describe("set_fee_rate", () => {
       ctx,
       TickSpacing.Standard
     );
-    const whirlpoolKey = poolInitInfo.whirlpoolPda.publicKey;
-    const whirlpoolsConfigKey = configInitInfo.whirlpoolsConfigKeypair.publicKey;
+    const poolKey = poolInitInfo.poolPda.publicKey;
+    const poolsConfigKey = configInitInfo.poolsConfigKeypair.publicKey;
     const feeAuthorityKeypair = configKeypairs.feeAuthorityKeypair;
 
     const newFeeRate = 30_000 + 1;
@@ -94,8 +88,8 @@ describe("set_fee_rate", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setFeeRateIx(ctx.program, {
-          whirlpoolsConfig: whirlpoolsConfigKey,
-          whirlpool: whirlpoolKey,
+          poolsConfig: poolsConfigKey,
+          pool: poolKey,
           feeAuthority: feeAuthorityKeypair.publicKey,
           feeRate: newFeeRate,
         })
@@ -111,8 +105,8 @@ describe("set_fee_rate", () => {
       ctx,
       TickSpacing.Standard
     );
-    const whirlpoolKey = poolInitInfo.whirlpoolPda.publicKey;
-    const whirlpoolsConfigKey = configInitInfo.whirlpoolsConfigKeypair.publicKey;
+    const poolKey = poolInitInfo.poolPda.publicKey;
+    const poolsConfigKey = configInitInfo.poolsConfigKeypair.publicKey;
     const feeAuthorityKeypair = configKeypairs.feeAuthorityKeypair;
 
     const newFeeRate = 1000;
@@ -120,8 +114,8 @@ describe("set_fee_rate", () => {
       toTx(
         ctx,
         ElysiumPoolIx.setFeeRateIx(ctx.program, {
-          whirlpoolsConfig: whirlpoolsConfigKey,
-          whirlpool: whirlpoolKey,
+          poolsConfig: poolsConfigKey,
+          pool: poolKey,
           feeAuthority: feeAuthorityKeypair.publicKey,
           feeRate: newFeeRate,
         })
@@ -130,12 +124,12 @@ describe("set_fee_rate", () => {
     );
   });
 
-  it("fails when whirlpool and whirlpools config don't match", async () => {
+  it("fails when pool and pools config don't match", async () => {
     const { poolInitInfo, configInitInfo, configKeypairs } = await initTestPool(
       ctx,
       TickSpacing.Standard
     );
-    const whirlpoolKey = poolInitInfo.whirlpoolPda.publicKey;
+    const poolKey = poolInitInfo.poolPda.publicKey;
     const feeAuthorityKeypair = configKeypairs.feeAuthorityKeypair;
 
     const { configInitInfo: otherConfigInitInfo } = generateDefaultConfigParams(ctx);
@@ -148,8 +142,8 @@ describe("set_fee_rate", () => {
     await assert.rejects(
       ctx.program.rpc.setFeeRate(newFeeRate, {
         accounts: {
-          whirlpoolsConfig: otherConfigInitInfo.whirlpoolsConfigKeypair.publicKey,
-          whirlpool: whirlpoolKey,
+          poolsConfig: otherConfigInitInfo.poolsConfigKeypair.publicKey,
+          pool: poolKey,
           feeAuthority: feeAuthorityKeypair.publicKey,
         },
         signers: [configKeypairs.feeAuthorityKeypair],
@@ -162,7 +156,7 @@ describe("set_fee_rate", () => {
 
   it("fails when fee authority is invalid", async () => {
     const { poolInitInfo, configInitInfo } = await initTestPool(ctx, TickSpacing.Standard);
-    const whirlpoolKey = poolInitInfo.whirlpoolPda.publicKey;
+    const poolKey = poolInitInfo.poolPda.publicKey;
 
     const fakeAuthorityKeypair = anchor.web3.Keypair.generate();
 
@@ -170,8 +164,8 @@ describe("set_fee_rate", () => {
     await assert.rejects(
       ctx.program.rpc.setFeeRate(newFeeRate, {
         accounts: {
-          whirlpoolsConfig: configInitInfo.whirlpoolsConfigKeypair.publicKey,
-          whirlpool: whirlpoolKey,
+          poolsConfig: configInitInfo.poolsConfigKeypair.publicKey,
+          pool: poolKey,
           feeAuthority: fakeAuthorityKeypair.publicKey,
         },
         signers: [fakeAuthorityKeypair],

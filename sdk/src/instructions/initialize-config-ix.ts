@@ -1,6 +1,6 @@
 import { Program } from "@coral-xyz/anchor";
 import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
-import { ElysiumPool } from "../artifacts/whirlpool";
+import { ElysiumPool } from "../artifacts/pool";
 
 import { Instruction } from "@orca-so/common-sdk";
 
@@ -8,7 +8,7 @@ import { Instruction } from "@orca-so/common-sdk";
  * Parameters to initialize a ElysiumPoolsConfig account.
  *
  * @category Instruction Types
- * @param whirlpoolsConfigKeypair - Generated keypair for the ElysiumPoolsConfig.
+ * @param poolsConfigKeypair - Generated keypair for the ElysiumPoolsConfig.
  * @param feeAuthority - Authority authorized to initialize fee-tiers and set customs fees.
  * @param collect_protocol_fees_authority - Authority authorized to collect protocol fees.
  * @param rewardEmissionsSuperAuthority - Authority authorized to set reward authorities in pools.
@@ -16,7 +16,7 @@ import { Instruction } from "@orca-so/common-sdk";
  * @param funder - The account that would fund the creation of this account
  */
 export type InitConfigParams = {
-  whirlpoolsConfigKeypair: Keypair;
+  poolsConfigKeypair: Keypair;
   feeAuthority: PublicKey;
   collectProtocolFeesAuthority: PublicKey;
   rewardEmissionsSuperAuthority: PublicKey;
@@ -52,7 +52,7 @@ export function initializeConfigIx(
     defaultProtocolFeeRate,
     {
       accounts: {
-        config: params.whirlpoolsConfigKeypair.publicKey,
+        config: params.poolsConfigKeypair.publicKey,
         funder,
         systemProgram: SystemProgram.programId,
       },
@@ -62,6 +62,6 @@ export function initializeConfigIx(
   return {
     instructions: [ix],
     cleanupInstructions: [],
-    signers: [params.whirlpoolsConfigKeypair],
+    signers: [params.poolsConfigKeypair],
   };
 }
